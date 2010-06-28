@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, Starter!</string>
+    <string name="app_name">Mileage Tracker</string>
+    <string name="odo_label">Odometer Reading:</string>
+    <string name="trip_label">Trip Reading:</string>
+    <string name="price_label">Price per gallon:</string>
+    <string name="gallons_label">Number of Gallons:</string>
+    <string name="comp_mileage_label">Computer Mileage:</string>
+    <string name="gas_station_label">Gas Station:</string>
+    <string name="date_label">Fillup Date:</string>
+    <string name="actual_mileage_label">Actual Mileage:</string>
+    <string name="total_price_label">Total Price:</string>
+    <string name="mpg_diff_label">MPG Difference:</string>
+    <string name="new_record_title">Add Record:</string>
+    <string name="edit_record_title">Edit Record:</string>
+    <string name="initDb">CREATE TABLE mileageInfo (_id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, station TEXT, odometer DOUBLE, trip DOUBLE, gallons, DOUBLE, price DOUBLE, compMileage DOUBLE, actMileage DOUBLE, totalPrice DOUBLE, mileageDiff DOUBLE);</string>
+    <string name="clearDb">DROP TABLE mileageInfo;</string>
+    <string name="greeting">Hey There, from my Mileage-Tracker application! I may (or may not) add more plots here, but this is the simple starter application.</string>
+    <string name="confirm_delete">Delete the following records?</string>
+    <string name="confirm_import">Import</string>
+    <string name="confirm_export">Export</string>
+</resources>

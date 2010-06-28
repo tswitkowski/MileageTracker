@@ -1,0 +1,108 @@
+package com.switkows.mileage;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+public class Starter extends Activity {
+    /** Called when the activity is first created. */
+//	private static LinearLayout root;
+	private static LinearLayout mileageChart;
+	private static LinearLayout diffChart;
+	private static Cursor mCursor;
+	private static TextView aveMpg;
+	private static TextView aveTrip;
+	private static TextView bestMpg;
+	private static TextView bestTrip;
+	private static TextView aveDiff;
+	private MileageChartManager chartManager;
+	
+	private Context mContext;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        //grab pointers to all my graphical elements
+        initalizePointers();
+    	
+    	Log.d("TJS", "Started onCreate...");
+        
+//        Log.d("TJS", "Finished opening/creating database");
+    	mContext = getApplicationContext();
+    	mCursor = managedQuery(MileageProvider.CONTENT_URI, null, null, null, null);
+    }
+    
+    public void onResume() {
+    	super.onResume();
+    	//FIXME - maybe be a bit smarter about when we generate charts!
+    	generateCharts();
+    	printStatistics();
+    }
+    
+    public void addUpdateDatapoint(MileageData data) {
+    	getContentResolver().insert(MileageProvider.CONTENT_URI,data.getContent());
+		chartManager.appendData(data,true);
+    }
+    
+    public void generateCharts() {
+    	chartManager = new MileageChartManager(mContext, mCursor);
+    	mileageChart.removeAllViews();
+    	diffChart.removeAllViews();
+        mileageChart.addView(chartManager.getMileageChart(), new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
+        diffChart.addView(chartManager.getDiffChart(), new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
+    }
+    
+    public void printStatistics() {
+    	aveMpg.setText(String.format("%.1f mpg", chartManager.getAverageMPG()));
+    	aveTrip.setText(String.format("%.1f mi", chartManager.getAverageTrip()));
+    	bestMpg.setText(String.format("%.1f mpg", chartManager.getBestMPG()));
+    	bestTrip.setText(String.format("%.1f mi", chartManager.getBestTrip()));
+    	aveDiff.setText(String.format("%.1f%%", chartManager.getAverageDiff()*100));
+    }
+    
+        
+    public void initalizePointers() {
+//        root = (LinearLayout)findViewById(R.id.root);
+    	mileageChart = (LinearLayout)findViewById(R.id.mileage_chart);
+    	diffChart 	 = (LinearLayout)findViewById(R.id.diff_chart);
+    	aveMpg    = (TextView)findViewById(R.id.ave_mpg_value);
+    	aveTrip   = (TextView)findViewById(R.id.ave_trip_value);
+    	bestMpg   = (TextView)findViewById(R.id.best_mpg_value);
+    	bestTrip  = (TextView)findViewById(R.id.best_trip_value);
+    	aveDiff   = (TextView)findViewById(R.id.ave_diff_value);
+
+    }
+    
+    private static final int
+    						MENU_ADD=0,
+						    MENU_SHOWALL=2;
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	menu.add(0, MENU_ADD, 0, "Add Entry").setIcon(android.R.drawable.ic_menu_add);
+    	menu.add(0, MENU_SHOWALL, 0, "Modify Data").setIcon(android.R.drawable.ic_menu_edit);
+    	return true;
+    }
+    
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+    	case MENU_ADD:
+    		Uri uri = MileageProvider.CONTENT_URI;
+            startActivity(new Intent(Intent.ACTION_INSERT, uri));
+    		return true;
+    	case MENU_SHOWALL:
+        	Intent i = new Intent(mContext,EditRecordsMenu.class);
+        	startActivity(i);
+    		return true;
+    	}
+    	return false;
+    }
+}
