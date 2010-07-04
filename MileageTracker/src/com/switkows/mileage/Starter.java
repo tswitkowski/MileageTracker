@@ -18,6 +18,7 @@ public class Starter extends Activity {
 //	private static LinearLayout root;
 	private static LinearLayout mileageChart;
 	private static LinearLayout diffChart;
+	private static LinearLayout priceChart;
 	private static Cursor mCursor;
 	private static TextView aveMpg;
 	private static TextView aveTrip;
@@ -58,8 +59,10 @@ public class Starter extends Activity {
     	chartManager = new MileageChartManager(mContext, mCursor);
     	mileageChart.removeAllViews();
     	diffChart.removeAllViews();
+    	priceChart.removeAllViews();
         mileageChart.addView(chartManager.getMileageChart(), new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
         diffChart.addView(chartManager.getDiffChart(), new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
+        priceChart.addView(chartManager.getPriceChart(), new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
     }
     
     public void printStatistics() {
@@ -75,6 +78,7 @@ public class Starter extends Activity {
 //        root = (LinearLayout)findViewById(R.id.root);
     	mileageChart = (LinearLayout)findViewById(R.id.mileage_chart);
     	diffChart 	 = (LinearLayout)findViewById(R.id.diff_chart);
+    	priceChart   = (LinearLayout)findViewById(R.id.price_chart);
     	aveMpg    = (TextView)findViewById(R.id.ave_mpg_value);
     	aveTrip   = (TextView)findViewById(R.id.ave_trip_value);
     	bestMpg   = (TextView)findViewById(R.id.best_mpg_value);

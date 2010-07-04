@@ -6,7 +6,7 @@ import org.achartengine.chart.*;
 import android.content.Context;
 import android.graphics.Color;
 
-public class MileageChart extends TimeChartExtension {
+public class MileageVsStationChart extends TimeChartExtension {
 	//strings which will return series index
 	public static final int 
 		COMPUTER_MILEAGE=0,
@@ -16,7 +16,7 @@ public class MileageChart extends TimeChartExtension {
 	private static final int[] colors = { Color.BLUE, Color.RED};
 	private static final PointStyle[] styles = { PointStyle.CIRCLE, PointStyle.SQUARE};
 
-	public MileageChart(Context c, MileageData[] data) {
+	public MileageVsStationChart(Context c, MileageData[] data) {
 		super(c,"MPG over Time","MPG",mTitles,colors,styles,data);
 	}
 
