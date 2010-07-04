@@ -98,6 +98,12 @@
 	    />-->
 	    </LinearLayout>
     </ScrollView>
+    <LinearLayout
+	    android:id="@+id/price_chart"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+    ></LinearLayout>
 	<LinearLayout
 		android:id="@+id/mileage_chart"
 		android:layout_width="fill_parent"

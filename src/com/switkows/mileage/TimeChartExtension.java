@@ -15,7 +15,7 @@ import android.graphics.Color;
 
 public abstract class TimeChartExtension {
 	private XYMultipleSeriesDataset  mDataSet;
-	private XYMultipleSeriesRenderer mRenderer;
+	protected XYMultipleSeriesRenderer mRenderer;
 
 	private final GraphicalView mView;
 	protected final String[] Titles;
@@ -26,7 +26,8 @@ public abstract class TimeChartExtension {
 	 * @param colors
 	 * @param styles
 	 */
-	public TimeChartExtension(Context c, String title, String[] titles, int[] colors, PointStyle[] styles, MileageData[] data) {
+	public TimeChartExtension(Context c, String title,String ylabel, String[] titles,
+			 int[] colors, PointStyle[] styles, MileageData[] data) {
 		Titles = titles;
 		mRenderer = buildRenderer(colors, styles);
 		List<double[]> x = buildXList(data);
@@ -36,7 +37,7 @@ public abstract class TimeChartExtension {
 			((XYSeriesRenderer) mRenderer.getSeriesRendererAt(i)).setFillPoints(true);
 		}
 		mDataSet = buildDataset(Titles,x,values);
-		setChartSettings(mRenderer, title, "Date", "MPG", 0, 100, 0, 100,
+		setChartSettings(mRenderer, title, "Date", ylabel, 0, 100, 0, 100,
 				Color.LTGRAY, Color.GRAY);
 		mRenderer.setYLabels(10);
 		autoFitChart();

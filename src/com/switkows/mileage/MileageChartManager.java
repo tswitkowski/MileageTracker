@@ -19,7 +19,8 @@ public class MileageChartManager extends DataSetObserver {
 	private TimeChartExtension[] charts;
 	private static final int
 			MPG_CHART = 0,
-			MPG_DIFF_CHART = 1;
+			MPG_DIFF_CHART = 1,
+			PRICE_CHART = 2;
 	
 	public MileageChartManager(Context c, Cursor cursor) {
 		mContext = c;
@@ -87,9 +88,10 @@ public class MileageChartManager extends DataSetObserver {
 	
 	
 	private void createCharts() {
-		charts = new TimeChartExtension[2];
+		charts = new TimeChartExtension[3];
 		charts[MPG_CHART]      = new MileageChart(    mContext, dataSet);
 		charts[MPG_DIFF_CHART] = new MileageDiffChart(mContext, dataSet);
+		charts[PRICE_CHART]    = new PriceChart(mContext, dataSet);
 	}
 	
 	private TimeChartExtension getChartStruct(int idx) {
@@ -107,11 +109,16 @@ public class MileageChartManager extends DataSetObserver {
 		return getChartView(MPG_DIFF_CHART);
 	}
 	
+	public GraphicalView getPriceChart() {
+		return getChartView(PRICE_CHART);
+	}
+	
 	public void appendData(MileageData data, boolean autofit) {
 		long date = data.getDate();
 		//passing false as 3rd argument because we will simply iterate over all charts in autoFitCharts
 		getChartStruct(MPG_CHART).appendDataToSeries(date, new float[] {data.getComputerMileage(), data.getActualMileage()}, false);
 		getChartStruct(MPG_DIFF_CHART).appendDataToSeries(date, new float[] {data.getMileageDiff()}, false);
+		getChartStruct(PRICE_CHART).appendDataToSeries(date, new float[] {data.getPrice()}, false);
 		if(autofit)
 			autoFitCharts();
 	}
