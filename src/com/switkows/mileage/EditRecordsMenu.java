@@ -14,10 +14,12 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -36,6 +38,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class EditRecordsMenu extends ListActivity {
 	
@@ -46,10 +49,15 @@ public class EditRecordsMenu extends ListActivity {
 	    MENU_IMPORT=4,
 	    MENU_DELETE=5,
 	    MENU_MODIFY=6;
-	@Override
+
+	private SharedPreferences prefs;
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		if(prefs==null)
+			prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		Intent i = getIntent();
 		if(i.getData() == null) {
 			i.setData(MileageProvider.CONTENT_URI);
@@ -250,21 +258,37 @@ public class EditRecordsMenu extends ListActivity {
 				String[] fields = line.split(",");
 				if(fields[0].equals(MileageData.ToDBNames[0]))
 					continue;
+				//are we an old format, without the 'cars' column?! if so, add it!
+				//FIXME - untested!!
+				if(fields.length == 10)
+				{
+					String[] newFields = new String[11];
+					for(int i=0 ; i<fields.length ; i++)
+						newFields[i] = fields[i];
+					newFields[10] = prefs.getString(this.getString(R.string.carSelection), "Car45");
+					fields = newFields;
+				}
 				MileageData record = new MileageData(getApplicationContext(),fields);
 		    	getContentResolver().insert(MileageProvider.CONTENT_URI,record.getContent());
 			}
 			reader.close();
-		} 	catch (FileNotFoundException e) {Log.e("TJS",e.toString());}
-			catch (IOException e) 			{Log.e("TJS",e.toString());}
+			Toast.makeText(this, "Data Successfully imported from ", Toast.LENGTH_LONG);
+		} 	catch (FileNotFoundException e) {
+			Log.e("TJS",e.toString());
+			Toast.makeText(this, "Error! could not access/read "+filename, Toast.LENGTH_LONG);
+		} catch (IOException e) {
+			Log.e("TJS",e.toString());
+			Toast.makeText(this, "Error! could not access/read "+filename, Toast.LENGTH_LONG);
+		}
 	}
 	
 	protected void exportFile(String filename) {
 		File loc = Environment.getExternalStorageDirectory();
-		Log.d("TJS",Environment.getExternalStorageState());
+//		Log.d("TJS",Environment.getExternalStorageState());
 		File csv_file = new File(loc,filename);
-		Log.d("TJS","File exists: " + csv_file.exists());
-		Log.d("TJS","is file: " + csv_file.isFile());
-		Log.d("TJS","is writeable: " + csv_file.canWrite());
+//		Log.d("TJS","File exists: " + csv_file.exists());
+//		Log.d("TJS","is file: " + csv_file.isFile());
+//		Log.d("TJS","is writeable: " + csv_file.canWrite());
 		try {
 //			FileOutputStream stream = new FileOutputStream(csv_file);
 //			PrintWriter writer = new PrintWriter(stream);
@@ -274,8 +298,12 @@ public class EditRecordsMenu extends ListActivity {
         	for(MileageData word : data)
         		writer.println(word.exportCSV());
         	writer.close();
+        	Toast.makeText(this, "Data Successfully Saved to "+filename, Toast.LENGTH_LONG).show();
 
-		} catch(FileNotFoundException e) { Log.e("TJS",e.toString());};
+		} catch(FileNotFoundException e) {
+			Log.e("TJS",e.toString());
+			Toast.makeText(this, "Error! could not access/write "+filename, Toast.LENGTH_LONG).show();
+		};
 	}
 	
 	protected String[] getCSVFiles() {

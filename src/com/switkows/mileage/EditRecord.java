@@ -8,9 +8,11 @@ import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +31,7 @@ public class EditRecord extends Activity {
 	private static final int DATE_PICKER=1;
 	private Uri mUri;
 	private Cursor mCursor;
+	private SharedPreferences prefs;
 	private boolean isNewRecord;
 
     private TextView dateBox;
@@ -140,6 +143,9 @@ public class EditRecord extends Activity {
     protected void onResume() {
         super.onResume();
 
+        if(prefs==null)
+        	prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         if(isNewRecord)
         	setTitle(getText(R.string.new_record_title));
         else
@@ -218,6 +224,7 @@ public class EditRecord extends Activity {
 		try {diff = Float.parseFloat(getTextFieldStruct(MileageData.COMPUTER_MILEAGE).getText().toString());}
     		catch(NumberFormatException e) {diff = 0;}
     	return new MileageData(getApplicationContext(),
+    			prefs.getString(getString(R.string.carSelection), "Car45"),
     			getTextFieldStruct(MileageData.DATE).getText().toString(),
     			getTextFieldStruct(MileageData.STATION).getText().toString(),
     			odo,
