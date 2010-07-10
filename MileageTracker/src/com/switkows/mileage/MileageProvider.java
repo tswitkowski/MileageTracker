@@ -5,6 +5,7 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -12,12 +13,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class MileageProvider extends ContentProvider {
 	private static final String DB_FILENAME = "mileage_db";
 	private static final String DB_TABLE = "mileageInfo";
-	private static final int DB_VERSION = 3;
+	private static final int DB_VERSION = 4;
 
 	public static final String AUTHORITY = "com.switkows.mileage.MileageProvider";
     public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/records");
@@ -25,18 +27,23 @@ public class MileageProvider extends ContentProvider {
     public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.google.mileage";
     public static final String CONTENT_ITEM = "vnd.android.cursor.item/vnd.google.mileage";
     
-    public static final int ALL=0,
+    public static final int ALL_CAR=0,
     						ONE=1;
     
-    public static final UriMatcher sriMatcher;
+	private SharedPreferences prefs;
+
+	public static final UriMatcher sriMatcher;
     static {
     	sriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-    	sriMatcher.addURI(AUTHORITY, "records", ALL);
+    	sriMatcher.addURI(AUTHORITY, "records", ALL_CAR);
     	sriMatcher.addURI(AUTHORITY, "records/#", ONE);
     }
 
 	@Override
 	public boolean onCreate() {
+        if(prefs==null)
+        	prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
 		mDatabase = new MileageDataSet(getContext());
 		return true;
 	}
@@ -47,7 +54,7 @@ public class MileageProvider extends ContentProvider {
 		SQLiteDatabase db = mDatabase.getWritableDatabase();
 		int count;
 		switch(sriMatcher.match(uri)) {
-		case ALL:
+		case ALL_CAR:
 			count = db.delete(DB_TABLE, where, whereArgs);
 			break;
 		case ONE:
@@ -65,7 +72,7 @@ public class MileageProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch(sriMatcher.match(uri)) {
-		case ALL:
+		case ALL_CAR:
 			return CONTENT_TYPE;
 		case ONE:
 			return CONTENT_ITEM;
@@ -76,7 +83,7 @@ public class MileageProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues initialValues) {
-		if(sriMatcher.match(uri)!=ALL) {
+		if(sriMatcher.match(uri)!=ALL_CAR) {
 			throw new IllegalArgumentException("Unknown URI : '"+uri+"'");
 		}
 		
@@ -103,8 +110,11 @@ public class MileageProvider extends ContentProvider {
 		String groupBy = null;
 		
 		switch(sriMatcher.match(uri)) {
-		case ALL:
+		case ALL_CAR:
 			qb.setTables(DB_TABLE);
+			//limit to only this car's data
+			//FIXME - need a 'true ALL' so we can export to CSV!! coming next!!
+			qb.appendWhere("carName = '" + prefs.getString(getContext().getString(R.string.carSelection), "Car45")+"'");
 			//This will add all of the Columns in 'projection', except for
 			//the _id column. This allows for 'uniquifying' the return data
 			//(currently, only used for giving suggestions in the gas-station
@@ -139,7 +149,7 @@ public class MileageProvider extends ContentProvider {
 		SQLiteDatabase db = mDatabase.getWritableDatabase();
 		int count;
 		switch(sriMatcher.match(uri)) {
-		case ALL:
+		case ALL_CAR:
 			count = db.update(DB_TABLE, values, selection, selectionArgs);
 			break;
 		case ONE:
@@ -160,19 +170,29 @@ public class MileageProvider extends ContentProvider {
 			mContext = context;
 		}
 		
-		public void onUpgrade(SQLiteDatabase db,int int1, int int2) {
+		public void onUpgrade(SQLiteDatabase db,int oldVer, int newVer) {
 			//FIXME - add some way to upgrade the dababase, if required
-			String[] sql = mContext.getString(R.string.clearDb).split("\n");
-			db.beginTransaction();
-			try {
-				executeMultipleCommands(db, sql);
-				db.setTransactionSuccessful();
-			} catch(SQLException e) {
-				Log.e("Error creating table!",e.toString());
-			} finally {
-				db.endTransaction();
+			if(oldVer == 3 && newVer == 4) {
+				Log.d("TJS","Trying to execute'"+mContext.getString(R.string.upgradeDBfrom3To4)+"'");
+				db.execSQL(mContext.getString(R.string.upgradeDBfrom3To4));  //create the new column (supports infinite number of users/cars)
+				ContentValues defaults = new ContentValues();
+				String carName = prefs.getString(mContext.getString(R.string.carSelection), "Car45");
+				defaults.put(MileageData.ToDBNames[MileageData.CAR], carName);
+				int rows = db.update(DB_TABLE, defaults, null, null);						//add car name to all rows in old database
+				Log.d("TJS","Database successfully upgraded. "+rows+" records were added to "+carName+"'s stats");
+			} else {
+				String[] sql = mContext.getString(R.string.clearDb).split("\n");
+				db.beginTransaction();
+				try {
+					executeMultipleCommands(db, sql);
+					db.setTransactionSuccessful();
+				} catch(SQLException e) {
+					Log.e("Error creating table!",e.toString());
+				} finally {
+					db.endTransaction();
+				}
+				onCreate(db);
 			}
-			onCreate(db);
 		}
 		
 		public void onCreate(SQLiteDatabase db) {

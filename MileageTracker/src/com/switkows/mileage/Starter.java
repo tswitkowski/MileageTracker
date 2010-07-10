@@ -40,12 +40,12 @@ public class Starter extends Activity {
         
 //        Log.d("TJS", "Finished opening/creating database");
     	mContext = getApplicationContext();
-    	mCursor = managedQuery(MileageProvider.CONTENT_URI, null, null, null, null);
     }
     
     public void onResume() {
     	super.onResume();
     	//FIXME - maybe be a bit smarter about when we generate charts!
+    	mCursor = managedQuery(MileageProvider.CONTENT_URI, null, null, null, null);
     	generateCharts();
     	printStatistics();
     }
@@ -89,10 +89,12 @@ public class Starter extends Activity {
     
     private static final int
     						MENU_ADD=0,
-						    MENU_SHOWALL=2;
+						    MENU_SHOWALL=2,
+						    MENU_PREFS=3;
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.add(0, MENU_ADD, 0, "Add Entry").setIcon(android.R.drawable.ic_menu_add);
     	menu.add(0, MENU_SHOWALL, 0, "Modify Data").setIcon(android.R.drawable.ic_menu_edit);
+    	menu.add(0, MENU_PREFS, 0, "Edit Preferences").setIcon(android.R.drawable.ic_menu_preferences);
     	return true;
     }
     
@@ -103,8 +105,10 @@ public class Starter extends Activity {
             startActivity(new Intent(Intent.ACTION_INSERT, uri));
     		return true;
     	case MENU_SHOWALL:
-        	Intent i = new Intent(mContext,EditRecordsMenu.class);
-        	startActivity(i);
+        	startActivity(new Intent(mContext,EditRecordsMenu.class));
+    		return true;
+    	case MENU_PREFS:
+    		startActivity(new Intent(mContext,EditPreferences.class));
     		return true;
     	}
     	return false;
