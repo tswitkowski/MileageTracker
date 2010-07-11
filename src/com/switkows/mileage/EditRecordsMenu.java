@@ -63,42 +63,15 @@ public class EditRecordsMenu extends ListActivity {
 			i.setData(MileageProvider.CONTENT_URI);
 		}
 		Cursor c = managedQuery(getIntent().getData(), null, null, null, null);
-//		setListAdapter(new MyCursorAdapter(this,
-//				android.R.layout.simple_list_item_multiple_choice,c,
-////				R.layout.record_list_item,c,
-//				new String[] {MileageData.ToDBNames[MileageData.DATE]},new int[] {android.R.id.text1}));
-        getListView().setOnCreateContextMenuListener(this);
+
+		getListView().setOnCreateContextMenuListener(this);
         getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         getListView().setClickable(true);
-//        getListView().perf
         setListAdapter(new ExtendedCheckBoxListAdapter(this,c,new String[] {MileageData.ToDBNames[MileageData.DATE]},new int[] {android.R.id.text1}));
 	}
     public boolean performItemClick(View view, int position, long id) {
     	return false;
     }
-
-//	private class MyCursorAdapter extends SimpleCursorAdapter {
-//
-//		public MyCursorAdapter(Context context, int layout, Cursor c,
-//				String[] from, int[] to) {
-//			super(context, layout, c, from, to);
-//			setViewBinder(new MyViewBinder());
-//		}
-//		private class MyViewBinder implements ViewBinder
-//		{
-//			public boolean setViewValue(View view, Cursor cursor, int columnIndex)
-//			{
-//				if(columnIndex==cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])) {
-//					String date = MileageData.getDateFormatter().format(cursor.getLong(columnIndex));
-//					float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
-//					((TextView)view).setText(String.format("%s (%2.1f MPG)", date,mpg));
-//					return true;
-//				}
-//				return false;
-//			}
-//
-//		} 
-//	}
 
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         AdapterView.AdapterContextMenuInfo info;
@@ -172,14 +145,21 @@ public class EditRecordsMenu extends ListActivity {
     	case MENU_CLEAR:
     		clearDB(true);
     		return true;
-    	case MENU_EXPORT :
-    		showDialog(MENU_EXPORT);
-    		return true;
-    	case MENU_IMPORT :
-    		showDialog(MENU_IMPORT);
+    	case MENU_EXPORT :	//don't show dialog if the SDcard is not installed.
+    	case MENU_IMPORT :	//It'll issue a Toast-based message, though
+			checkSDState(item.getItemId());
 			return true;
     	}
     	return false;
+    }
+    
+    private void checkSDState(int menuId) {
+		String state = Environment.getExternalStorageState();
+		if(state.equals(Environment.MEDIA_MOUNTED)) {
+    		showDialog(menuId);
+    	} else {
+			Toast.makeText(this, "Error! SDCARD not accessible!", Toast.LENGTH_LONG).show();
+    	}
     }
     @Override
     protected Dialog onCreateDialog(int id) {
@@ -187,7 +167,7 @@ public class EditRecordsMenu extends ListActivity {
     	case MENU_DELETE :
     		return new DeleteConfirm(this);
     	case MENU_IMPORT :
-    		return new ImportDialog(this);
+			return new ImportDialog(this);
     	case MENU_EXPORT :
     		return new ExportDialog(this);
     	}
@@ -201,6 +181,13 @@ public class EditRecordsMenu extends ListActivity {
     	switch(id) {
     	case MENU_DELETE :
     		((DeleteConfirm)dialog).computeMessage();
+    		break;
+    	case MENU_IMPORT :
+    		dialog = new ImportDialog(this);
+    		break;
+    	case MENU_EXPORT :
+    		dialog = new ExportDialog(this);
+    		break;
     	}
     }
 
@@ -249,6 +236,7 @@ public class EditRecordsMenu extends ListActivity {
 
 	protected void importFile(String filename) {
 		File in_file = new File(Environment.getExternalStorageDirectory(),filename);
+		String importMessage = "Error! could not access/read "+filename;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(in_file));
 			String line;
@@ -259,7 +247,6 @@ public class EditRecordsMenu extends ListActivity {
 				if(fields[0].equals(MileageData.ToDBNames[0]))
 					continue;
 				//are we an old format, without the 'cars' column?! if so, add it!
-				//FIXME - untested!!
 				if(fields.length == 10)
 				{
 					String[] newFields = new String[11];
@@ -268,20 +255,19 @@ public class EditRecordsMenu extends ListActivity {
 					newFields[10] = prefs.getString(this.getString(R.string.carSelection), "Car45");
 					fields = newFields;
 				}
-				MileageData record = new MileageData(getApplicationContext(),fields);
+				MileageData record = new MileageData(this,fields);
 		    	getContentResolver().insert(MileageProvider.CONTENT_URI,record.getContent());
 			}
 			reader.close();
-			Toast.makeText(this, "Data Successfully imported from ", Toast.LENGTH_LONG);
+			importMessage = "Data Successfully imported from " +filename;
 		} 	catch (FileNotFoundException e) {
 			Log.e("TJS",e.toString());
-			Toast.makeText(this, "Error! could not access/read "+filename, Toast.LENGTH_LONG);
 		} catch (IOException e) {
 			Log.e("TJS",e.toString());
-			Toast.makeText(this, "Error! could not access/read "+filename, Toast.LENGTH_LONG);
 		}
+		Toast.makeText(this, importMessage, Toast.LENGTH_LONG);
 	}
-	
+		
 	protected void exportFile(String filename) {
 		File loc = Environment.getExternalStorageDirectory();
 //		Log.d("TJS",Environment.getExternalStorageState());
@@ -307,13 +293,19 @@ public class EditRecordsMenu extends ListActivity {
 	}
 	
 	protected String[] getCSVFiles() {
-		File sdcard = Environment.getExternalStorageDirectory();
-		String[] files = sdcard.list(new FilenameFilter() {
-			public boolean accept(File dir, String filename) {
-				return filename.endsWith(".csv");
-			}
-		});
-		return files;
+		String state = Environment.getExternalStorageState();
+		if(state.equals(Environment.MEDIA_MOUNTED)) {
+			File sdcard = Environment.getExternalStorageDirectory();
+			String[] files = sdcard.list(new FilenameFilter() {
+				public boolean accept(File dir, String filename) {
+					return filename.endsWith(".csv");
+				}
+			});
+			return files;
+		} else {	//we should NEVER enter here, as it is checked before import/export dialogs are shown!
+			Toast.makeText(this, "Error! SDCARD not accessible!", Toast.LENGTH_LONG).show();
+			return null;
+		}
 	}
 
 	protected class DeleteConfirm extends AlertDialog {
@@ -348,23 +340,30 @@ public class EditRecordsMenu extends ListActivity {
 		private final View.OnClickListener importListener = new View.OnClickListener() {
 			public void onClick(View v) {
 				String name = (String)filename.getSelectedItem();
-				importFile(name);
 				dismiss();
+				importFile(name);
 			}
 		};
 		public ImportDialog(Context context) {
 			super(context);
-			setTitle("Select Import File:");
-			setContentView(R.layout.import_dialog);
-			filename = (Spinner)findViewById(R.id.file_list);
-			confirm = (Button)findViewById(R.id.import_button);
-			confirm.setOnClickListener(importListener);
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
-			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			filename.setAdapter(adapter);
 			String[] files = getCSVFiles();
-			for(String file : files)
-				adapter.add(file);
+			if(files != null) {
+				setTitle("Select Import File:");
+				setContentView(R.layout.import_dialog);
+				filename = (Spinner)findViewById(R.id.file_list);
+				confirm = (Button)findViewById(R.id.import_button);
+				confirm.setOnClickListener(importListener);
+				ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
+				adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				filename.setAdapter(adapter);
+				for(String file : files)
+					adapter.add(file);
+			}
+			else {
+				filename = null;
+				confirm = null;
+				dismiss();
+			}
 		}
 	};
 	
@@ -403,6 +402,7 @@ public class EditRecordsMenu extends ListActivity {
 		
 		public void setChecked(boolean checked) {
 			mChecked = checked;
+//			Log.d("TJS","Setting checked state to '"+checked+"'...");
 		}
 		public boolean getChecked() {
 			return mChecked;
@@ -448,7 +448,7 @@ public class EditRecordsMenu extends ListActivity {
 			setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					showContextMenu();
-					Log.d("TJS","Clicked...");
+//					Log.d("TJS","Clicked...");
 				}
 			});
 		}
@@ -457,9 +457,11 @@ public class EditRecordsMenu extends ListActivity {
 			data.setText(text);
 		}
 		public void toggle() {
+//			Log.d("TJS","ListviewItem.toggle called...");
 			setChecked(!isChecked());
 		}
 		public void setChecked(boolean checked) {
+//			Log.d("TJS","ListViewItem.setChecked called with '"+checked+"'");
 			data.setChecked(checked);
 			mCheckBox.setChecked(checked);
 		}
@@ -486,7 +488,7 @@ public class EditRecordsMenu extends ListActivity {
 	      */
 	     public ExtendedCheckBoxListAdapter(Context context, Cursor c,String[] from, int[] to) {
 			super(context, R.layout.record_list_item, c, from, to);
-	          mContext = context;            
+	          mContext = context;
 	     }
 
 	    /**
@@ -497,7 +499,7 @@ public class EditRecordsMenu extends ListActivity {
 	     private MyListViewItem[] mDisplays;
 	    public View getView(int position, View convertView, ViewGroup parent ){
 	    	if(mDisplays==null) {
-	    		Log.v("TJS","Creating array...");
+//	    		Log.v("TJS","Creating array...");
 	    		mDisplays = new MyListViewItem[getCursor().getCount()];
 	    	}
 	    	if(mDisplays[position]==null) {
@@ -505,7 +507,7 @@ public class EditRecordsMenu extends ListActivity {
 				cursor.moveToPosition(position);
 				String date = MileageData.getDateFormatter().format(cursor.getLong(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])));
 				float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
-				Log.v("TJS","creating row "+position);
+//				Log.v("TJS","creating row "+position);
 			    mDisplays[position] = new MyListViewItem(mContext, new MyListItem(
 			    		 String.format("%s (%2.1f MPG)", date,mpg),
 			    		 false));
