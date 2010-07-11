@@ -38,7 +38,7 @@
             </intent-filter>
 
         </activity>
-		<activity android:name=".EditPreferences" android:label="MileageTracker Preferences" />
+		<activity android:name=".EditPreferences" android:label="Mileage Tracker Preferences" />
     </application>
 
 

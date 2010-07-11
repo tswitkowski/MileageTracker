@@ -3,8 +3,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
         <ListPreference
                 android:key="@string/carSelection"
-                android:title="Select Profile(Car)"
-                android:summary="Selecct which Car you want to enter data for"
+                android:title="Select Profile"
+                android:summary="Select which Car you want to enter data for"
                 android:defaultValue="Car1"
                 android:entries="@array/carArray"
                 android:entryValues="@array/carValues" />

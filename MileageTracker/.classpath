@@ -4,6 +4,6 @@
 	<classpathentry excluding="**/.svn/|com/switkows/mileage/AddRecordDialog.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="C:/Users/Trevor/Documents/Java/achartengine-0.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/achartengine-0.5.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

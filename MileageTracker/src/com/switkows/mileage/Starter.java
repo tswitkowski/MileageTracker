@@ -94,7 +94,7 @@ public class Starter extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
     	menu.add(0, MENU_ADD, 0, "Add Entry").setIcon(android.R.drawable.ic_menu_add);
     	menu.add(0, MENU_SHOWALL, 0, "Modify Data").setIcon(android.R.drawable.ic_menu_edit);
-    	menu.add(0, MENU_PREFS, 0, "Edit Preferences").setIcon(android.R.drawable.ic_menu_preferences);
+    	menu.add(0, MENU_PREFS, 0, "Preferences").setIcon(android.R.drawable.ic_menu_preferences);
     	return true;
     }
     
