@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+   xmlns:android="http://schemas.android.com/apk/res/android">
+   <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content">
+      <TextView
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:text="@string/date_label" />
+      <!--
+         this is the place where the date is entered. Once the text
+         field is clicked on, a datePicker dialog box will show up,
+         where the user can change the date. the default date will be
+         the current date (encoded, if necessary)
+      -->
+      <EditText
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:inputType="none|date"
+         android:id="@+id/date_reading" />
+   </LinearLayout>
+   <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content">
+      <TextView
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:text="@string/actual_mileage_label" />
+      <EditText
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:id="@+id/actual_mileage_reading"
+         android:inputType="none|numberDecimal"
+         android:enabled="false" />
+   </LinearLayout>
+   <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content">
+      <TextView
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:text="@string/total_price_label" />
+      <EditText
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:id="@+id/total_price_reading"
+         android:inputType="none|numberDecimal"
+         android:enabled="false" />
+   </LinearLayout>
+   <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content">
+      <TextView
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:text="@string/mpg_diff_label" />
+      <EditText
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:id="@+id/mpg_diff_reading"
+         android:inputType="none|numberDecimal"
+         android:enabled="false" />
+   </LinearLayout>
+   <Button
+      android:id="@+id/submit"
+      android:text="Submit Modifications"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal" />
+</merge>

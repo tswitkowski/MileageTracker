@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<array name="carValues">
-		<item>"Car1"</item>
-		<item>"Car2"</item>
-		<item>"Car3"</item>
-	</array>
-	<array name="carArray">
-		<item>"Car1"</item>
-		<item>"Car2"</item>
-		<item>"Car3"</item>
-	</array>
+   <array
+      name="carValues">
+      <item>"Car1"</item>
+      <item>"Car2"</item>
+      <item>"Car3"</item>
+   </array>
+   <array
+      name="carArray">
+      <item>"Car1"</item>
+      <item>"Car2"</item>
+      <item>"Car3"</item>
+   </array>
+   <array
+      name="unitValues">
+      <item>"mpg"</item>
+      <item>"kmpl"</item>
+   </array>
+   <array
+      name="unitArray">
+      <item>"Miles/Gallons"</item>
+      <item>"Kilometers/Liters"</item>
+   </array>
 </resources>
