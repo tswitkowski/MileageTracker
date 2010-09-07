@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-        <ListPreference
-                android:key="@string/carSelection"
-                android:title="Select Profile"
-                android:summary="Select which Car you want to enter data for"
-                android:defaultValue="Car1"
-                android:entries="@array/carArray"
-                android:entryValues="@array/carValues" />
+<PreferenceScreen
+   xmlns:android="http://schemas.android.com/apk/res/android">
+   <ListPreference
+      android:key="@string/carSelection"
+      android:title="Select Profile"
+      android:summary="Select which Car you want to enter data for"
+      android:defaultValue="Car1"
+      android:entries="@array/carArray"
+      android:entryValues="@array/carValues" />
+   <ListPreference
+      android:key="@string/unitSelection"
+      android:title="Select Units"
+      android:summary="Select which units you'd like to represent data with"
+      android:defaultValue="mpg"
+      android:entries="@array/unitArray"
+      android:entryValues="@array/unitValues" />
 </PreferenceScreen>

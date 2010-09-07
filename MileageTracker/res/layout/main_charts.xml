@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+   xmlns:android="http://schemas.android.com/apk/res/android">
+   <LinearLayout
+      android:id="@+id/price_chart"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_weight="1"></LinearLayout>
+   <LinearLayout
+      android:id="@+id/mileage_chart"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_weight="1">
+      <!--
+         place-holder for chart drawing. add chart in onCreate to this
+         location!
+      -->
+   </LinearLayout>
+   <LinearLayout
+      android:id="@+id/diff_chart"
+      android:layout_width="fill_parent"
+      android:layout_height="100dp">
+      <!--
+         place-holder for chart drawing. add chart in onCreate to this
+         location!
+      -->
+   </LinearLayout>
+</merge>
+   <!--
+      <RelativeLayout
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:background="#ffffffff" > <LinearLayout
+      android:id="@+id/price_chart" android:layout_width="wrap_content"
+      android:layout_height="wrap_content" ></LinearLayout>
+      <LinearLayout android:id="@+id/mileage_chart"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@id/price_chart" > </LinearLayout>
+      <LinearLayout android:id="@+id/diff_chart"
+      android:layout_width="wrap_content" android:layout_height="100dp"
+      android:layout_below="@id/mileage_chart" > </LinearLayout>
+      </RelativeLayout>
+   -->

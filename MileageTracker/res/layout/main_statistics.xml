@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+   xmlns:android="http://schemas.android.com/apk/res/android">
+   <ScrollView
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:background="#c0ffffff"
+      android:layout_weight="1">
+      <LinearLayout
+         android:orientation="vertical"
+         android:layout_width="300dp"
+         android:layout_height="wrap_content">
+         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:text="Average economy: " />
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:id="@+id/ave_mpg_value" />
+         </LinearLayout>
+         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:text="Average Trip: " />
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:id="@+id/ave_trip_value" />
+         </LinearLayout>
+         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:text="Best economy: " />
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:id="@+id/best_mpg_value" />
+         </LinearLayout>
+         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:text="Best Trip: " />
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:id="@+id/best_trip_value" />
+         </LinearLayout>
+         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:text="Average difference: " />
+            <TextView
+               android:layout_width="125dp"
+               android:layout_height="wrap_content"
+               android:textColor="#ff000000"
+               android:id="@+id/ave_diff_value" />
+         </LinearLayout>
+         <!--
+            <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#ff000000"
+            android:text="@string/greeting"
+            android:id="@+id/home_text_box" />
+         -->
+      </LinearLayout>
+   </ScrollView>
+</merge>
