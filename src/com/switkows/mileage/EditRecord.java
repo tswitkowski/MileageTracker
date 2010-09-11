@@ -27,31 +27,23 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 
 public class EditRecord extends Activity {
-   private static final String   TAG                  = "TJS - EditRecord";
-   private static final int      DATE_PICKER          = 1;
-   private Uri                   mUri;
-   private Cursor                mCursor;
-   private SharedPreferences     prefs;
-   private boolean               isNewRecord;
+   private static final String  TAG         = "TJS - EditRecord";
+   private static final int     DATE_PICKER = 1;
+   private Uri                  mUri;
+   private Cursor               mCursor;
+   private SharedPreferences    prefs;
+   private boolean              isNewRecord;
 
-   private TextView              dateBox;
-   private AutoCompleteTextView  stationBox;
-   private TextView              odoBox;
-   private TextView              tripBox;
-   private TextView              gallonsBox;
-   private TextView              priceBox;
-   private TextView              compMpgBox;
-   private TextView              actMpgBox;
-   private TextView              totPriceBox;
-   private TextView              mpgDiffBox;
-
-   // Conversion to/from metric/us units
-   // FIXME - move to strings/arrays file?
-   private static final int      US                   = 0, METRIC = 1;
-   private static final String[] ECONOMY_UNIT_LABELS  = { "mpg", "km/L" };
-   private static final String[] DISTANCE_UNIT_LABELS = { "mi", "km" };
-   private static final float    LITER_PER_GALLON     = (float) 3.78541178;
-   private static final float    KM_PER_MILE          = (float) 1.609344;
+   private TextView             dateBox;
+   private AutoCompleteTextView stationBox;
+   private TextView             odoBox;
+   private TextView             tripBox;
+   private TextView             gallonsBox;
+   private TextView             priceBox;
+   private TextView             compMpgBox;
+   private TextView             actMpgBox;
+   private TextView             totPriceBox;
+   private TextView             mpgDiffBox;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -152,9 +144,6 @@ public class EditRecord extends Activity {
    protected void onResume() {
       super.onResume();
 
-      if(prefs == null)
-         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
       if(isNewRecord)
          setTitle(getText(R.string.new_record_title));
       else
@@ -210,40 +199,10 @@ public class EditRecord extends Activity {
       return null;
    }
 
-   // Utility methods for determining what units to display information in
-   public boolean isMilesGallons() {
-      String units = prefs.getString(getApplicationContext().getString(R.string.unitSelection), "mpg");
-      return units.equals("mpg");
-   }
-
-   public String getDistanceUnits() {
-      if(isMilesGallons())
-         return DISTANCE_UNIT_LABELS[US];
-      return DISTANCE_UNIT_LABELS[METRIC];
-   }
-
-   public String getEconomyUnits() {
-      if(isMilesGallons())
-         return ECONOMY_UNIT_LABELS[US];
-      return ECONOMY_UNIT_LABELS[METRIC];
-   }
-
-   public float getDistance(float miles) {
-      if(isMilesGallons())
-         return miles;
-      return (miles * KM_PER_MILE);
-   }
-
-   public float getVolume(float gallons) {
-      if(isMilesGallons())
-         return gallons;
-      return (gallons * LITER_PER_GALLON);
-   }
-
-   public float getEconomy(float mpg) {
-      if(isMilesGallons())
-         return mpg;
-      return (getDistance(mpg) / getVolume(1));
+   public SharedPreferences getPrefs() {
+      if(prefs == null)
+         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+      return prefs;
    }
 
    protected void updateDbRow() {
@@ -283,12 +242,12 @@ public class EditRecord extends Activity {
          diff = 0;
       }
       // Convert from Metric units (km/L & km) to US units (mpg & mi)
-      if(!isMilesGallons()) {
-         odo = odo / getDistance(1);
-         trip = trip / getDistance(1);
-         gal = gal / getVolume(1);
+      if(!MileageData.isMilesGallons(getPrefs(), this)) {
+         odo = odo / MileageData.getDistance(1, getPrefs(), this);
+         trip = trip / MileageData.getDistance(1, getPrefs(), this);
+         gal = gal / MileageData.getVolume(1, getPrefs(), this);
       }
-      return new MileageData(getApplicationContext(), prefs.getString(getString(R.string.carSelection), "Car45"),
+      return new MileageData(getApplicationContext(), getPrefs().getString(getString(R.string.carSelection), "Car45"),
             getTextFieldStruct(MileageData.DATE).getText().toString(), getTextFieldStruct(MileageData.STATION)
                   .getText().toString(), odo, trip, gal, price, diff);
    }
@@ -306,14 +265,14 @@ public class EditRecord extends Activity {
       switch(column) {
          case MileageData.ACTUAL_MILEAGE:
          case MileageData.COMPUTER_MILEAGE:
-            value = getEconomy(value);
+            value = MileageData.getEconomy(value, getPrefs(), this);
             break;
          case MileageData.GALLONS:
-            value = getVolume(value);
+            value = MileageData.getVolume(value, getPrefs(), this);
             break;
          case MileageData.ODOMETER:
          case MileageData.TRIP:
-            value = getDistance(value);
+            value = MileageData.getDistance(value, getPrefs(), this);
             break;
       }
       return "" + value;

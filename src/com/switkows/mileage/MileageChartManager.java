@@ -14,20 +14,13 @@ import android.preference.PreferenceManager;
  * 
  */
 public class MileageChartManager extends DataSetObserver {
-   private Context               mContext;
-   private Cursor                mCursor;
-   private MileageData[]         dataSet;
-   private SharedPreferences     prefs;
+   private Context              mContext;
+   private Cursor               mCursor;
+   private MileageData[]        dataSet;
+   private SharedPreferences    prefs;
 
-   private TimeChartExtension[]  charts;
-   private static final int      MPG_CHART            = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2;
-
-   // FIXME - move to strings/arrays file?
-   private static final int      US                   = 0, METRIC = 1;
-   private static final String[] ECONOMY_UNIT_LABELS  = { "mpg", "km/L" };
-   private static final String[] DISTANCE_UNIT_LABELS = { "mi", "km" };
-   private static final float    LITER_PER_GALLON     = (float) 3.78541178;
-   private static final float    KM_PER_MILE          = (float) 1.609344;
+   private TimeChartExtension[] charts;
+   private static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2;
 
    public MileageChartManager(Context c, Cursor cursor) {
       mContext = c;
@@ -46,42 +39,19 @@ public class MileageChartManager extends DataSetObserver {
       }
    }
 
-   // Utility methods for determining what units to display information in
-   public boolean isMilesGallons() {
+   public SharedPreferences getPrefs() {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-      String units = prefs.getString(mContext.getString(R.string.unitSelection), "mpg");
-      return units.equals("mpg");
+      return prefs;
    }
 
+   // Utility methods for determining what units to display information in
    public String getDistanceUnits() {
-      if(isMilesGallons())
-         return DISTANCE_UNIT_LABELS[US];
-      return DISTANCE_UNIT_LABELS[METRIC];
+      return MileageData.getDistanceUnits(getPrefs(), mContext);
    }
 
    public String getEconomyUnits() {
-      if(isMilesGallons())
-         return ECONOMY_UNIT_LABELS[US];
-      return ECONOMY_UNIT_LABELS[METRIC];
-   }
-
-   public float getDistance(float miles) {
-      if(isMilesGallons())
-         return miles;
-      return (miles * KM_PER_MILE);
-   }
-
-   public float getVolume(float gallons) {
-      if(isMilesGallons())
-         return gallons;
-      return (gallons * LITER_PER_GALLON);
-   }
-
-   public float getEconomy(float mpg) {
-      if(isMilesGallons())
-         return mpg;
-      return (getDistance(mpg) / getVolume(1));
+      return MileageData.getEconomyUnits(getPrefs(), mContext);
    }
 
    // FIXME - this should not go in the chartManager, but it's conventient..
@@ -89,11 +59,11 @@ public class MileageChartManager extends DataSetObserver {
    public float getAverageMPG() {
       if(dataSet == null || dataSet.length == 0)
          return 0;
-      return getEconomy(getTotal(MileageData.TRIP) / getTotal(MileageData.GALLONS));
+      return MileageData.getEconomy(getTotal(MileageData.TRIP) / getTotal(MileageData.GALLONS), getPrefs(), mContext);
    }
 
    public float getAverageTrip() {
-      return getDistance(getAverage(MileageData.TRIP));
+      return MileageData.getDistance(getAverage(MileageData.TRIP), getPrefs(), mContext);
    }
 
    public float getAverageDiff() {
@@ -101,11 +71,11 @@ public class MileageChartManager extends DataSetObserver {
    }
 
    public float getBestMPG() {
-      return getEconomy(getBest(MileageData.ACTUAL_MILEAGE));
+      return MileageData.getEconomy(getBest(MileageData.ACTUAL_MILEAGE), getPrefs(), mContext);
    }
 
    public float getBestTrip() {
-      return getDistance(getBest(MileageData.TRIP));
+      return MileageData.getDistance(getBest(MileageData.TRIP), getPrefs(), mContext);
    }
 
    public float getTotal(int field) {
@@ -133,7 +103,7 @@ public class MileageChartManager extends DataSetObserver {
    }
 
    private void createCharts() {
-      boolean isUS = isMilesGallons();
+      boolean isUS = MileageData.isMilesGallons(getPrefs(), mContext);
       charts = new TimeChartExtension[3];
       charts[MPG_CHART] = new MileageChart(mContext, dataSet, isUS);
       charts[MPG_DIFF_CHART] = new MileageDiffChart(mContext, dataSet, isUS);

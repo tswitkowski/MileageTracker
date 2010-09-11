@@ -177,7 +177,8 @@ public class MileageProvider extends ContentProvider {
          // FIXME - add some way to upgrade the dababase, if required
          if(oldVer == 3 && newVer == 4) {
             Log.d("TJS", "Trying to execute'" + mContext.getString(R.string.upgradeDBfrom3To4) + "'");
-            db.execSQL(mContext.getString(R.string.upgradeDBfrom3To4)); // create the new column (supports infinite number of users/cars)
+            db.execSQL(mContext.getString(R.string.upgradeDBfrom3To4)); // create the new column (supports infinite
+            // number of users/cars)
             ContentValues defaults = new ContentValues();
             String carName = prefs.getString(mContext.getString(R.string.carSelection), "Car45");
             defaults.put(MileageData.ToDBNames[MileageData.CAR], carName);

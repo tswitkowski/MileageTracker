@@ -5,6 +5,7 @@ import java.util.Date;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.util.Log;
 
@@ -222,4 +223,47 @@ public class MileageData {
       Log.d("TJS", "Exporting line '" + str + "'...");
       return str;
    }
+
+   // Unit conversion helpers:
+   public static final int      US                   = 0, METRIC = 1;
+   public static final String[] ECONOMY_UNIT_LABELS  = { "mpg", "km/L" };
+   public static final String[] DISTANCE_UNIT_LABELS = { "mi", "km" };
+   public static final float    LITER_PER_GALLON     = (float) 3.78541178;
+   public static final float    KM_PER_MILE          = (float) 1.609344;
+
+   public static final boolean isMilesGallons(SharedPreferences prefs, Context context) {
+      String units = prefs.getString(context.getString(R.string.unitSelection), "mpg");
+      return units.equals("mpg");
+   }
+
+   public static final String getDistanceUnits(SharedPreferences prefs, Context context) {
+      if(isMilesGallons(prefs, context))
+         return DISTANCE_UNIT_LABELS[US];
+      return DISTANCE_UNIT_LABELS[METRIC];
+   }
+
+   public static final String getEconomyUnits(SharedPreferences prefs, Context context) {
+      if(isMilesGallons(prefs, context))
+         return ECONOMY_UNIT_LABELS[US];
+      return ECONOMY_UNIT_LABELS[METRIC];
+   }
+
+   public static final float getDistance(float miles, SharedPreferences prefs, Context context) {
+      if(isMilesGallons(prefs, context))
+         return miles;
+      return (miles * KM_PER_MILE);
+   }
+
+   public static final float getVolume(float gallons, SharedPreferences prefs, Context context) {
+      if(isMilesGallons(prefs, context))
+         return gallons;
+      return (gallons * LITER_PER_GALLON);
+   }
+
+   public static final float getEconomy(float mpg, SharedPreferences prefs, Context context) {
+      if(isMilesGallons(prefs, context))
+         return mpg;
+      return (getDistance(mpg, prefs, context) / getVolume(1, prefs, context));
+   }
+
 }

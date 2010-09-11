@@ -1,12 +1,12 @@
 package com.switkows.mileage;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.io.PrintWriter;
+
+import com.switkows.mileage.EditRecordsListAdapter.MyListViewItem;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -15,28 +15,23 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.Checkable;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -45,48 +40,18 @@ import android.widget.Toast;
 
 public class EditRecordsMenu extends ListActivity {
 
-   private static final int    MENU_ADD            = 0, MENU_CLEAR = 1, MENU_EXPORT = 3, MENU_IMPORT = 4,
-         PERFORM_IMPORT = 7, MENU_DELETE = 5, MENU_MODIFY = 6;
-
-   private static final String IMPORT_PROGRESS_STR = "linesRead", IMPORT_MAX_STR = "numLines",
-         IMPORT_FINISHED_STR = "toast";
-
-   private SharedPreferences   prefs;
+   private static final int MENU_ADD = 0, MENU_CLEAR = 1, MENU_EXPORT = 3, MENU_IMPORT = 4, PERFORM_IMPORT = 7,
+         MENU_DELETE = 5, MENU_MODIFY = 6, MENU_PREFS = 8;
 
    // 'global' fields for handling Import of data within a separate thread
-   protected ImportThread      iThread;
-   protected ProgressDialog    iProgress;
-   protected final Handler     iHandler = new ImportProgressHandler();
+   protected ImportThread   iThread;
+   protected ProgressDialog iProgress;
+   protected final Handler  iHandler = new ImportProgressHandler();
 
-   private class ImportProgressHandler extends Handler {
-      @Override
-      public void handleMessage(Message m) {
-         Bundle data = m.getData();
-         if(data.containsKey(IMPORT_MAX_STR)) {
-            // iProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            iProgress.setProgress(0);
-            iProgress.setMax(data.getInt(IMPORT_MAX_STR));
-         } else if(data.containsKey(IMPORT_PROGRESS_STR))
-            iProgress.setProgress(data.getInt(IMPORT_PROGRESS_STR));
-         else if(data.containsKey(IMPORT_FINISHED_STR)) {
-            iProgress.setProgress(iProgress.getMax()); // might not be
-            // worth updating
-            // this, but put
-            // it here, just
-            // in case
-            dismissDialog(PERFORM_IMPORT);
-            Toast.makeText(getApplicationContext(),
-                  data.getString(IMPORT_FINISHED_STR),
-                  Toast.LENGTH_LONG).show();
-         }
-      }
-   }
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
-      if(prefs == null)
-         prefs = PreferenceManager.getDefaultSharedPreferences(this);
       Intent i = getIntent();
       if(i.getData() == null) {
          i.setData(MileageProvider.CONTENT_URI);
@@ -96,12 +61,42 @@ public class EditRecordsMenu extends ListActivity {
       getListView().setOnCreateContextMenuListener(this);
       getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       getListView().setClickable(true);
-      setListAdapter(new ExtendedCheckBoxListAdapter(this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
+      setListAdapter(new EditRecordsListAdapter(this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
             new int[] { android.R.id.text1 }));
+
+      TextView empty = new TextView(this);
+      empty.setText("No records present");
+      getListView().setEmptyView(empty);
+      LayoutParams params = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
+      addContentView(empty, params);
+
+      // restore ImportThread pointer, if we got here by way of an orientation change
+      if(getLastNonConfigurationInstance() != null) {
+         iThread = (ImportThread) getLastNonConfigurationInstance();
+         iThread.setHandler(iHandler);
+      }
    }
 
-   public boolean performItemClick(View view, int position, long id) {
-      return false;
+   @Override
+   public void onResume() {
+      super.onResume();
+      // This might not be the best way to do this, but if we 'resume' this activity,
+      // throw away the old cursor, and re-generate the data. This was needed to
+      // support a user changing 'profiles' from the preferences screen
+      Cursor c = managedQuery(getIntent().getData(), null, null, null, null);
+      ((SimpleCursorAdapter) getListAdapter()).changeCursor(c);
+   }
+
+   // Save the import worker thread, so re-launching the program
+   // due to an orientation change will not result in a lockup
+   @Override
+   public Object onRetainNonConfigurationInstance() {
+      removeDialog(PERFORM_IMPORT);
+      if(iThread != null) {
+         iThread.setHandler(null);
+         return iThread;
+      }
+      return super.onRetainNonConfigurationInstance();
    }
 
    @Override
@@ -163,6 +158,7 @@ public class EditRecordsMenu extends ListActivity {
       menu.add(0, MENU_DELETE, 0, "Delete").setIcon(android.R.drawable.ic_menu_delete);
       menu.add(0, MENU_EXPORT, 0, "Export").setIcon(android.R.drawable.ic_menu_save);
       menu.add(0, MENU_IMPORT, 0, "Import").setIcon(android.R.drawable.ic_menu_upload);
+      menu.add(0, MENU_PREFS, 0, "Preferences").setIcon(android.R.drawable.ic_menu_preferences);
 
       return true;
    }
@@ -178,14 +174,31 @@ public class EditRecordsMenu extends ListActivity {
             showDialog(MENU_DELETE);
             return true;
          case MENU_CLEAR:
-            clearDB(true);
+            clearDB();
             return true;
          case MENU_EXPORT: // don't show dialog if the SDcard is not installed.
          case MENU_IMPORT: // It'll issue a Toast-based message, though
             checkSDState(item.getItemId());
             return true;
+         case MENU_PREFS: {
+            // Launch preferences activity
+            startActivityForResult(new Intent(this, EditPreferences.class), MENU_PREFS);
+            return true;
+         }
       }
       return false;
+   }
+
+   @Override
+   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+      // if we just finished the preferences activity, then get rid of all
+      // of the ListActivity data. we could be a little smarter about this,
+      // but this shouldn't adversely affect performance, at least not noticeably.
+      // This was needed to support a user changing the 'units' from the
+      // preferences screen
+      if(requestCode == MENU_PREFS) {
+         ((EditRecordsListAdapter) getListAdapter()).invalidate();
+      }
    }
 
    private void checkSDState(int menuId) {
@@ -228,23 +241,19 @@ public class EditRecordsMenu extends ListActivity {
          case MENU_IMPORT:
             dialog = new ImportDialog(this);
             break;
-         case PERFORM_IMPORT:
-            Log.d("TJS", "Starting ImportThread...");
-            iThread.start();
-            break;
          case MENU_EXPORT:
             dialog = new ExportDialog(this);
             break;
       }
    }
 
-   public void clearDB(boolean repaint) {
+   public void clearDB() {
       getContentResolver().delete(MileageProvider.CONTENT_URI, null, null);
    }
 
    private MileageData[] readAllEntries() {
       MileageData[] allData = new MileageData[getListAdapter().getCount()];
-      Cursor cursor = ((ExtendedCheckBoxListAdapter) getListAdapter()).getCursor();
+      Cursor cursor = ((EditRecordsListAdapter) getListAdapter()).getCursor();
       for(int i = 0; i < allData.length; i++) {
          cursor.moveToPosition(i);
          allData[i] = new MileageData(getApplicationContext(), cursor);
@@ -270,97 +279,22 @@ public class EditRecordsMenu extends ListActivity {
       String ret = "";
       ListView view = getListView();
       for(int i = 0; i < view.getCount(); i++) {
-         if(view.isItemChecked(i)) {
-            Cursor cursor = (Cursor) view.getItemAtPosition(i);
-            float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
-            String date = MileageData.getDateFormatter().format(
-                  cursor.getLong(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])));
-            String str = String.format("%s (%2.1f MPG)\n", date, mpg);
+         Log.d("TJS", "Checking item " + i + " in the listView");
+         MyListViewItem mine = (MyListViewItem) view.getAdapter().getView(i, null, null);
+         if(mine.isChecked()) {
+            // if(view.isItemChecked(i)) {
+            Log.d("TJS", "   Item " + i + " is checked!!");
+            // MyListViewItem mine = (MyListViewItem)view.getAdapter().getView(i, null, null);
+            String str = mine.toString();
+            // Cursor cursor = (Cursor) view.getItemAtPosition(i);
+            // float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
+            // String date = MileageData.getDateFormatter().format(
+            // cursor.getLong(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])));
+            // String str = String.format("%s (%2.1f MPG)\n", date, mpg);
             ret += str;
          }
       }
       return ret;
-   }
-
-   protected class ImportThread extends Thread {
-      Handler mHandler;
-      Context mContext;
-      String  mFile;
-
-      ImportThread(Handler h, Context c, String f) {
-         mHandler = h;
-         mContext = c;
-         mFile = f;
-         // Log.d("TJS","Created ImportThread...");
-      }
-
-      @Override
-      public void run() {
-         // Log.d("TJS","Started ImportThread");
-         File in_file = new File(Environment.getExternalStorageDirectory(), mFile);
-         String importMessage = "Error! could not access/read " + mFile;
-         try {
-            BufferedReader reader = new BufferedReader(new FileReader(in_file));
-            String line;
-            clearDB(false);
-            int lineCount = 0;
-            while(reader.ready()) {
-               reader.readLine();
-               lineCount++;
-            }
-            Message msg = mHandler.obtainMessage();
-            Bundle b = new Bundle();
-            b.putInt(IMPORT_MAX_STR, lineCount);
-            msg.setData(b);
-            mHandler.sendMessage(msg);
-
-            reader = new BufferedReader(new FileReader(in_file));
-            lineCount = 0;
-            while(reader.ready()) {
-               line = reader.readLine();
-               String[] fields = line.split(",");
-               if(fields[0].equals(MileageData.ToDBNames[0])) {
-                  // Log.d("TJS","Found header in CSV file");
-                  continue;
-               }
-               // are we an old format, without the 'cars' column?! if so, add it!
-               if(fields.length == 10) {
-                  String[] newFields = new String[11];
-                  for(int i = 0; i < fields.length; i++)
-                     newFields[i] = fields[i];
-                  newFields[10] = prefs.getString(mContext.getString(R.string.carSelection), "Car45");
-                  fields = newFields;
-                  Log.v("TJS", "Importing entry from CSV file into current car: " + newFields[10]);
-               } else if(fields.length == 11) {
-                  // Log.v("TJS","Importing entry from CSV file into car: "+fields[10]);
-               } else {
-                  Log.d("TJS", "Skipping import line: only " + fields.length + "elements in CSV line!!");
-               }
-               // Log.d("TJS","Read line '"+line+"', date = '"+fields[0]+"'...");
-               MileageData record = new MileageData(mContext, fields);
-               getContentResolver().insert(MileageProvider.CONTENT_URI, record.getContent());
-               lineCount++;
-               msg = mHandler.obtainMessage();
-               b = new Bundle();
-               b.putInt(IMPORT_PROGRESS_STR, lineCount);
-               msg.setData(b);
-               mHandler.sendMessage(msg);
-            }
-            reader.close();
-            importMessage = "Data Successfully imported from " + mFile;
-            Log.d("TJS", importMessage);
-         } catch (FileNotFoundException e) {
-            Log.e("TJS", e.toString());
-         } catch (IOException e) {
-            Log.e("TJS", e.toString());
-         }
-         // Toast.makeText(this, importMessage, Toast.LENGTH_LONG);
-         Message msg = mHandler.obtainMessage();
-         Bundle b = new Bundle();
-         b.putString(IMPORT_FINISHED_STR, importMessage);
-         msg.setData(b);
-         mHandler.sendMessage(msg);
-      }
    }
 
    protected void exportFile(String filename) {
@@ -441,10 +375,11 @@ public class EditRecordsMenu extends ListActivity {
             String name = (String) filename.getSelectedItem();
             dismiss();
             iThread = new ImportThread(iHandler, getContext(), name);
+            iThread.start();
             showDialog(PERFORM_IMPORT);
          }
       }
-      
+
       public ImportDialog(Context context) {
          super(context);
          String[] files = getCSVFiles();
@@ -472,8 +407,8 @@ public class EditRecordsMenu extends ListActivity {
       private final Button               confirm;
       private final View.OnClickListener exportListener = new ExportListener();
 
-      //FIXME - it might be good to make this appear very similar to the import listener (that is, start a new
-      //thread, and present the user with a progress dialog)
+      // FIXME - it might be good to make this appear very similar to the import listener (that is, start a new
+      // thread, and present the user with a progress dialog)
       private class ExportListener implements View.OnClickListener {
          public void onClick(View v) {
             String name = filename.getText().toString();
@@ -496,151 +431,29 @@ public class EditRecordsMenu extends ListActivity {
       }
    }
 
-   protected class MyListItem implements Comparable<MyListItem> {
-
-      private String  mLabel;
-      private boolean mChecked;
-
-      public MyListItem(String label, boolean checked) {
-         mLabel = label;
-         mChecked = checked;
-      }
-
-      public void setChecked(boolean checked) {
-         mChecked = checked;
-         // Log.d("TJS","Setting checked state to '"+checked+"'...");
-      }
-
-      public boolean getChecked() {
-         return mChecked;
-      }
-
-      public void setText(String text) {
-         mLabel = text;
-      }
-
-      public String getText() {
-         return mLabel;
-      }
-
-      public int compareTo(MyListItem another) {
-         if(mLabel != null)
-            return mLabel.compareTo(another.getText());
-         else
-            return 0;
-      }
-   }
-
-   protected class MyListViewItem extends LinearLayout implements Checkable {
-      private TextView   mLabel;
-      private CheckBox   mCheckBox;
-      private MyListItem data;
-
-      public MyListViewItem(Context context, MyListItem item) {
-         super(context);
-         mLabel = new TextView(context);
-         mCheckBox = new CheckBox(context);
-         addView(mLabel);
-         addView(mCheckBox);
-         data = item;
-         mLabel.setText(data.getText());
-         LayoutParams params = new LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,
-               android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-         mLabel.setLayoutParams(params);
-         mCheckBox.setChecked(data.getChecked());
-         mCheckBox.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-               data.setChecked(isChecked());
-            }
-         });
-         params = new LayoutParams(android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-               android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0);
-         mCheckBox.setLayoutParams(params);
-
-         setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-               showContextMenu();
-               // Log.d("TJS","Clicked...");
-            }
-         });
-      }
-
-      public void setText(String text) {
-         mLabel.setText(text);
-         data.setText(text);
-      }
-
-      public void toggle() {
-         // Log.d("TJS","ListviewItem.toggle called...");
-         setChecked(!isChecked());
-      }
-
-      public void setChecked(boolean checked) {
-         // Log.d("TJS","ListViewItem.setChecked called with '"+checked+"'");
-         data.setChecked(checked);
-         mCheckBox.setChecked(checked);
-      }
-
-      public boolean isChecked() {
-         return mCheckBox.isChecked();
-      }
-
-      public void refresh() {
-         // Log.v("TJS","refreshing row. checked="+data.getChecked());
-         mCheckBox.setChecked(data.getChecked());
-         mCheckBox.postInvalidate();
-         // Log.v("TJS","data.checked="+data.getChecked()+", checkbox.checked="+mCheckBox.isChecked());
-      }
-   }
-
-   public class ExtendedCheckBoxListAdapter extends SimpleCursorAdapter {
-
-      /** Remember our context so we can use it when constructing views. */
-      private Context mContext;
-
-      /**
-       * 
-       * @param context
-       *           - Render context
-       */
-      public ExtendedCheckBoxListAdapter(Context context, Cursor c, String[] from, int[] to) {
-         super(context, R.layout.record_list_item, c, from, to);
-         mContext = context;
-      }
-
-      /**
-       * Do not recycle a view if one is already there, if not the data could get corrupted and the checkbox state could
-       * be lost.
-       * 
-       * @param convertView
-       *           The old view to overwrite
-       * @returns a CheckBoxifiedTextView that holds wraps around an CheckBoxifiedText
-       */
-      private MyListViewItem[] mDisplays;
-
+   private class ImportProgressHandler extends Handler {
       @Override
-      public View getView(int position, View convertView, ViewGroup parent) {
-         if(mDisplays != null && (mDisplays.length != getCursor().getCount())) // if the array size doesn't match the
-            // database, reset everything!
-            mDisplays = null;
-         if(mDisplays == null) {
-            // Log.v("TJS","Creating array...");
-            mDisplays = new MyListViewItem[getCursor().getCount()];
-            // Log.d("TJS","Creating array with "+mDisplays.length+" entries...");
+      public void handleMessage(Message m) {
+         Bundle data = m.getData();
+         if(data.containsKey(ImportThread.IMPORT_MAX_STR)) {
+            // iProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            iProgress.setProgress(0);
+            iProgress.setMax(data.getInt(ImportThread.IMPORT_MAX_STR));
          }
-         // Log.d("TJS","Trying to retrieve list item "+position+" (cursor contains "+getCursor().getCount()+" elements)");
-         if(mDisplays[position] == null) {
-            Cursor cursor = getCursor();
-            cursor.moveToPosition(position);
-            String date = MileageData.getDateFormatter().format(
-                  cursor.getLong(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])));
-            float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
-            // Log.v("TJS","creating row "+position);
-            mDisplays[position] = new MyListViewItem(mContext, new MyListItem(String
-                  .format("%s (%2.1f MPG)", date, mpg), false));
+         if(data.containsKey(ImportThread.IMPORT_PROGRESS_STR))
+            iProgress.setProgress(data.getInt(ImportThread.IMPORT_PROGRESS_STR));
+         else if(data.containsKey(ImportThread.IMPORT_FINISHED_STR)) {
+            iProgress.setProgress(iProgress.getMax()); // might not be
+            // worth updating
+            // this, but put
+            // it here, just
+            // in case
+            dismissDialog(PERFORM_IMPORT);
+            iThread = null;
+            Toast
+                  .makeText(getApplicationContext(), data.getString(ImportThread.IMPORT_FINISHED_STR),
+                        Toast.LENGTH_LONG).show();
          }
-         mDisplays[position].refresh();
-         return mDisplays[position];
       }
    }
 }
