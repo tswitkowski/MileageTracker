@@ -7,4 +7,15 @@
       <item
          name="android:layout_height">wrap_content</item>
    </style>
+   <style name="Theme" parent="android:Theme">
+   </style>
+   
+   <style name="Theme.Transparent">
+      <item name="android:windowIsTranslucent">true</item>
+      <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+      <!--<item name="android:windowBackground">@drawable/transparent_background</item>-->
+      <item name="android:windowNoTitle">true</item>
+      <item name="android:colorForeground">#fff</item>
+   </style>
+   
 </resources>
