@@ -22,4 +22,12 @@
       <item>"Miles/Gallons"</item>
       <item>"Kilometers/Liters"</item>
    </array>
+   
+   <array name="StatisticsLabels">
+      <item>"Average economy"</item>
+      <item>"Average Trip"</item>
+      <item>"Best economy"</item>
+      <item>"Best Trip"</item>
+      <item>"Average difference"</item>
+   </array>
 </resources>
