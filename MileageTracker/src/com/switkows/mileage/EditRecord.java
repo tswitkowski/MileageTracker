@@ -2,6 +2,7 @@ package com.switkows.mileage;
 
 import java.util.Calendar;
 import java.util.Date;
+
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -52,6 +53,9 @@ public class EditRecord extends Activity {
 
       final Intent intent = getIntent();
 
+      // Have the system blur any windows behind this one.
+//      getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+//              WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
       // Do some setup based on the action being performed.
 
       final String action = intent.getAction();
