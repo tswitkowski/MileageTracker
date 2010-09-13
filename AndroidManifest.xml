@@ -1,46 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="5"
+      android:versionCode="6"
       android:installLocation="auto"
-      android:versionName="1.4" package="com.switkows.mileage">
-    <application android:icon="@drawable/mileage_tracker_icon" android:label="@string/app_name" android:debuggable="true">
+      android:versionName="1.4.1" package="com.switkows.mileage">
+   <application android:icon="@drawable/mileage_tracker_icon" android:label="@string/app_name" android:debuggable="true">
 <!-- <application android:icon="@drawable/mileage_tracker_icon" android:label="@string/app_name" android:debuggable="true">-->
-        <activity android:name=".MileageTracker"
-        android:theme="@style/Theme.Transparent"
-                  android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".EditRecordsMenu" />
-        <provider android:name="MileageProvider"
-            android:authorities="com.switkows.mileage.MileageProvider"
-        />
+      <activity android:name=".MileageTracker"
+         android:label="@string/app_name">
+         <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+         </intent-filter>
+      </activity>
+      <activity android:name=".EditRecordsMenu" />
+      <provider android:name="MileageProvider"
+         android:authorities="com.switkows.mileage.MileageProvider"
+	  />
 
-		<!--  This section is setting up the 'editor' page -->
-       <activity android:name="EditRecord"
-            android:label="FIXME"
-            android:configChanges="keyboardHidden"
-        >
+      <!--  This section is setting up the 'editor' page -->
+      <activity android:name="EditRecord"
+         android:label="FIXME"
+         android:theme="@android:style/Theme.Dialog"
+      >
             <!-- This filter says that we can view or edit the data of
                  a single note -->
-            <intent-filter android:label="FIXME2">
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.EDIT" />
-<!--                <action android:name="com.switkows.mileage.EDIT_RECORD" />-->
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.item/vnd.google.mileage" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.INSERT" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.dir/vnd.google.mileage" />
-            </intent-filter>
+         <intent-filter android:label="FIXME2">
+            <action android:name="android.intent.action.VIEW" />
+            <action android:name="android.intent.action.EDIT" />
+   <!--                <action android:name="com.switkows.mileage.EDIT_RECORD" />-->
+            <category android:name="android.intent.category.DEFAULT" />
+            <data android:mimeType="vnd.android.cursor.item/vnd.google.mileage" />
+         </intent-filter>
+         <intent-filter>
+            <action android:name="android.intent.action.INSERT" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <data android:mimeType="vnd.android.cursor.dir/vnd.google.mileage" />
+         </intent-filter>
 
-        </activity>
-		<activity android:name=".EditPreferences" android:label="Mileage Tracker Preferences" />
-    </application>
+      </activity>
+      <activity android:name=".EditPreferences" 
+         android:theme="@style/Theme.Transparent"
+         android:label="Mileage Tracker Preferences" />
+   </application>
 
 
 <uses-sdk android:minSdkVersion="4"></uses-sdk>
