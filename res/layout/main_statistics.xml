@@ -7,6 +7,7 @@
       android:layout_height="fill_parent"
       android:layout_weight="1"
       android:divider="@null"
-      android:background="#c0ffffff"
+      android:background="#ffcccccc"
+      android:cacheColorHint="#cccccc"
    />
 </merge>

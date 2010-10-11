@@ -1,5 +1,6 @@
 package com.switkows.mileage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.achartengine.ChartFactory;
@@ -17,8 +18,15 @@ public abstract class TimeChartExtension {
    private XYMultipleSeriesDataset    mDataSet;
    protected XYMultipleSeriesRenderer mRenderer;
 
-   private final GraphicalView        mView;
-   protected final String[]           Titles;
+   private GraphicalView        mView;
+   private final Context        mContext;
+   private final String         mTitle;
+   private final String         mYLabel;
+   
+   protected String[]             mTitles;
+   protected int[]                mColors;
+   protected PointStyle[]         mStyles;
+   protected MileageData[]        mData;
 
    /**
     * creates the renderer and GraphicalView
@@ -29,23 +37,47 @@ public abstract class TimeChartExtension {
     */
    public TimeChartExtension(Context c, String title, String ylabel, String[] titles, int[] colors,
          PointStyle[] styles, MileageData[] data) {
-      Titles = titles;
-      mRenderer = buildRenderer(colors, styles);
-      List<double[]> x = buildXList(data);
-      List<double[]> values = buildValuesList(data);
+      mContext = c;
+      mTitle = title;
+      mYLabel = ylabel;
+      mTitles = titles;
+      mColors = colors;
+      mStyles = styles;
+      mData = data;
+   }
+
+   public void buildChart() {
+      mRenderer = buildRenderer(mColors, mStyles);
+      List<double[]> x = buildXList(mData);
+      List<double[]> values = buildValuesList(mData);
       int length = mRenderer.getSeriesRendererCount();
       for(int i = 0; i < length; i++) {
          ((XYSeriesRenderer) mRenderer.getSeriesRendererAt(i)).setFillPoints(true);
       }
-      mDataSet = buildDataset(Titles, x, values);
-      setChartSettings(mRenderer, title, "Date", ylabel, 0, 100, 0, 100, Color.LTGRAY, Color.GRAY);
+      mDataSet = buildDataset(mTitles, x, values);
+      setChartSettings(mRenderer, mTitle, "Date", mYLabel, 0, 100, 0, 100, Color.LTGRAY, Color.GRAY);
       mRenderer.setYLabels(10);
+      mRenderer.setPanEnabled(false);
+      mRenderer.setZoomEnabled(false);
       autoFitChart();
-      mView = ChartFactory.getTimeChartView(c, mDataSet, mRenderer, "MMM yyyy");
+      mView = ChartFactory.getTimeChartView(mContext, mDataSet, mRenderer, "MMM yyyy");
    }
-
    public GraphicalView getChart() {
+      if(mView == null)
+         buildChart();
       return mView;
+   }
+   
+   public void setTitles(String[] titles) {
+      mTitles = titles;
+   }
+   
+   public void setColors(int[] colors) {
+      mColors = colors;
+   }
+   
+   public void setStyles(PointStyle[] s) {
+      mStyles = s;
    }
 
    /**
@@ -56,7 +88,18 @@ public abstract class TimeChartExtension {
     */
    protected abstract List<double[]> buildValuesList(MileageData[] data);
 
-   protected abstract List<double[]> buildXList(MileageData[] data);
+   protected List<double[]> buildXList(MileageData[] data) {
+      List<double[]> x = new ArrayList<double[]>();
+      for(int i = 0; i < mTitles.length; i++) {
+         double[] x_row = new double[data.length];
+         for(int row = 0; row < data.length; row++) {
+            x_row[row] = data[row].getDate();
+         }
+         x.add(x_row);
+      }
+      return x;
+   }
+
 
    protected abstract void appendDataToSeries(long date, float[] values);
 
@@ -64,8 +107,8 @@ public abstract class TimeChartExtension {
       XYSeries[] allSeries = mDataSet.getSeries();
       for(XYSeries series : allSeries)
          mDataSet.removeSeries(series);
-      for(int i = 0; i < Titles.length; i++)
-         mDataSet.addSeries(new XYSeries(Titles[i]));
+      for(int i = 0; i < mTitles.length; i++)
+         mDataSet.addSeries(new XYSeries(mTitles[i]));
    }
 
    protected void appendDataToSeries(long date, int ser, float value) {
@@ -201,7 +244,7 @@ public abstract class TimeChartExtension {
          XYSeries series = new XYSeries(titles[i]);
          double[] xV = xValues.get(i);
          double[] yV = yValues.get(i);
-         int seriesLength = xV.length;
+         int seriesLength = yV.length;             //assume x is >= length of y, but y may be less than x!
          for(int k = 0; k < seriesLength; k++) {
             series.add(xV[k], yV[k]);
          }

@@ -1,11 +1,14 @@
 package com.switkows.mileage;
 
-import org.achartengine.GraphicalView;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
 
 /**
  * This class holds all charts that will be rentered for this application.
@@ -19,14 +22,12 @@ public class MileageChartManager extends DataSetObserver {
    private MileageData[]        dataSet;
    private SharedPreferences    prefs;
 
-   private TimeChartExtension[] charts;
-   private static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2;
+   public static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2, MPG_STATION_CHART = 3, NO_CHART = 100;
 
    public MileageChartManager(Context c, Cursor cursor) {
       mContext = c;
       mCursor = cursor;
       loadData();
-      createCharts();
       mCursor.registerDataSetObserver(this);
    }
 
@@ -102,68 +103,47 @@ public class MileageChartManager extends DataSetObserver {
       return best;
    }
 
-   private void createCharts() {
-      boolean isUS = MileageData.isMilesGallons(getPrefs(), mContext);
-      charts = new TimeChartExtension[3];
-      charts[MPG_CHART] = new MileageChart(mContext, dataSet, isUS);
-      charts[MPG_DIFF_CHART] = new MileageDiffChart(mContext, dataSet, isUS);
-      charts[PRICE_CHART] = new PriceChart(mContext, dataSet, isUS);
+   public void addCharts(LinearLayout[] charts, LayoutParams params) {
+      SharedPreferences locPrefs = getPrefs();
+      if(charts.length > 0) {
+         genAddChart(charts[0],locPrefs,R.string.chart1Selection);
+         if(charts.length > 1) {
+            genAddChart(charts[1],locPrefs,R.string.chart2Selection);
+            if(charts.length > 2) {
+               genAddChart(charts[2],locPrefs,R.string.chart3Selection);
+            }
+         }
+      }
    }
-
-   private TimeChartExtension getChartStruct(int idx) {
-      return charts[idx];
-   }
-
-   private GraphicalView getChartView(int idx) {
-      return charts[idx].getChart();
-   }
-
-   public GraphicalView getMileageChart() {
-      return getChartView(MPG_CHART);
-   }
-
-   public GraphicalView getDiffChart() {
-      return getChartView(MPG_DIFF_CHART);
-   }
-
-   public GraphicalView getPriceChart() {
-      return getChartView(PRICE_CHART);
-   }
-
-   public void appendData(MileageData data, boolean autofit) {
-      long date = data.getDate();
-      // passing false as 3rd argument because we will simply iterate over all
-      // charts in autoFitCharts
-      getChartStruct(MPG_CHART).appendDataToSeries(date,
-            new float[] { data.getComputerMileage(), data.getActualMileage() }, false);
-      getChartStruct(MPG_DIFF_CHART).appendDataToSeries(date, new float[] { data.getMileageDiff() }, false);
-      getChartStruct(PRICE_CHART).appendDataToSeries(date, new float[] { data.getPrice() }, false);
-      if(autofit)
-         autoFitCharts();
-   }
-
-   public void clearData(boolean repaint) {
-      for(TimeChartExtension chart : charts)
-         chart.clearData();
-      if(repaint)
-         updateCharts();
-   }
-
-   public void autoFitCharts() {
-      for(TimeChartExtension chart : charts)
-         chart.autoFitChart();
-      updateCharts();
-   }
-
-   public void updateCharts() {
-      for(TimeChartExtension chart : charts)
-         chart.getChart().repaint();
-   }
-
-   @Override
-   public void onChanged() {
-      loadData();
-      createCharts();
+   
+   public void genAddChart(LinearLayout view, SharedPreferences prefs, int key) {
+      if(!prefs.contains(mContext.getString(key))) {
+         Log.e("TJS","Error. key wasn't found...bad news...");
+         return;
+      }
+      String strVal = prefs.getString(mContext.getString(key), "100");
+      int val = NO_CHART;
+      try {
+         val = Integer.parseInt(strVal);
+      } catch(NumberFormatException e) {Log.e("TJS",e.toString());}
+      boolean isUS = MileageData.isMilesGallons(prefs, mContext);
+      switch(val) {
+         case NO_CHART:
+            break;
+         case MPG_CHART:
+            view.addView(new MileageChart(mContext, dataSet, isUS).getChart());
+            break;
+         case MPG_DIFF_CHART:
+            view.addView(new MileageDiffChart(mContext, dataSet, isUS).getChart());
+            break;
+         case PRICE_CHART:
+            view.addView(new PriceChart(mContext, dataSet, isUS).getChart());
+            break;
+         case MPG_STATION_CHART:
+            view.addView(new MileageVsStationChart(mContext, dataSet).getChart());
+            break;
+      }
+      view.setVisibility(val == NO_CHART ? View.GONE : View.VISIBLE);
    }
 
 }
