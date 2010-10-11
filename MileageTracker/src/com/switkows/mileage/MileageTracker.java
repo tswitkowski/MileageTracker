@@ -25,9 +25,7 @@ import android.widget.TextView;
 public class MileageTracker extends Activity {
    /** Called when the activity is first created. */
    // private static LinearLayout root;
-   private static LinearLayout      mileageChart;
-   private static LinearLayout      diffChart;
-   private static LinearLayout      priceChart;
+   private static LinearLayout []   charts;
    private static Cursor            mCursor;
    private MileageChartManager      chartManager;
    private static ListView          mStatsView;
@@ -59,18 +57,15 @@ public class MileageTracker extends Activity {
 
    public void addUpdateDatapoint(MileageData data) {
       getContentResolver().insert(MileageProvider.CONTENT_URI, data.getContent());
-      chartManager.appendData(data, true);
+//      chartManager.appendData(data, true);
    }
 
    public void generateCharts() {
       chartManager = new MileageChartManager(mContext, mCursor);
-      mileageChart.removeAllViews();
-      diffChart.removeAllViews();
-      priceChart.removeAllViews();
+      for(LinearLayout chart : charts)
+         chart.removeAllViews();
       LayoutParams params = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-      mileageChart.addView(chartManager.getMileageChart(), params);
-      diffChart.addView(chartManager.getDiffChart(), params);
-      priceChart.addView(chartManager.getPriceChart(), params);
+      chartManager.addCharts(charts,params);
    }
 
    public void printStatistics() {
@@ -86,9 +81,10 @@ public class MileageTracker extends Activity {
 
    public void initalizePointers() {
       // root = (LinearLayout)findViewById(R.id.root);
-      mileageChart = (LinearLayout) findViewById(R.id.mileage_chart);
-      diffChart = (LinearLayout) findViewById(R.id.diff_chart);
-      priceChart = (LinearLayout) findViewById(R.id.price_chart);
+      charts = new LinearLayout[3];
+      charts[0] = (LinearLayout) findViewById(R.id.chart1);
+      charts[1] = (LinearLayout) findViewById(R.id.chart2);
+      charts[2] = (LinearLayout) findViewById(R.id.chart3);
       mStatsView = (ListView) findViewById(R.id.statistics_list);
       mStatsView.setAdapter(mStatsAdapter);
    }

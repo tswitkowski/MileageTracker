@@ -156,6 +156,8 @@ public class MileageData {
    }
 
    public String getStation() {
+      if(gas_station.equals(""))
+         return "unknown";
       return gas_station;
    }
 

@@ -57,4 +57,7 @@
       name="carSelection">carSelection</string>
    <string
       name="unitSelection">unitSelection</string>
+   <string name="chart1Selection">chart1Selection</string>
+   <string name="chart2Selection">chart2Selection</string>
+   <string name="chart3Selection">chart3Selection</string>
 </resources>

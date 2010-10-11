@@ -15,4 +15,28 @@
       android:defaultValue="mpg"
       android:entries="@array/unitArray"
       android:entryValues="@array/unitValues" />
+   <PreferenceCategory
+      android:title="Chart setup">
+      <ListPreference
+         android:key="@string/chart1Selection"
+         android:title="Select Chart 1"
+         android:summary="Select which chart to display first"
+         android:defaultValue="2"
+         android:entries="@array/chartArray"
+         android:entryValues="@array/chartValues" />
+      <ListPreference
+         android:key="@string/chart2Selection"
+         android:title="Select Chart 2"
+         android:summary="Select which chart to display second"
+         android:defaultValue="0"
+         android:entries="@array/chartArray"
+         android:entryValues="@array/chartValues" />
+      <ListPreference
+         android:key="@string/chart3Selection"
+         android:title="Select Chart 3"
+         android:summary="Select which chart to display third"
+         android:defaultValue="1"
+         android:entries="@array/chartArray"
+         android:entryValues="@array/chartValues" />
+   </PreferenceCategory>
 </PreferenceScreen>
