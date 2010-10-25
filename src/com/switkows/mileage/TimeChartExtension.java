@@ -19,7 +19,7 @@ public abstract class TimeChartExtension {
    protected XYMultipleSeriesRenderer mRenderer;
 
    private GraphicalView        mView;
-   private final Context        mContext;
+   protected final Context      mContext;
    private final String         mTitle;
    private final String         mYLabel;
    
@@ -57,8 +57,8 @@ public abstract class TimeChartExtension {
       mDataSet = buildDataset(mTitles, x, values);
       setChartSettings(mRenderer, mTitle, "Date", mYLabel, 0, 100, 0, 100, Color.LTGRAY, Color.GRAY);
       mRenderer.setYLabels(10);
-      mRenderer.setPanEnabled(false);
-      mRenderer.setZoomEnabled(false);
+//      mRenderer.setPanEnabled(false);
+//      mRenderer.setZoomEnabled(false);
       autoFitChart();
       mView = ChartFactory.getTimeChartView(mContext, mDataSet, mRenderer, "MMM yyyy");
    }

@@ -21,20 +21,21 @@ public class MileageProvider extends ContentProvider {
    private static final int       DB_VERSION   = 4;
 
    public static final String     AUTHORITY    = "com.switkows.mileage.MileageProvider";
-   public static final Uri        CONTENT_URI  = Uri.parse("content://" + AUTHORITY + "/records");
+   public static final Uri        CONTENT_URI  = Uri.parse("content://" + AUTHORITY + "/all");
 
    public static final String     CONTENT_TYPE = "vnd.android.cursor.dir/vnd.google.mileage";
    public static final String     CONTENT_ITEM = "vnd.android.cursor.item/vnd.google.mileage";
 
-   public static final int        ALL_CAR      = 0, ONE = 1;
+   public static final int        ALL_CAR      = 0, ONE = 1, SPECIFIC_CAR = 2;
 
    private SharedPreferences      prefs;
 
    public static final UriMatcher sriMatcher;
    static {
       sriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-      sriMatcher.addURI(AUTHORITY, "records", ALL_CAR);
-      sriMatcher.addURI(AUTHORITY, "records/#", ONE);
+      sriMatcher.addURI(AUTHORITY, "all", ALL_CAR);
+      sriMatcher.addURI(AUTHORITY, "car/#", SPECIFIC_CAR);
+      sriMatcher.addURI(AUTHORITY, "all/#", ONE);
    }
 
    @Override

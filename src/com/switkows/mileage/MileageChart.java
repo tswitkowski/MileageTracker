@@ -31,8 +31,8 @@ public class MileageChart extends TimeChartExtension {
       List<double[]> values = new ArrayList<double[]>();
       for(int i = 0; i < mTitles.length; i++) {
          for(int row = 0; row < data.length; row++) {
-            comp_mpg[row] = data[row].getComputerMileage();
-            act_mpg[row] = data[row].getActualMileage();
+            comp_mpg[row] = data[row].getComputerMileage(mContext,null);
+            act_mpg[row] = data[row].getActualMileage(mContext,null);
          }
       }
       values.add(comp_mpg);

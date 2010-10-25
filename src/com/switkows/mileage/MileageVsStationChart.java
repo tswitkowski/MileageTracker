@@ -9,14 +9,16 @@ import android.graphics.Color;
 
 public class MileageVsStationChart extends TimeChartExtension {
 
+   private static final String[]     mChartTitles        = { "MPG over Time", "Km/L over Time" };
+   private static final String[]     mUnits              = { "MPG", "Km/L" };
    private static final int[]        allColors           = { Color.BLUE, Color.RED, Color.GREEN, Color.GRAY, Color.WHITE, Color.CYAN, Color.MAGENTA };
    private static final PointStyle[] allStyles           = { PointStyle.CIRCLE, PointStyle.SQUARE };
    
    private List<double[]> mValues;
    private List<double[]> mXValues;
 
-   public MileageVsStationChart(Context c, MileageData[] data) {
-      super(c, "MPG over Time", "MPG", null, null, null, data);
+   public MileageVsStationChart(Context c, MileageData[] data, boolean isUS) {
+      super(c, mChartTitles[isUS ? 0 : 1], mUnits[isUS ? 0 : 1], null, null, null, data);
       analyzeData();
    }
 
@@ -73,10 +75,12 @@ public class MileageVsStationChart extends TimeChartExtension {
       for(String title : mTitles) {
          List<Float> valueList = new ArrayList<Float>();
          List<Double> timeList = new ArrayList<Double>();
-         for(MileageData item : mData) {
-            if(title.equals(item.getStation())) {
-               valueList.add(item.getActualMileage());
-               timeList.add(new Double(item.getDate()));
+         //a little tricky here: you must grab the date & mileage from
+         //the entry AFTER the entry that matches the station name! 
+         for(i=1 ; i<mData.length ; i++) {
+            if(title.equals(mData[i-1].getStation())) {
+               valueList.add(mData[i].getActualMileage(mContext,null));
+               timeList.add(new Double(mData[i].getDate()));
             }
          }
          

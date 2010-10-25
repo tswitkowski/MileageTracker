@@ -1,5 +1,7 @@
 package com.switkows.mileage;
 
+import com.switkows.mileage.MileageTracker.ShowLargeChart;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -103,20 +105,20 @@ public class MileageChartManager extends DataSetObserver {
       return best;
    }
 
-   public void addCharts(LinearLayout[] charts, LayoutParams params) {
+   public void addCharts(LinearLayout[] charts, ShowLargeChart[] listeners, LayoutParams params) {
       SharedPreferences locPrefs = getPrefs();
       if(charts.length > 0) {
-         genAddChart(charts[0],locPrefs,R.string.chart1Selection);
+         genAddChart(charts[0],listeners[0],locPrefs,R.string.chart1Selection);
          if(charts.length > 1) {
-            genAddChart(charts[1],locPrefs,R.string.chart2Selection);
+            genAddChart(charts[1],listeners[1],locPrefs,R.string.chart2Selection);
             if(charts.length > 2) {
-               genAddChart(charts[2],locPrefs,R.string.chart3Selection);
+               genAddChart(charts[2],listeners[2],locPrefs,R.string.chart3Selection);
             }
          }
       }
    }
    
-   public void genAddChart(LinearLayout view, SharedPreferences prefs, int key) {
+   public void genAddChart(LinearLayout view, ShowLargeChart listener, SharedPreferences prefs, int key) {
       if(!prefs.contains(mContext.getString(key))) {
          Log.e("TJS","Error. key wasn't found...bad news...");
          return;
@@ -131,19 +133,31 @@ public class MileageChartManager extends DataSetObserver {
          case NO_CHART:
             break;
          case MPG_CHART:
-            view.addView(new MileageChart(mContext, dataSet, isUS).getChart());
-            break;
          case MPG_DIFF_CHART:
-            view.addView(new MileageDiffChart(mContext, dataSet, isUS).getChart());
-            break;
          case PRICE_CHART:
-            view.addView(new PriceChart(mContext, dataSet, isUS).getChart());
-            break;
          case MPG_STATION_CHART:
-            view.addView(new MileageVsStationChart(mContext, dataSet).getChart());
+            listener.setID(val);
+            View chart = createChart(val,isUS);
+            chart.setOnClickListener(listener);
+            view.addView(chart);
             break;
       }
       view.setVisibility(val == NO_CHART ? View.GONE : View.VISIBLE);
    }
-
+   
+   public View createChart(int chartID, boolean isUS) {
+      switch(chartID) {
+       case MPG_CHART:
+           return new MileageChart(mContext, dataSet, isUS).getChart();
+        case MPG_DIFF_CHART:
+           return new MileageDiffChart(mContext, dataSet, isUS).getChart();
+        case PRICE_CHART:
+           return new PriceChart(mContext, dataSet, isUS).getChart();
+        case MPG_STATION_CHART:
+           return new MileageVsStationChart(mContext, dataSet, isUS).getChart();
+        default:
+           return null;
+      }
+   }
+   
 }
