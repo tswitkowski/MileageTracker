@@ -8,12 +8,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
@@ -26,6 +28,7 @@ public class MileageTracker extends Activity {
    /** Called when the activity is first created. */
    // private static LinearLayout root;
    private static LinearLayout []   charts;
+   private ShowLargeChart      []   chartListeners;
    private static Cursor            mCursor;
    private MileageChartManager      chartManager;
    private static ListView          mStatsView;
@@ -37,7 +40,7 @@ public class MileageTracker extends Activity {
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       Log.d("TJS", "Started onCreate...");
-      mContext = getApplicationContext();
+      mContext = this;
       setContentView(R.layout.main);
       mStatsAdapter = new StatisticsAdapter(mContext);
       // grab pointers to all my graphical elements
@@ -65,7 +68,7 @@ public class MileageTracker extends Activity {
       for(LinearLayout chart : charts)
          chart.removeAllViews();
       LayoutParams params = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-      chartManager.addCharts(charts,params);
+      chartManager.addCharts(charts,chartListeners,params);
    }
 
    public void printStatistics() {
@@ -85,6 +88,10 @@ public class MileageTracker extends Activity {
       charts[0] = (LinearLayout) findViewById(R.id.chart1);
       charts[1] = (LinearLayout) findViewById(R.id.chart2);
       charts[2] = (LinearLayout) findViewById(R.id.chart3);
+      chartListeners = new ShowLargeChart[3];
+      chartListeners[0] = new ShowLargeChart(mContext,0);
+      chartListeners[1] = new ShowLargeChart(mContext,0);
+      chartListeners[2] = new ShowLargeChart(mContext,0);
       mStatsView = (ListView) findViewById(R.id.statistics_list);
       mStatsView.setAdapter(mStatsAdapter);
    }
@@ -234,5 +241,26 @@ public class MileageTracker extends Activity {
       public String getFormattedString() {
          return String.format("%.1f %s", mValue, mUnits);
       }
+   }
+
+   protected class ShowLargeChart implements OnClickListener {
+      private Context mContext;
+      private Intent launcher;
+      private int mID;
+      ShowLargeChart(Context c, int id) {
+         mContext = c;
+         mID = id;
+         launcher = new Intent(mContext,ChartViewer.class);
+      }
+      public void setID(int id) {
+         mID = id;
+      }
+      public void onClick(View v) {
+         boolean isUS = MileageData.isMilesGallons(PreferenceManager.getDefaultSharedPreferences(mContext),mContext);
+         launcher.putExtra(ChartViewer.UNITS_KEY, isUS);
+         launcher.putExtra(ChartViewer.CHART_KEY, mID);
+         startActivity(launcher);
+      }
+      
    }
 }

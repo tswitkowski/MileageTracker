@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class MileageData {
@@ -184,7 +185,7 @@ public class MileageData {
    public float getComputerMileage() {
       return getFloatValue(COMPUTER_MILEAGE);
    }
-
+   
    public float getActualMileage() {
       return getFloatValue(ACTUAL_MILEAGE);
    }
@@ -195,6 +196,15 @@ public class MileageData {
 
    public float getMileageDiff() {
       return getFloatValue(MPG_DIFF);
+   }
+
+   //These methods return the specific data point with the correct units
+   public float getComputerMileage(Context context, SharedPreferences prefs) {
+	   return getEconomy(getComputerMileage(), prefs, context);
+   }
+
+   public float getActualMileage(Context context, SharedPreferences prefs) {
+	   return getEconomy(getActualMileage(), prefs, context);
    }
 
    public static String exportCSVTitle() {
@@ -239,30 +249,40 @@ public class MileageData {
    }
 
    public static final String getDistanceUnits(SharedPreferences prefs, Context context) {
+	   if(prefs == null)
+		   prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
          return DISTANCE_UNIT_LABELS[US];
       return DISTANCE_UNIT_LABELS[METRIC];
    }
 
    public static final String getEconomyUnits(SharedPreferences prefs, Context context) {
+	   if(prefs == null)
+		   prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
          return ECONOMY_UNIT_LABELS[US];
       return ECONOMY_UNIT_LABELS[METRIC];
    }
 
    public static final float getDistance(float miles, SharedPreferences prefs, Context context) {
+	   if(prefs == null)
+		   prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
          return miles;
       return (miles * KM_PER_MILE);
    }
 
    public static final float getVolume(float gallons, SharedPreferences prefs, Context context) {
+	   if(prefs == null)
+		   prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
          return gallons;
       return (gallons * LITER_PER_GALLON);
    }
 
    public static final float getEconomy(float mpg, SharedPreferences prefs, Context context) {
+	   if(prefs == null)
+		   prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
          return mpg;
       return (getDistance(mpg, prefs, context) / getVolume(1, prefs, context));
