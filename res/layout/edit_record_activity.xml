@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<LinearLayout
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   android:orientation="vertical"
+   android:layout_width="match_parent"
+   android:layout_height="match_parent"> 
+ 
+   <ListView
+      android:id="@android:id/list"
+      android:layout_width="match_parent"
+      android:layout_height="0dip"
+      android:layout_weight="1" /> 
+ 
+<!-- fixme - replace with viewstub-->
+   <LinearLayout android:id="@+id/edit_records_footer"
+      android:orientation="horizontal"
+      android:visibility="gone"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:paddingTop="5dip"
+      android:paddingLeft="4dip"
+      android:paddingRight="4dip"
+      android:paddingBottom="1dip"
+      android:background="@android:drawable/bottom_bar"> 
+ 
+      <Button
+         android:id="@+id/button_deselect"
+         android:layout_width="0dip"
+         android:layout_height="match_parent"
+         android:layout_weight="1"
+         android:text="Deselect" /> 
+ 
+      <Button
+         android:id="@+id/button_delete"
+         android:layout_width="0dip"
+         android:layout_height="match_parent"
+         android:layout_weight="1"
+         android:text="Delete" /> 
+   </LinearLayout> 
+</LinearLayout> 

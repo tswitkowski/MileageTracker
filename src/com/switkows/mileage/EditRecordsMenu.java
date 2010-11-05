@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.PrintWriter;
+import java.util.HashSet;
 
-import com.switkows.mileage.EditRecordsListAdapter.MyListViewItem;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -28,17 +28,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EditRecordsMenu extends ListActivity {
+public class EditRecordsMenu extends ListActivity implements AnimationListener, android.view.View.OnClickListener {
 
    private static final int MENU_ADD = 0, MENU_CLEAR = 1, MENU_EXPORT = 3, MENU_IMPORT = 4, PERFORM_IMPORT = 7,
          MENU_DELETE = 5, MENU_MODIFY = 6, MENU_PREFS = 8;
@@ -47,21 +51,26 @@ public class EditRecordsMenu extends ListActivity {
    protected ImportThread   iThread;
    protected ProgressDialog iProgress;
    protected final Handler  iHandler = new ImportProgressHandler();
+   protected LinearLayout   mFooter;
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-
+      setContentView(R.layout.edit_record_activity);
       Intent i = getIntent();
       if(i.getData() == null) {
          i.setData(MileageProvider.CONTENT_URI);
       }
+      mFooter = (LinearLayout)findViewById(R.id.edit_records_footer);
+      findViewById(R.id.button_delete).setOnClickListener(this);
+      findViewById(R.id.button_deselect).setOnClickListener(this);
+
       Cursor c = managedQuery(getIntent().getData(), null, null, null, null);
 
       getListView().setOnCreateContextMenuListener(this);
       getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       getListView().setClickable(true);
-      setListAdapter(new EditRecordsListAdapter(this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
+      setListAdapter(new EditRecordsListAdapter(this, this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
             new int[] { android.R.id.text1 }));
 
       TextView empty = new TextView(this);
@@ -189,18 +198,6 @@ public class EditRecordsMenu extends ListActivity {
       return false;
    }
 
-   @Override
-   public void onActivityResult(int requestCode, int resultCode, Intent data) {
-      // if we just finished the preferences activity, then get rid of all
-      // of the ListActivity data. we could be a little smarter about this,
-      // but this shouldn't adversely affect performance, at least not noticeably.
-      // This was needed to support a user changing the 'units' from the
-      // preferences screen
-      if(requestCode == MENU_PREFS) {
-         ((EditRecordsListAdapter) getListAdapter()).invalidate();
-      }
-   }
-
    private void checkSDState(int menuId) {
       String state = Environment.getExternalStorageState();
       if(state.equals(Environment.MEDIA_MOUNTED)) {
@@ -262,40 +259,62 @@ public class EditRecordsMenu extends ListActivity {
    }
 
    protected void deleteSelected() {
-      ListView view = getListView();
-      for(int i = 0; i < view.getCount(); i++) {
-         if(view.isItemChecked(i)) {
-            Uri uri = ContentUris.withAppendedId(getIntent().getData(), view.getItemIdAtPosition(i));
-            getContentResolver().delete(uri, null, null);
-         }
-      }
+      HashSet<Long> checked = ((EditRecordsListAdapter)getListAdapter()).getSelected();
+      Uri baseUri = getIntent().getData();
+      for(Long id : checked)
+         getContentResolver().delete(ContentUris.withAppendedId(baseUri, id.longValue()), null, null);
+      checked.clear();
    }
 
    protected void deselectAll() {
       getListView().clearChoices();
+      ((EditRecordsListAdapter)getListAdapter()).clearSelected();
+      handleSelection(true);
    }
 
+   //FIXME - change to access the adapter directly!
    protected String getSelectedMessage() {
       String ret = "";
+//      EditRecordsListAdapter adapter = (EditRecordsListAdapter)getListAdapter();
+//      for(Long mID : adapter.getSelected())
+//      ;
       ListView view = getListView();
       for(int i = 0; i < view.getCount(); i++) {
-         Log.d("TJS", "Checking item " + i + " in the listView");
-         MyListViewItem mine = (MyListViewItem) view.getAdapter().getView(i, null, null);
+//         Log.d("TJS", "Checking item " + i + " in the listView");
+         EditRecordListItem mine = (EditRecordListItem) view.getAdapter().getView(i, null, null);
          if(mine.isChecked()) {
             // if(view.isItemChecked(i)) {
-            Log.d("TJS", "   Item " + i + " is checked!!");
+//            Log.d("TJS", "   Item " + i + " is checked!!");
             // MyListViewItem mine = (MyListViewItem)view.getAdapter().getView(i, null, null);
-            String str = mine.toString();
-            // Cursor cursor = (Cursor) view.getItemAtPosition(i);
-            // float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
-            // String date = MileageData.getDateFormatter().format(
-            // cursor.getLong(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])));
-            // String str = String.format("%s (%2.1f MPG)\n", date, mpg);
-            ret += str;
+            CharSequence str = mine.getText();
+            if(ret.length() > 0)
+               ret = String.format("%s\n%s", ret, str);//ret += str;
+            else
+               ret = str.toString();
          }
       }
       return ret;
    }
+
+   public void handleSelection(boolean hide) {
+      if(hide && mFooter.getVisibility() != View.GONE) {
+         mFooter.setVisibility(View.GONE);
+         Animation animation = AnimationUtils.loadAnimation(this, R.anim.footer_hide);
+         animation.setAnimationListener(this);
+         mFooter.startAnimation(animation);
+      } else if(!hide && mFooter.getVisibility() != View.VISIBLE) {
+         mFooter.setVisibility(View.VISIBLE);
+         Animation animation = AnimationUtils.loadAnimation(this, R.anim.footer_show);
+         animation.setAnimationListener(this);
+         mFooter.startAnimation(animation);
+      }
+   }
+
+   public void onAnimationEnd(Animation animation) { }
+
+   public void onAnimationRepeat(Animation animation) { }
+
+   public void onAnimationStart(Animation animation) { }
 
    protected void exportFile(String filename) {
       File loc = Environment.getExternalStorageDirectory();
@@ -455,5 +474,17 @@ public class EditRecordsMenu extends ListActivity {
                         Toast.LENGTH_LONG).show();
          }
       }
+   }
+
+   public void onClick(View v) {
+      switch(v.getId()) {
+         case R.id.button_delete:
+            deleteSelected();
+            deselectAll();
+            break;
+         case R.id.button_deselect:
+            deselectAll();
+            break;
+         }
    }
 }
