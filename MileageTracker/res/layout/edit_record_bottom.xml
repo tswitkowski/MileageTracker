@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge
    xmlns:android="http://schemas.android.com/apk/res/android">
-   <LinearLayout
-      android:orientation="horizontal"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content">
+   <RelativeLayout
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content">
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
+         android:id="@+id/date_label"
+         android:layout_alignBaseline="@+id/date_reading"
          android:text="@string/date_label" />
       <!--
          this is the place where the date is entered. Once the text
@@ -19,57 +20,61 @@
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:inputType="none|date"
+         android:layout_toRightOf="@id/date_label"
          android:id="@+id/date_reading" />
-   </LinearLayout>
-   <LinearLayout
-      android:orientation="horizontal"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content">
+<!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
+         android:id="@+id/actual_mileage_label"
+         android:layout_alignBaseline="@+id/actual_mileage_reading"
          android:text="@string/actual_mileage_label" />
       <EditText
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/actual_mileage_reading"
          android:inputType="none|numberDecimal"
+         android:layout_below="@id/date_reading"
+         android:layout_toRightOf="@id/actual_mileage_label"
          android:enabled="false" />
-   </LinearLayout>
-   <LinearLayout
-      android:orientation="horizontal"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content">
+<!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
+         android:id="@+id/total_price_label"
+         android:layout_alignBaseline="@+id/total_price_reading"
          android:text="@string/total_price_label" />
       <EditText
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/total_price_reading"
          android:inputType="none|numberDecimal"
+         android:layout_below="@id/actual_mileage_reading"
+         android:layout_toRightOf="@id/total_price_label"
          android:enabled="false" />
-   </LinearLayout>
-   <LinearLayout
-      android:orientation="horizontal"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content">
+<!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
+         android:id="@+id/mpg_diff_label"
+         android:layout_alignBaseline="@+id/mpg_diff_reading"
          android:text="@string/mpg_diff_label" />
       <EditText
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/mpg_diff_reading"
          android:inputType="none|numberDecimal"
+         android:layout_below="@id/total_price_reading"
+         android:layout_toRightOf="@id/mpg_diff_label"
          android:enabled="false" />
-   </LinearLayout>
-   <Button
-      android:id="@+id/submit"
-      android:text="Submit Modifications"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_horizontal" />
+<!-- Row -->
+      <Button
+         android:id="@+id/submit"
+         android:text="Submit Modifications"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_below="@id/mpg_diff_reading"
+         android:layout_marginLeft="25dp"
+         android:layout_gravity="center_horizontal" />
+   </RelativeLayout>
 </merge>

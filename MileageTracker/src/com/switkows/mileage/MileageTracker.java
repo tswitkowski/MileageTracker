@@ -153,7 +153,7 @@ public class MileageTracker extends Activity {
          return mList.size();
       }
 
-      public Object getItem(int position) {
+      public FloatWithUnits getItem(int position) {
          return mList.get(mLabels[position]);
       }
 
@@ -169,7 +169,7 @@ public class MileageTracker extends Activity {
          } else {
             stats = (StatisticsView) convertView;
          }
-         stats.setValue(((FloatWithUnits) getItem(position)).getFormattedString());
+         stats.setValue(getItem(position).getFormattedString());
          stats.setLabel(mLabels[position]);
          return stats;
       }
@@ -261,6 +261,5 @@ public class MileageTracker extends Activity {
          launcher.putExtra(ChartViewer.CHART_KEY, mID);
          startActivity(launcher);
       }
-      
    }
 }
