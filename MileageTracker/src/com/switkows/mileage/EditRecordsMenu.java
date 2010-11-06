@@ -15,12 +15,14 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -37,7 +39,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,14 +53,20 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
    protected ProgressDialog iProgress;
    protected final Handler  iHandler = new ImportProgressHandler();
    protected LinearLayout   mFooter;
+   private EditRecordsListAdapter mAdapter;
+
+   //for handling 'delete' option selection via context menu
+   private boolean mSingleSelection;
+   private long mSingleSelectionID;
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      mSingleSelection = false;
       setContentView(R.layout.edit_record_activity);
       Intent i = getIntent();
       if(i.getData() == null) {
-         i.setData(MileageProvider.CONTENT_URI);
+         i.setData(getURI());
       }
       mFooter = (LinearLayout)findViewById(R.id.edit_records_footer);
       findViewById(R.id.button_delete).setOnClickListener(this);
@@ -70,8 +77,9 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       getListView().setOnCreateContextMenuListener(this);
       getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       getListView().setClickable(true);
-      setListAdapter(new EditRecordsListAdapter(this, this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
-            new int[] { android.R.id.text1 }));
+      mAdapter = new EditRecordsListAdapter(this, this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
+            new int[] { android.R.id.text1 });
+      setListAdapter(mAdapter);
 
       TextView empty = new TextView(this);
       empty.setText("No records present");
@@ -92,8 +100,10 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       // This might not be the best way to do this, but if we 'resume' this activity,
       // throw away the old cursor, and re-generate the data. This was needed to
       // support a user changing 'profiles' from the preferences screen
+      //FIXME - is this okay? should i always reset the data?!
+      getIntent().setData(getURI());
       Cursor c = managedQuery(getIntent().getData(), null, null, null, null);
-      ((SimpleCursorAdapter) getListAdapter()).changeCursor(c);
+      mAdapter.changeCursor(c);
    }
 
    // Save the import worker thread, so re-launching the program
@@ -143,15 +153,17 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
          return false;
       }
 
-      Uri uri = ContentUris.withAppendedId(getIntent().getData(), info.id);
       switch(item.getItemId()) {
          case MENU_DELETE: {
             // Delete the note that the context menu is for
-            getContentResolver().delete(uri, null, null);
+            mSingleSelection = true;
+            mSingleSelectionID = info.id;
+            showDialog(MENU_DELETE);
             return true;
          }
          case MENU_MODIFY: {
             // Launch activity to view/edit the currently selected item
+            Uri uri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, info.id);
             startActivity(new Intent(Intent.ACTION_EDIT, uri));
             return true;
          }
@@ -164,7 +176,6 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       super.onCreateOptionsMenu(menu);
       menu.add(0, MENU_ADD, 0, "Add Entry").setIcon(android.R.drawable.ic_menu_add);
       menu.add(0, MENU_CLEAR, 0, "Clear Data").setIcon(android.R.drawable.ic_menu_close_clear_cancel);
-      menu.add(0, MENU_DELETE, 0, "Delete").setIcon(android.R.drawable.ic_menu_delete);
       menu.add(0, MENU_EXPORT, 0, "Export").setIcon(android.R.drawable.ic_menu_save);
       menu.add(0, MENU_IMPORT, 0, "Import").setIcon(android.R.drawable.ic_menu_upload);
       menu.add(0, MENU_PREFS, 0, "Preferences").setIcon(android.R.drawable.ic_menu_preferences);
@@ -244,13 +255,21 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       }
    }
 
+   //This is not a true database clear...just clears THIS profile's data!!!
+   //FIXME - there should be another which deletes ALL data (For use with import)
    public void clearDB() {
-      getContentResolver().delete(MileageProvider.CONTENT_URI, null, null);
+      getContentResolver().delete(getURI(), null, null);
    }
 
+   private Uri getURI() {
+      String option = getString(R.string.carSelection);
+      String car = PreferenceManager.getDefaultSharedPreferences(this).getString(option, "Car45");
+      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI,car);
+      return uri;
+   }
    private MileageData[] readAllEntries() {
-      MileageData[] allData = new MileageData[getListAdapter().getCount()];
-      Cursor cursor = ((EditRecordsListAdapter) getListAdapter()).getCursor();
+      Cursor cursor = getContentResolver().query(MileageProvider.ALL_CONTENT_URI, null, null, null, null);
+      MileageData[] allData = new MileageData[cursor.getCount()];
       for(int i = 0; i < allData.length; i++) {
          cursor.moveToPosition(i);
          allData[i] = new MileageData(getApplicationContext(), cursor);
@@ -259,36 +278,46 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
    }
 
    protected void deleteSelected() {
-      HashSet<Long> checked = ((EditRecordsListAdapter)getListAdapter()).getSelected();
-      Uri baseUri = getIntent().getData();
+      HashSet<Long> checked = mAdapter.getSelected();
+      Uri baseUri = MileageProvider.ALL_CONTENT_URI;
+      if(mSingleSelection)
+         getContentResolver().delete(ContentUris.withAppendedId(baseUri, mSingleSelectionID), null, null);
       for(Long id : checked)
          getContentResolver().delete(ContentUris.withAppendedId(baseUri, id.longValue()), null, null);
+      //FIXME - this is needed, apparently, since i'm not using the same URI as the adapter uses?!
+      mAdapter.getCursor().requery();
+      mAdapter.notifyDataSetChanged();
       checked.clear();
    }
 
    protected void deselectAll() {
-      getListView().clearChoices();
-      ((EditRecordsListAdapter)getListAdapter()).clearSelected();
+      mAdapter.clearSelected();
       handleSelection(true);
    }
 
-   //FIXME - change to access the adapter directly!
+   //This method queries the Adapter to determine which items are selected.
+   //It then walks through the Cursor, adding to the return message a string
+   //containing a message for each selected row in the Adapter.
+   @SuppressWarnings("unchecked")
    protected String getSelectedMessage() {
       String ret = "";
-//      EditRecordsListAdapter adapter = (EditRecordsListAdapter)getListAdapter();
-//      for(Long mID : adapter.getSelected())
-//      ;
-      ListView view = getListView();
-      for(int i = 0; i < view.getCount(); i++) {
-//         Log.d("TJS", "Checking item " + i + " in the listView");
-         EditRecordListItem mine = (EditRecordListItem) view.getAdapter().getView(i, null, null);
-         if(mine.isChecked()) {
-            // if(view.isItemChecked(i)) {
-//            Log.d("TJS", "   Item " + i + " is checked!!");
-            // MyListViewItem mine = (MyListViewItem)view.getAdapter().getView(i, null, null);
-            CharSequence str = mine.getText();
+      HashSet<Long> mySelected = (HashSet<Long>) mAdapter.getSelected().clone();
+      if(mSingleSelection)
+         mySelected.add(Long.valueOf(mSingleSelectionID));
+      
+      Cursor cursor = mAdapter.getCursor();
+      int idColumn   = cursor.getColumnIndex("_id");
+      int dateColumn = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
+      int mpgColumn  = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
+      SharedPreferences prefs = mAdapter.getPrefs();
+      for(int i=0 ; i<cursor.getCount() ; i++) {
+         cursor.moveToPosition(i);
+         long id = cursor.getLong(idColumn);
+         String str;
+         if(mySelected.contains(Long.valueOf(id))) {
+            str = MileageData.getSimpleDescription(cursor, dateColumn, mpgColumn, prefs, this);
             if(ret.length() > 0)
-               ret = String.format("%s\n%s", ret, str);//ret += str;
+               ret = String.format("%s\n%s", ret, str);
             else
                ret = str.toString();
          }
@@ -468,6 +497,8 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
             // it here, just
             // in case
             dismissDialog(PERFORM_IMPORT);
+            if(mAdapter != null)
+               mAdapter.getCursor().requery();
             iThread = null;
             Toast
                   .makeText(getApplicationContext(), data.getString(ImportThread.IMPORT_FINISHED_STR),
@@ -479,8 +510,8 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
    public void onClick(View v) {
       switch(v.getId()) {
          case R.id.button_delete:
-            deleteSelected();
-            deselectAll();
+            mSingleSelection = false;
+            showDialog(MENU_DELETE);
             break;
          case R.id.button_deselect:
             deselectAll();

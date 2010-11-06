@@ -226,6 +226,13 @@ public class MileageData {
       Date dt = new Date(year - 1900, month, day);
       return getDateFormatter().format(dt);
    }
+   
+   public static String getSimpleDescription(Cursor c, int dateColumn, int mpgColumn, SharedPreferences prefs, Context context) {
+      String date = MileageData.getDateFormatter().format(c.getLong(dateColumn));
+      float mpg = MileageData.getEconomy(c.getFloat(mpgColumn), prefs, context);
+      return String.format("%s (%2.1f %s)", date, mpg, MileageData.getEconomyUnits(prefs, context));
+
+   }
 
    public String exportCSV() {
       String str = getFormattedDate(date) + "," + gas_station + ",";

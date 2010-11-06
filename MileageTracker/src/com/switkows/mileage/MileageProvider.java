@@ -21,7 +21,8 @@ public class MileageProvider extends ContentProvider {
    private static final int       DB_VERSION   = 4;
 
    public static final String     AUTHORITY    = "com.switkows.mileage.MileageProvider";
-   public static final Uri        CONTENT_URI  = Uri.parse("content://" + AUTHORITY + "/all");
+   public static final Uri        CONTENT_URI  = Uri.parse("content://" + AUTHORITY + "/car");
+   public static final Uri        ALL_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/all");
 
    public static final String     CONTENT_TYPE = "vnd.android.cursor.dir/vnd.google.mileage";
    public static final String     CONTENT_ITEM = "vnd.android.cursor.item/vnd.google.mileage";
@@ -34,7 +35,7 @@ public class MileageProvider extends ContentProvider {
    static {
       sriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
       sriMatcher.addURI(AUTHORITY, "all", ALL_CAR);
-      sriMatcher.addURI(AUTHORITY, "car/#", SPECIFIC_CAR);
+      sriMatcher.addURI(AUTHORITY, "car/*", SPECIFIC_CAR);
       sriMatcher.addURI(AUTHORITY, "all/#", ONE);
    }
 
@@ -53,19 +54,24 @@ public class MileageProvider extends ContentProvider {
    public int delete(Uri uri, String where, String[] whereArgs) {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
       int count;
+      String extra = where != null && where.length() > 0 ? " AND (" + where + ")" : "";
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
             count = db.delete(DB_TABLE, where, whereArgs);
             break;
+         case SPECIFIC_CAR:
+            count = db.delete(DB_TABLE, "carName = '" + uri.getPathSegments().get(1) + "'" + extra, whereArgs);
+            break;
          case ONE:
             String id = uri.getPathSegments().get(1);
-            String extra = where != null && where.length() > 0 ? " AND (" + where + ")" : "";
             count = db.delete(DB_TABLE, "_id=" + id + extra, whereArgs);
             break;
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
       getContext().getContentResolver().notifyChange(uri, null);
+      //FIXME - try to get rid of this. it's probably not needed..
+      getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
       return count;
    }
 
@@ -73,6 +79,7 @@ public class MileageProvider extends ContentProvider {
    public String getType(Uri uri) {
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
+         case SPECIFIC_CAR:
             return CONTENT_TYPE;
          case ONE:
             return CONTENT_ITEM;
@@ -83,7 +90,7 @@ public class MileageProvider extends ContentProvider {
 
    @Override
    public Uri insert(Uri uri, ContentValues initialValues) {
-      if(sriMatcher.match(uri) != ALL_CAR) {
+      if(sriMatcher.match(uri) != ALL_CAR && sriMatcher.match(uri) != SPECIFIC_CAR) {
          throw new IllegalArgumentException("Unknown URI : '" + uri + "'");
       }
 
@@ -96,8 +103,10 @@ public class MileageProvider extends ContentProvider {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
       long rowId = db.insert(DB_TABLE, null, values);
       if(rowId > 0) {
-         Uri noteUri = ContentUris.withAppendedId(CONTENT_URI, rowId);
+         Uri noteUri = ContentUris.withAppendedId(ALL_CONTENT_URI, rowId);
          getContext().getContentResolver().notifyChange(noteUri, null);
+         //FIXME - try to get rid of this. it's probably not needed..
+         getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
          return noteUri;
       }
       throw new SQLException("Failed to insert row into " + uri);
@@ -109,12 +118,10 @@ public class MileageProvider extends ContentProvider {
       String groupBy = null;
 
       switch(sriMatcher.match(uri)) {
-         case ALL_CAR:
+         case SPECIFIC_CAR:
             qb.setTables(DB_TABLE);
             // limit to only this car's data
-            // FIXME - need a 'true ALL' so we can export to CSV!! coming next!!
-            qb.appendWhere("carName = '" + prefs.getString(getContext().getString(R.string.carSelection), "Car45")
-                  + "'");
+            qb.appendWhere("carName = '" + uri.getPathSegments().get(1) + "'");
             // This will add all of the Columns in 'projection', except for
             // the _id column. This allows for 'uniquifying' the return data
             // (currently, only used for giving suggestions in the gas-station
@@ -127,6 +134,17 @@ public class MileageProvider extends ContentProvider {
                         groupBy = "" + projection[i];
                      else
                         groupBy += projection[i];
+                  }
+            break;
+         case ALL_CAR:
+            qb.setTables(DB_TABLE);
+            if(projection != null)
+               for(String proj : projection)
+                  if(!proj.equals("_id")) {
+                     if(groupBy == null)
+                        groupBy = "" + proj;
+                     else
+                        groupBy += proj;
                   }
             break;
          case ONE:
@@ -151,6 +169,7 @@ public class MileageProvider extends ContentProvider {
       int count;
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
+         case SPECIFIC_CAR:
             count = db.update(DB_TABLE, values, selection, selectionArgs);
             break;
          case ONE:
@@ -162,6 +181,8 @@ public class MileageProvider extends ContentProvider {
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
       getContext().getContentResolver().notifyChange(uri, null);
+      //FIXME - try to get rid of this. it's probably not needed..
+      getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
       return count;
    }
 

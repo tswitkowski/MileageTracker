@@ -27,8 +27,8 @@ import android.widget.TextView;
 public class MileageTracker extends Activity {
    /** Called when the activity is first created. */
    // private static LinearLayout root;
-   private static LinearLayout []   charts;
-   private ShowLargeChart      []   chartListeners;
+   private static LinearLayout[]    charts;
+   private ShowLargeChart[]         chartListeners;
    private static Cursor            mCursor;
    private MileageChartManager      chartManager;
    private static ListView          mStatsView;
@@ -53,14 +53,9 @@ public class MileageTracker extends Activity {
    public void onResume() {
       super.onResume();
       // FIXME - maybe be a bit smarter about when we generate charts!
-      mCursor = managedQuery(MileageProvider.CONTENT_URI, null, null, null, null);
+      mCursor = managedQuery(getCurrentProfileURI(), null, null, null, null);
       generateCharts();
       printStatistics();
-   }
-
-   public void addUpdateDatapoint(MileageData data) {
-      getContentResolver().insert(MileageProvider.CONTENT_URI, data.getContent());
-//      chartManager.appendData(data, true);
    }
 
    public void generateCharts() {
@@ -68,7 +63,7 @@ public class MileageTracker extends Activity {
       for(LinearLayout chart : charts)
          chart.removeAllViews();
       LayoutParams params = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-      chartManager.addCharts(charts,chartListeners,params);
+      chartManager.addCharts(charts, chartListeners, params);
    }
 
    public void printStatistics() {
@@ -89,11 +84,18 @@ public class MileageTracker extends Activity {
       charts[1] = (LinearLayout) findViewById(R.id.chart2);
       charts[2] = (LinearLayout) findViewById(R.id.chart3);
       chartListeners = new ShowLargeChart[3];
-      chartListeners[0] = new ShowLargeChart(mContext,0);
-      chartListeners[1] = new ShowLargeChart(mContext,0);
-      chartListeners[2] = new ShowLargeChart(mContext,0);
+      chartListeners[0] = new ShowLargeChart(mContext, 0);
+      chartListeners[1] = new ShowLargeChart(mContext, 0);
+      chartListeners[2] = new ShowLargeChart(mContext, 0);
       mStatsView = (ListView) findViewById(R.id.statistics_list);
       mStatsView.setAdapter(mStatsAdapter);
+   }
+
+   public Uri getCurrentProfileURI() {
+      String option = this.getString(R.string.carSelection);
+      String car = PreferenceManager.getDefaultSharedPreferences(mContext).getString(option, "Car45");
+      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI, car);
+      return uri;
    }
 
    private static final int MENU_ADD = 0, MENU_SHOWALL = 2, MENU_PREFS = 3;
@@ -110,8 +112,7 @@ public class MileageTracker extends Activity {
    public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
          case MENU_ADD:
-            Uri uri = MileageProvider.CONTENT_URI;
-            startActivity(new Intent(Intent.ACTION_INSERT, uri));
+            startActivity(new Intent(Intent.ACTION_INSERT, getCurrentProfileURI()));
             return true;
          case MENU_SHOWALL:
             startActivity(new Intent(mContext, EditRecordsMenu.class));
@@ -245,18 +246,21 @@ public class MileageTracker extends Activity {
 
    protected class ShowLargeChart implements OnClickListener {
       private Context mContext;
-      private Intent launcher;
-      private int mID;
+      private Intent  launcher;
+      private int     mID;
+
       ShowLargeChart(Context c, int id) {
          mContext = c;
          mID = id;
-         launcher = new Intent(mContext,ChartViewer.class);
+         launcher = new Intent(mContext, ChartViewer.class);
       }
+
       public void setID(int id) {
          mID = id;
       }
+
       public void onClick(View v) {
-         boolean isUS = MileageData.isMilesGallons(PreferenceManager.getDefaultSharedPreferences(mContext),mContext);
+         boolean isUS = MileageData.isMilesGallons(PreferenceManager.getDefaultSharedPreferences(mContext), mContext);
          launcher.putExtra(ChartViewer.UNITS_KEY, isUS);
          launcher.putExtra(ChartViewer.CHART_KEY, mID);
          startActivity(launcher);

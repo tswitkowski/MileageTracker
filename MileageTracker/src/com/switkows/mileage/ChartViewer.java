@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
@@ -23,7 +25,10 @@ public class ChartViewer extends Activity {
    @Override
    public void onResume() {
       super.onResume();
-       mCursor = managedQuery(MileageProvider.CONTENT_URI, null, null, null, null);
+      String pref = this.getString(R.string.carSelection);
+      String car = PreferenceManager.getDefaultSharedPreferences(this).getString(pref, "Car1");
+      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI, car);
+       mCursor = managedQuery(uri, null, null, null, null);
        mContext = this;
       chartManager = new MileageChartManager(mContext, mCursor);
 

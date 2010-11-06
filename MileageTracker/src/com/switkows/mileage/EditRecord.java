@@ -128,7 +128,7 @@ public class EditRecord extends Activity {
       // getTextFieldStruct(MileageData.TOTAL_PRICE).setEnabled(false);
 
       // Try and grab all of the previously entered gas stations, to make data entry easier
-      Uri uri = MileageProvider.CONTENT_URI;
+      Uri uri = MileageProvider.ALL_CONTENT_URI;
       Cursor cursor = managedQuery(uri, new String[] { "_id", MileageData.ToDBNames[MileageData.STATION] }, null, null,
             null);
       AutoCompleteTextView text = (AutoCompleteTextView) getTextFieldStruct(MileageData.STATION);
@@ -399,13 +399,13 @@ public class EditRecord extends Activity {
       @Override
       public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
          if(constraint == null)
-            return managedQuery(MileageProvider.CONTENT_URI, Columns, null, null, null);
+            return managedQuery(MileageProvider.ALL_CONTENT_URI, Columns, null, null, null);
          // if (getFilterQueryProvider() != null)
          // return getFilterQueryProvider().runQuery(constraint);
          // return managedQuery(MileageProvider.CONTENT_URI,new String[]
          // {ColumnName},ColumnName+" like '%?%'",new String[]
          // {constraint.toString()},null);
-         Cursor cursor = managedQuery(MileageProvider.CONTENT_URI, Columns, ColumnName + " like '%"
+         Cursor cursor = managedQuery(MileageProvider.ALL_CONTENT_URI, Columns, ColumnName + " like '%"
                + constraint.toString() + "%'", null, ColumnName + " DESC");
          return cursor;
       }
