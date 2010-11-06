@@ -17,6 +17,8 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    private Context mContext;
    private final LayoutInflater mInflater;
    private final int idColumn;
+   private final int mileageColumn;
+   private final int dateColumn;
    private final EditRecordsMenu mParent;
 
    /**
@@ -29,9 +31,10 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       mContext = context;
       mParent  = parent;
       mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      idColumn = c.getColumnIndex("_id");
+      idColumn       = c.getColumnIndex("_id");
+      dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
+      mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
    }
-
 
    /**
     * Do not recycle a view if one is already there, if not the data could get corrupted and the checkbox state could be
@@ -53,11 +56,11 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       Cursor cursor = getCursor();
       cursor.moveToPosition(position);
       view.mIDValue = cursor.getLong(idColumn);
-      String date = MileageData.getDateFormatter().format(
-         cursor.getLong(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE])));
-      float mpg = cursor.getFloat(cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]));
-      mpg = MileageData.getEconomy(mpg, getPrefs(), mContext);
-      view.setText(String.format("%s (%2.1f %s)", date, mpg, MileageData.getEconomyUnits(getPrefs(), mContext)));
+//      String date = MileageData.getDateFormatter().format(cursor.getLong(dateColumn));
+//      float mpg = cursor.getFloat(mileageColumn);
+//      mpg = MileageData.getEconomy(mpg, getPrefs(), mContext);
+//      view.setText(String.format("%s (%2.1f %s)", date, mpg, MileageData.getEconomyUnits(getPrefs(), mContext)));
+      view.setText(MileageData.getSimpleDescription(cursor, dateColumn, mileageColumn, getPrefs(), mContext));
       view.setChecked(mSelected.contains(Long.valueOf(view.mIDValue)));
 
       return convertView;
@@ -73,18 +76,21 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    }
 
    public void setSelected(EditRecordListItem item, boolean isSelected) {
-      Long id = Long.valueOf(item.mIDValue);
+      setSelected(item.mIDValue,isSelected);
+   }
+   
+   public void setSelected(long id, boolean isSelected) {
+      Long lID = Long.valueOf(id);
       if(isSelected)
-         mSelected.add(id);
+         mSelected.add(lID);
       else
-         mSelected.remove(id);
-
+         mSelected.remove(lID);
       mParent.handleSelection(mSelected.isEmpty());
    }
 
    public void clearSelected() {
       mSelected.clear();
-      this.notifyDataSetChanged();
+      notifyDataSetChanged();
    }
 
    public HashSet<Long> getSelected() {

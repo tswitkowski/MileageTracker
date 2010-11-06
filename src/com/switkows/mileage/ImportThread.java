@@ -84,7 +84,7 @@ public class ImportThread extends Thread {
             }
             // Log.d("TJS","Read line '"+line+"', date = '"+fields[0]+"'...");
             MileageData record = new MileageData(mContext, fields);
-            mContext.getContentResolver().insert(MileageProvider.CONTENT_URI, record.getContent());
+            mContext.getContentResolver().insert(MileageProvider.ALL_CONTENT_URI, record.getContent());
             lineCount++;
             if(mHandler != null) {
                msg = mHandler.obtainMessage();
@@ -114,7 +114,7 @@ public class ImportThread extends Thread {
    }
 
    public void clearDB(boolean repaint) {
-      mContext.getContentResolver().delete(MileageProvider.CONTENT_URI, null, null);
+      mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
    }
 
    private SharedPreferences prefs;
