@@ -35,7 +35,7 @@ public class ChartViewer extends Activity {
        Intent i = getIntent();
        boolean isUS = i.getBooleanExtra(UNITS_KEY, true);
        int chartID = i.getIntExtra(CHART_KEY, MileageChartManager.NO_CHART);
-      View view = chartManager.createChart(chartID, isUS);
+      View view = chartManager.createChart(chartID, true, isUS);
        addContentView(view, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
    }
 

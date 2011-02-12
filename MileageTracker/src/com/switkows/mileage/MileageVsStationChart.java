@@ -3,6 +3,8 @@ package com.switkows.mileage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.achartengine.GraphicalView;
 import org.achartengine.chart.*;
 import android.content.Context;
 import android.graphics.Color;
@@ -19,7 +21,7 @@ public class MileageVsStationChart extends TimeChartExtension {
 
    public MileageVsStationChart(Context c, MileageData[] data, boolean isUS) {
       super(c, mChartTitles[isUS ? 0 : 1], mUnits[isUS ? 0 : 1], null, null, null, data);
-      analyzeData();
+//      analyzeData();
    }
 
    protected void appendDataToSeries(long date, float[] values) {
@@ -38,6 +40,11 @@ public class MileageVsStationChart extends TimeChartExtension {
       return mXValues;
    }
    
+   @Override
+   public GraphicalView getChart() {
+      analyzeData();
+      return super.getChart();
+   }
    public void analyzeData() {
       mValues = new ArrayList<double[]>();
       mXValues = new ArrayList<double[]>();
@@ -88,7 +95,7 @@ public class MileageVsStationChart extends TimeChartExtension {
          double theseVals[] = new double[valueList.size()];
          double theseTimes[] = new double[valueList.size()];
          for(i=0 ; i<valueList.size() ; i++) {
-            theseVals[i] = valueList.get(i).floatValue();
+            theseVals[i] = valueList.get(i).floatValue() - mNormalize;
             theseTimes[i] = timeList.get(i).doubleValue();
          }
          

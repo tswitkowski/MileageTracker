@@ -100,6 +100,8 @@ public class EditRecord extends Activity {
       submit.setOnClickListener(new Button.OnClickListener() {
          public void onClick(View v) {
             updateDbRow();
+            if(getIntent().hasExtra("starter"))
+               startActivity(new Intent(getApplicationContext(),MileageTracker.class));
             finish();
          }
       });
@@ -148,10 +150,11 @@ public class EditRecord extends Activity {
    protected void onResume() {
       super.onResume();
 
+      String indicator = "("+getPrefs().getString(getString(R.string.carSelection), "Car45")+"):";
       if(isNewRecord)
-         setTitle(getText(R.string.new_record_title));
+         setTitle(getText(R.string.new_record_title)+indicator);
       else
-         setTitle(getText(R.string.edit_record_title));
+         setTitle(getText(R.string.edit_record_title)+indicator);
       // If we didn't have any trouble retrieving the data, it is now
       // time to get at the stuff.
       if(mCursor != null) {

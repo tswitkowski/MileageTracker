@@ -22,11 +22,13 @@ public abstract class TimeChartExtension {
    protected final Context      mContext;
    private final String         mTitle;
    private final String         mYLabel;
+   private boolean              mIsPanZoomable;
    
    protected String[]             mTitles;
    protected int[]                mColors;
    protected PointStyle[]         mStyles;
    protected MileageData[]        mData;
+   protected float                mNormalize = 0;
 
    /**
     * creates the renderer and GraphicalView
@@ -57,8 +59,13 @@ public abstract class TimeChartExtension {
       mDataSet = buildDataset(mTitles, x, values);
       setChartSettings(mRenderer, mTitle, "Date", mYLabel, 0, 100, 0, 100, Color.LTGRAY, Color.GRAY);
       mRenderer.setYLabels(10);
-//      mRenderer.setPanEnabled(false);
-//      mRenderer.setZoomEnabled(false);
+      if(mIsPanZoomable) {
+         mRenderer.setPanEnabled(true,true);
+         mRenderer.setZoomEnabled(true,true);
+      } else {
+         mRenderer.setPanEnabled(false,false);
+         mRenderer.setZoomEnabled(false,false);
+      }
       autoFitChart();
       mView = ChartFactory.getTimeChartView(mContext, mDataSet, mRenderer, "MMM yyyy");
    }
@@ -78,6 +85,14 @@ public abstract class TimeChartExtension {
    
    public void setStyles(PointStyle[] s) {
       mStyles = s;
+   }
+   
+   public void setPanZoomable(boolean setting) {
+      mIsPanZoomable = setting;
+   }
+   
+   public void setNormalizedValue(float value) {
+      mNormalize = value;
    }
 
    /**
@@ -185,9 +200,12 @@ public abstract class TimeChartExtension {
       renderer.setChartTitle(title);
       renderer.setXTitle(xTitle);
       renderer.setYTitle(yTitle);
+//      renderer.setMarginsColor(Color.TRANSPARENT);
+//      renderer.setBackgroundColor(Color.GREEN);
       setRendererBounds(xMin, xMax, yMin, yMax);
       renderer.setAxesColor(axesColor);
       renderer.setLabelsColor(labelsColor);
+      renderer.setShowGrid(false);
    }
 
    protected void autoFitChart() {
@@ -217,6 +235,7 @@ public abstract class TimeChartExtension {
       }
       // Log.d("TJS","xmin="+minX+", xmax="+maxX+", ymin="+minY+", ymax="+maxY);
       setRendererBounds(minX, maxX, minY, maxY);
+      mRenderer.setLegendHeight(((int)((mDataSet.getSeriesCount())/3)+3)*15);
    }
 
    protected void setRendererBounds(double xmin, double xmax, double ymin, double ymax) {

@@ -137,7 +137,7 @@ public class MileageChartManager extends DataSetObserver {
          case PRICE_CHART:
          case MPG_STATION_CHART:
             listener.setID(val);
-            View chart = createChart(val,isUS);
+            View chart = createChart(val,false, isUS);
             chart.setOnClickListener(listener);
             view.addView(chart);
             break;
@@ -145,19 +145,34 @@ public class MileageChartManager extends DataSetObserver {
       view.setVisibility(val == NO_CHART ? View.GONE : View.VISIBLE);
    }
    
-   public View createChart(int chartID, boolean isUS) {
+   public View createChart(int chartID, boolean isPanZoomable, boolean isUS) {
+      TimeChartExtension chart = null;
+//      float average = 0;
       switch(chartID) {
        case MPG_CHART:
-           return new MileageChart(mContext, dataSet, isUS).getChart();
+           chart = new MileageChart(mContext, dataSet, isUS);
+//           average = getAverageMPG();
+           break;
         case MPG_DIFF_CHART:
-           return new MileageDiffChart(mContext, dataSet, isUS).getChart();
+           chart = new MileageDiffChart(mContext, dataSet, isUS);
+//           average = getAverageDiff();
+           break;
         case PRICE_CHART:
-           return new PriceChart(mContext, dataSet, isUS).getChart();
+           chart = new PriceChart(mContext, dataSet, isUS);
+//           average = getAverage(MileageData.PRICE);
+           break;
         case MPG_STATION_CHART:
-           return new MileageVsStationChart(mContext, dataSet, isUS).getChart();
-        default:
-           return null;
+           chart = new MileageVsStationChart(mContext, dataSet, isUS);
+//           average = getAverageMPG();
+           break;
       }
+      if(chart != null) {
+         chart.setPanZoomable(isPanZoomable);
+//         Log.d("TJS","Setting Normalization value to "+average);
+//         chart.setNormalizedValue(average);
+         return chart.getChart();
+      }
+      return null;
    }
    
 }
