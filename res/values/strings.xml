@@ -25,9 +25,9 @@
    <string
       name="mpg_diff_label">MPG Difference:</string>
    <string
-      name="new_record_title">Add Record:</string>
+      name="new_record_title">Add Record</string>
    <string
-      name="edit_record_title">Edit Record:</string>
+      name="edit_record_title">Edit Record</string>
    <string
       name="dbName">mileageInfo</string>
    <string

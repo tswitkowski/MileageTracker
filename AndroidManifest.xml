@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="11"
+      android:versionCode="12"
       android:installLocation="auto"
-      android:versionName="1.5.5" package="com.switkows.mileage">
+      android:versionName="1.5.6" package="com.switkows.mileage">
    <application android:icon="@drawable/mileage_tracker_icon" android:label="@string/app_name" android:debuggable="false">
       <activity android:name=".MileageTracker"
          android:label="@string/app_name">
@@ -18,7 +18,7 @@
 
       <!--  This section is setting up the 'editor' page -->
       <activity android:name="EditRecord"
-         android:label="FIXME"
+         android:label="Edit Record"
          android:theme="@android:style/Theme.Dialog"
       >
             <!-- This filter says that we can view or edit the data of
@@ -30,7 +30,7 @@
             <category android:name="android.intent.category.DEFAULT" />
             <data android:mimeType="vnd.android.cursor.item/vnd.google.mileage" />
          </intent-filter>
-         <intent-filter>
+         <intent-filter android:label="Add Record">
             <action android:name="android.intent.action.INSERT" />
             <category android:name="android.intent.category.DEFAULT" />
             <data android:mimeType="vnd.android.cursor.dir/vnd.google.mileage" />
@@ -44,6 +44,31 @@
       <activity android:name=".ChartViewer"
          android:theme="@android:style/Theme.NoTitleBar"
          android:label="FIXME" />
+         
+      <activity android:name=".ShortcutAddEntry"
+         android:label="Add Mileage Entry">
+         <intent-filter>
+             <action android:name=".Add" />
+             <category android:name="android.intent.category.DEFAULT" />
+         </intent-filter>
+      </activity>
+
+        <!-- It is recommended that you use an activity-alias to provide the "CREATE_SHORTCUT" -->
+        <!-- intent-filter.  This gives you a way to set the text (and optionally the -->
+        <!-- icon) that will be seen in the launcher's create-shortcut user interface. -->
+
+      <activity-alias android:name=".CreateShortcutAddEntry"
+         android:targetActivity=".ShortcutAddEntry"
+         android:label="Add Mileage Entry">
+
+         <!--  This intent-filter allows your shortcuts to be created in the launcher. -->
+         <intent-filter>
+             <action android:name="android.intent.action.CREATE_SHORTCUT" />
+             <category android:name="android.intent.category.DEFAULT" />
+         </intent-filter>
+
+      </activity-alias>
+         
    </application>
 
 
