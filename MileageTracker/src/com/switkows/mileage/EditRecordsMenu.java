@@ -188,7 +188,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       switch(item.getItemId()) {
          case MENU_ADD:
             Uri uri = getIntent().getData();
-            startActivity(new Intent(Intent.ACTION_INSERT, uri));
+            startActivity(new Intent(MileageTracker.ACTION_INSERT, uri));
             return true;
          case MENU_DELETE:
             showDialog(MENU_DELETE);
@@ -264,7 +264,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
    private Uri getURI() {
       String option = getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(option, "Car45");
-      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI,car);
+      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI,car);
       return uri;
    }
    private MileageData[] readAllEntries() {

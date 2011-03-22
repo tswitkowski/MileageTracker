@@ -64,7 +64,7 @@ public class EditRecord extends Activity {
          // mState = STATE_EDIT;
          mUri = intent.getData();
          mCursor = managedQuery(mUri, null, null, null, null);
-      } else if(Intent.ACTION_INSERT.equals(action)) {
+      } else if(MileageTracker.ACTION_INSERT.equals(action)) {
          isNewRecord = true;
          // Requested to insert: set that state, and create a new entry
          // in the container.
@@ -215,7 +215,7 @@ public class EditRecord extends Activity {
    protected void updateDbRow() {
       MileageData data = createDataStructure();
       ContentValues values = data.getContent();
-      if(Intent.ACTION_INSERT.equals(getIntent().getAction()))
+      if(MileageTracker.ACTION_INSERT.equals(getIntent().getAction()))
          getContentResolver().insert(mUri, values);
       else
          getContentResolver().update(mUri, values, "_id = " + mCursor.getInt(mCursor.getColumnIndex("_id")), null);

@@ -47,9 +47,9 @@ public class ShortcutAddEntry extends Activity {
 
       String option = this.getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(option, "Car45");
-      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI, car);
+      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
 
-      Intent shortcutIntent = new Intent(Intent.ACTION_INSERT,uri);
+      Intent shortcutIntent = new Intent(MileageTracker.ACTION_INSERT,uri);
       shortcutIntent.putExtra("starter", "MileageTracker Add Entry shortcut"); //value is don't care. this tells the EditRecord activity to return to the main MileageTracker activity
       shortcutIntent.setFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);  //don't put this action in the 'recent apps' menu
 

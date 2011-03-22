@@ -1,9 +1,12 @@
-package com.switkows.mileage;
+package com.switkows.mileage.Charts;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.achartengine.chart.PointStyle;
+
+import com.switkows.mileage.MileageData;
+
 import android.content.Context;
 import android.graphics.Color;
 

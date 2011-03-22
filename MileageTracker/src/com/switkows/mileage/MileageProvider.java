@@ -20,8 +20,8 @@ public class MileageProvider extends ContentProvider {
    private static final String    DB_TABLE     = "mileageInfo";
    private static final int       DB_VERSION   = 4;
 
-   public static final String     AUTHORITY    = "com.switkows.mileage.MileageProvider";
-   public static final Uri        CONTENT_URI  = Uri.parse("content://" + AUTHORITY + "/car");
+   public static final String     AUTHORITY       = "com.switkows.mileage.MileageProvider";
+   public static final Uri        CAR_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/car");
    public static final Uri        ALL_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/all");
 
    public static final String     CONTENT_TYPE = "vnd.android.cursor.dir/vnd.google.mileage";

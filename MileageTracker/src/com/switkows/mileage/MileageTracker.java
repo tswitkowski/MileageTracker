@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class MileageTracker extends Activity {
+   public static final String ACTION_INSERT = "com.switkows.mileage.INSERT";
    /** Called when the activity is first created. */
    // private static LinearLayout root;
    private static LinearLayout[]    charts;
@@ -94,7 +95,7 @@ public class MileageTracker extends Activity {
    public Uri getCurrentProfileURI() {
       String option = this.getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(mContext).getString(option, "Car45");
-      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI, car);
+      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
       return uri;
    }
 
@@ -112,7 +113,7 @@ public class MileageTracker extends Activity {
    public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
          case MENU_ADD:
-            startActivity(new Intent(Intent.ACTION_INSERT, getCurrentProfileURI()));
+            startActivity(new Intent(ACTION_INSERT, getCurrentProfileURI()));
             return true;
          case MENU_SHOWALL:
             startActivity(new Intent(mContext, EditRecordsMenu.class));

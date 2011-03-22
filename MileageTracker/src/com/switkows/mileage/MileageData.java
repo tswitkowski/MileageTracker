@@ -206,6 +206,10 @@ public class MileageData {
    public float getActualMileage(Context context, SharedPreferences prefs) {
 	   return getEconomy(getActualMileage(), prefs, context);
    }
+   
+   public float getOdometerReading(Context context, SharedPreferences prefs) {
+      return getDistance(getOdometerReading(), prefs, context);
+   }
 
    public static String exportCSVTitle() {
       String str = "";
