@@ -36,6 +36,7 @@
       <item>"Price v Time"</item>
       <item>"%diff v Time"</item>
       <item>"MPG/station v Time"</item>
+      <item>"Miles v Time"</item>
       <item>"None"</item>
    </array>
    <array name="chartValues">
@@ -43,6 +44,7 @@
       <item>"2"</item>
       <item>"1"</item>
       <item>"3"</item>
+      <item>"4"</item>
       <item>"100"</item>
    </array>
 </resources>

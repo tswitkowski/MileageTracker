@@ -27,7 +27,7 @@ public class ChartViewer extends Activity {
       super.onResume();
       String pref = this.getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(pref, "Car1");
-      Uri uri = Uri.withAppendedPath(MileageProvider.CONTENT_URI, car);
+      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
        mCursor = managedQuery(uri, null, null, null, null);
        mContext = this;
       chartManager = new MileageChartManager(mContext, mCursor);

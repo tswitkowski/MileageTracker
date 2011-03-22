@@ -1,4 +1,4 @@
-package com.switkows.mileage;
+package com.switkows.mileage.Charts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,8 @@ import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+
+import com.switkows.mileage.MileageData;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -59,6 +61,7 @@ public abstract class TimeChartExtension {
       mDataSet = buildDataset(mTitles, x, values);
       setChartSettings(mRenderer, mTitle, "Date", mYLabel, 0, 100, 0, 100, Color.LTGRAY, Color.GRAY);
       mRenderer.setYLabels(10);
+      mRenderer.setFitLegend(true);
       if(mIsPanZoomable) {
          mRenderer.setPanEnabled(true,true);
          mRenderer.setZoomEnabled(true,true);
@@ -202,7 +205,7 @@ public abstract class TimeChartExtension {
       renderer.setYTitle(yTitle);
 //      renderer.setMarginsColor(Color.TRANSPARENT);
 //      renderer.setBackgroundColor(Color.GREEN);
-      setRendererBounds(xMin, xMax, yMin, yMax);
+      renderer.setRange(new double[] {xMin,xMax,yMin,yMax});
       renderer.setAxesColor(axesColor);
       renderer.setLabelsColor(labelsColor);
       renderer.setShowGrid(false);
@@ -234,15 +237,10 @@ public abstract class TimeChartExtension {
             maxY = locMaxY;
       }
       // Log.d("TJS","xmin="+minX+", xmax="+maxX+", ymin="+minY+", ymax="+maxY);
-      setRendererBounds(minX, maxX, minY, maxY);
-      mRenderer.setLegendHeight(((int)((mDataSet.getSeriesCount())/3)+3)*15);
-   }
-
-   protected void setRendererBounds(double xmin, double xmax, double ymin, double ymax) {
-      mRenderer.setXAxisMin(xmin);
-      mRenderer.setXAxisMax(xmax);
-      mRenderer.setYAxisMin(ymin);
-      mRenderer.setYAxisMax(ymax);
+      double [] range = {minX, maxX, minY, maxY};
+      mRenderer.setRange(range);
+      mRenderer.setInitialRange(range);
+//      mRenderer.setLegendHeight(((int)((mDataSet.getSeriesCount())/3)+3)*15);
    }
 
    /**

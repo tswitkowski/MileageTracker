@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
+import com.switkows.mileage.Charts.*;
 
 /**
  * This class holds all charts that will be rentered for this application.
@@ -24,7 +25,7 @@ public class MileageChartManager extends DataSetObserver {
    private MileageData[]        dataSet;
    private SharedPreferences    prefs;
 
-   public static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2, MPG_STATION_CHART = 3, NO_CHART = 100;
+   public static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2, MPG_STATION_CHART = 3, ODO_CHART = 4, NO_CHART = 100;
 
    public MileageChartManager(Context c, Cursor cursor) {
       mContext = c;
@@ -136,6 +137,7 @@ public class MileageChartManager extends DataSetObserver {
          case MPG_DIFF_CHART:
          case PRICE_CHART:
          case MPG_STATION_CHART:
+         case ODO_CHART:
             listener.setID(val);
             View chart = createChart(val,false, isUS);
             chart.setOnClickListener(listener);
@@ -164,6 +166,9 @@ public class MileageChartManager extends DataSetObserver {
         case MPG_STATION_CHART:
            chart = new MileageVsStationChart(mContext, dataSet, isUS);
 //           average = getAverageMPG();
+           break;
+        case ODO_CHART:
+           chart = new MilesChart(mContext, dataSet, isUS);
            break;
       }
       if(chart != null) {
