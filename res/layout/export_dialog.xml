@@ -4,7 +4,6 @@
    android:orientation="vertical"
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
-   android:background="#ff000000"
    android:id="@+id/root">
    <AutoCompleteTextView
       android:layout_width="fill_parent"

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
    <string
-      name="hello">Hello World, Starter!</string>
-   <string
       name="app_name">Mileage Tracker</string>
    <string
       name="odo_label">Odometer Reading:</string>
@@ -29,22 +27,14 @@
    <string
       name="edit_record_title">Edit Record</string>
    <string
-      name="dbName">mileageInfo</string>
-   <string
       name="initDb">CREATE TABLE mileageInfo (_id INTEGER PRIMARY KEY
       AUTOINCREMENT, carName TEXT, date INTEGER, station TEXT, odometer
       DOUBLE, trip DOUBLE, gallons, DOUBLE, price DOUBLE, compMileage
       DOUBLE, actMileage DOUBLE, totalPrice DOUBLE, mileageDiff DOUBLE);</string>
    <string
-      name="dbVersion4NewFields">carName TEXT</string>
-   <string
       name="upgradeDBfrom3To4">ALTER TABLE mileageInfo ADD COLUMN carName TEXT;</string>
    <string
       name="clearDb">DROP TABLE mileageInfo;</string>
-   <string
-      name="greeting">Hey There, from my Mileage-Tracker application! I may (or may
-      not) add more plots here, but this is the simple starter
-      application.</string>
    <string
       name="confirm_delete">Delete the following records?</string>
    <string
@@ -60,4 +50,9 @@
    <string name="chart1Selection">chart1Selection</string>
    <string name="chart2Selection">chart2Selection</string>
    <string name="chart3Selection">chart3Selection</string>
+   <string name="deselectButton">Deselect</string>
+   <string name="deleteButton">Delete</string>
+   <string name="submitButton">Submit Modifications</string>
+   <string name="averageEcoLabel">Average economy: </string>
+   <string name="unknownValue">\??</string>
 </resources>

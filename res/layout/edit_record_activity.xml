@@ -28,13 +28,13 @@
          android:layout_width="0dip"
          android:layout_height="match_parent"
          android:layout_weight="1"
-         android:text="Deselect" /> 
+         android:text="@string/deselectButton" /> 
  
       <Button
          android:id="@+id/button_delete"
          android:layout_width="0dip"
          android:layout_height="match_parent"
          android:layout_weight="1"
-         android:text="Delete" /> 
+         android:text="@string/deleteButton" />
    </LinearLayout> 
 </LinearLayout> 
