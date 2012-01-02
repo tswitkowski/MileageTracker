@@ -21,5 +21,7 @@
       <item name="android:windowBackground">@drawable/translucent_background</item>
       <item name="android:colorForeground">#fff</item>
    </style>
+   <style name="Theme.Dialog" parent="android:style/Theme.Dialog">
+   </style>
        
 </resources>

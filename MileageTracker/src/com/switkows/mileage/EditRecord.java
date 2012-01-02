@@ -144,6 +144,10 @@ public class EditRecord extends Activity {
       // dataSet[i] = new MileageData(mContext,mCursor);
       //
       // }
+      //FIXME - seems like a hack to get the dialog to stretch to the proper width:
+      LayoutParams params = getWindow().getAttributes();
+      params.width = LayoutParams.FILL_PARENT;
+      getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
    }
 
    @Override
