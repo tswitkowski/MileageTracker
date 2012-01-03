@@ -26,6 +26,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -45,8 +46,7 @@ import android.widget.Toast;
 
 public class EditRecordsMenu extends ListActivity implements AnimationListener, android.view.View.OnClickListener {
 
-   private static final int MENU_ADD = 0, MENU_CLEAR = 1, MENU_EXPORT = 3, MENU_IMPORT = 4, PERFORM_IMPORT = 7,
-         MENU_DELETE = 5, MENU_MODIFY = 6, MENU_PREFS = 8;
+   private static final int PERFORM_IMPORT = 7, MENU_DELETE = 5, MENU_MODIFY = 6;
 
    // 'global' fields for handling Import of data within a separate thread
    protected ImportThread   iThread;
@@ -174,35 +174,31 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
       super.onCreateOptionsMenu(menu);
-      menu.add(0, MENU_ADD, 0, "Add Entry").setIcon(android.R.drawable.ic_menu_add);
-      menu.add(0, MENU_CLEAR, 0, "Clear Data").setIcon(android.R.drawable.ic_menu_close_clear_cancel);
-      menu.add(0, MENU_EXPORT, 0, "Export").setIcon(android.R.drawable.ic_menu_save);
-      menu.add(0, MENU_IMPORT, 0, "Import").setIcon(android.R.drawable.ic_menu_upload);
-      menu.add(0, MENU_PREFS, 0, "Preferences").setIcon(android.R.drawable.ic_menu_preferences);
-
+	  MenuInflater inflater = getMenuInflater();
+	  inflater.inflate(R.menu.database_menu, menu);
       return true;
    }
 
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
-         case MENU_ADD:
+         case R.id.add_item:
             Uri uri = getIntent().getData();
             startActivity(new Intent(MileageTracker.ACTION_INSERT, uri));
             return true;
          case MENU_DELETE:
             showDialog(MENU_DELETE);
             return true;
-         case MENU_CLEAR:
+         case R.id.clear_database:
             clearDB();
             return true;
-         case MENU_EXPORT: // don't show dialog if the SDcard is not installed.
-         case MENU_IMPORT: // It'll issue a Toast-based message, though
+         case R.id.export_csv: // don't show dialog if the SDcard is not installed.
+         case R.id.import_csv: // It'll issue a Toast-based message, though
             checkSDState(item.getItemId());
             return true;
-         case MENU_PREFS: {
+         case R.id.preferences: {
             // Launch preferences activity
-            startActivityForResult(new Intent(this, EditPreferences.class), MENU_PREFS);
+            startActivityForResult(new Intent(this, EditPreferences.class), R.id.preferences);
             return true;
          }
       }
@@ -223,7 +219,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       switch(id) {
          case MENU_DELETE:
             return new DeleteConfirm(this);
-         case MENU_IMPORT:
+         case R.id.import_csv:
             return new ImportDialog(this);
          case PERFORM_IMPORT:
             iProgress = new ProgressDialog(this);
@@ -232,7 +228,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
             iProgress.setCancelable(false);
             // Thread started below, in onPrepareDialog
             return iProgress;
-         case MENU_EXPORT:
+         case R.id.export_csv:
             return new ExportDialog(this);
       }
       Log.i("TJS", "Got here. should not have!");
@@ -246,10 +242,10 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
          case MENU_DELETE:
             ((DeleteConfirm) dialog).computeMessage();
             break;
-         case MENU_IMPORT:
+         case R.id.import_csv:
             dialog = new ImportDialog(this);
             break;
-         case MENU_EXPORT:
+         case R.id.export_csv:
             dialog = new ExportDialog(this);
             break;
       }
