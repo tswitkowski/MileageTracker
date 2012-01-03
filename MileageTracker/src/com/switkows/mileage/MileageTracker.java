@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -99,26 +100,23 @@ public class MileageTracker extends Activity {
       return uri;
    }
 
-   private static final int MENU_ADD = 0, MENU_SHOWALL = 2, MENU_PREFS = 3;
-
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
-      menu.add(0, MENU_ADD, 0, "Add Entry").setIcon(android.R.drawable.ic_menu_add);
-      menu.add(0, MENU_SHOWALL, 0, "Modify Data").setIcon(android.R.drawable.ic_menu_edit);
-      menu.add(0, MENU_PREFS, 0, "Preferences").setIcon(android.R.drawable.ic_menu_preferences);
+	  MenuInflater inflater = getMenuInflater();
+	  inflater.inflate(R.menu.main_menu, menu);
       return true;
    }
 
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
-         case MENU_ADD:
+         case R.id.add_item:
             startActivity(new Intent(ACTION_INSERT, getCurrentProfileURI()));
             return true;
-         case MENU_SHOWALL:
+         case R.id.show_data:
             startActivity(new Intent(mContext, EditRecordsMenu.class));
             return true;
-         case MENU_PREFS:
+         case R.id.preferences:
             startActivity(new Intent(mContext, EditPreferences.class));
             return true;
       }

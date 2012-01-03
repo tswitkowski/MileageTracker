@@ -14,6 +14,7 @@ import org.achartengine.renderer.XYSeriesRenderer;
 import com.switkows.mileage.MileageData;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 
 public abstract class TimeChartExtension {
@@ -65,6 +66,9 @@ public abstract class TimeChartExtension {
       if(mIsPanZoomable) {
          mRenderer.setPanEnabled(true,true);
          mRenderer.setZoomEnabled(true,true);
+         Configuration config = mContext.getResources().getConfiguration();
+         if(config.touchscreen == Configuration.TOUCHSCREEN_NOTOUCH)
+        	 mRenderer.setZoomButtonsVisible(true);
       } else {
          mRenderer.setPanEnabled(false,false);
          mRenderer.setZoomEnabled(false,false);
