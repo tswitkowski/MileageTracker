@@ -1,9 +1,7 @@
 package com.switkows.mileage;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
-import java.io.PrintWriter;
 import java.util.HashSet;
 
 
@@ -18,10 +16,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -46,12 +43,12 @@ import android.widget.Toast;
 
 public class EditRecordsMenu extends ListActivity implements AnimationListener, android.view.View.OnClickListener {
 
-   private static final int PERFORM_IMPORT = 7, MENU_DELETE = 5, MENU_MODIFY = 6;
+   private static final int PERFORM_EXPORT = 8, PERFORM_IMPORT = 7, MENU_DELETE = 5, MENU_MODIFY = 6;
 
    // 'global' fields for handling Import of data within a separate thread
-   protected ImportThread   iThread;
-   protected ProgressDialog iProgress;
-   protected final Handler  iHandler = new ImportProgressHandler();
+   protected DataImportThread   iThread;
+   protected final ImportExportProgressHandler iHandler = new ImportExportProgressHandler(this, PERFORM_IMPORT);
+   protected final ImportExportProgressHandler eHandler = new ImportExportProgressHandler(this, PERFORM_EXPORT);
    protected LinearLayout   mFooter;
    private EditRecordsListAdapter mAdapter;
 
@@ -89,7 +86,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
 
       // restore ImportThread pointer, if we got here by way of an orientation change
       if(getLastNonConfigurationInstance() != null) {
-         iThread = (ImportThread) getLastNonConfigurationInstance();
+         iThread = (DataImportThread) getLastNonConfigurationInstance();
          iThread.setHandler(iHandler);
       }
    }
@@ -104,6 +101,9 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       getIntent().setData(getURI());
       Cursor c = managedQuery(getIntent().getData(), null, null, null, null);
       mAdapter.changeCursor(c);
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+         getActionBar().setDisplayHomeAsUpEnabled(true);
+      }
    }
 
    // Save the import worker thread, so re-launching the program
@@ -201,6 +201,10 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
             startActivityForResult(new Intent(this, EditPreferences.class), R.id.preferences);
             return true;
          }
+         case android.R.id.home: {
+            startActivity(new Intent(this,MileageTracker.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+            return true;
+         }
       }
       return false;
    }
@@ -216,18 +220,27 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
 
    @Override
    protected Dialog onCreateDialog(int id) {
+      ProgressDialog dialog;
       switch(id) {
          case MENU_DELETE:
             return new DeleteConfirm(this);
          case R.id.import_csv:
             return new ImportDialog(this);
          case PERFORM_IMPORT:
-            iProgress = new ProgressDialog(this);
-            iProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            iProgress.setMessage("Importing Data...");
-            iProgress.setCancelable(false);
+            dialog = new ProgressDialog(this);
+            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            dialog.setMessage("Importing Data...");
+            dialog.setCancelable(false);
+            iHandler.setDialog(dialog);
             // Thread started below, in onPrepareDialog
-            return iProgress;
+            return dialog;
+         case PERFORM_EXPORT:
+            dialog = new ProgressDialog(this);
+            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            dialog.setMessage("Exporting Data...");
+            dialog.setCancelable(false);
+            eHandler.setDialog(dialog);
+            return dialog;
          case R.id.export_csv:
             return new ExportDialog(this);
       }
@@ -262,15 +275,6 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(option, "Car45");
       Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI,car);
       return uri;
-   }
-   private MileageData[] readAllEntries() {
-      Cursor cursor = getContentResolver().query(MileageProvider.ALL_CONTENT_URI, null, null, null, null);
-      MileageData[] allData = new MileageData[cursor.getCount()];
-      for(int i = 0; i < allData.length; i++) {
-         cursor.moveToPosition(i);
-         allData[i] = new MileageData(getApplicationContext(), cursor);
-      }
-      return allData;
    }
 
    protected void deleteSelected() {
@@ -341,30 +345,6 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
 
    public void onAnimationStart(Animation animation) { }
 
-   protected void exportFile(String filename) {
-      File loc = Environment.getExternalStorageDirectory();
-      // Log.d("TJS",Environment.getExternalStorageState());
-      File csv_file = new File(loc, filename);
-      // Log.d("TJS","File exists: " + csv_file.exists());
-      // Log.d("TJS","is file: " + csv_file.isFile());
-      // Log.d("TJS","is writeable: " + csv_file.canWrite());
-      try {
-         // FileOutputStream stream = new FileOutputStream(csv_file);
-         // PrintWriter writer = new PrintWriter(stream);
-         PrintWriter writer = new PrintWriter(csv_file);
-         MileageData[] data = readAllEntries();
-         writer.println(MileageData.exportCSVTitle());
-         for(MileageData word : data)
-            writer.println(word.exportCSV());
-         writer.close();
-         Toast.makeText(this, "Data Successfully Saved to " + filename, Toast.LENGTH_LONG).show();
-
-      } catch (FileNotFoundException e) {
-         Log.e("TJS", e.toString());
-         Toast.makeText(this, "Error! could not access/write " + filename, Toast.LENGTH_LONG).show();
-      }
-   }
-
    protected String[] getCSVFiles() {
       String state = Environment.getExternalStorageState();
       if(state.equals(Environment.MEDIA_MOUNTED)) {
@@ -418,7 +398,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
          public void onClick(View v) {
             String name = (String) filename.getSelectedItem();
             dismiss();
-            iThread = new ImportThread(iHandler, getContext(), name);
+            iThread = new DataImportThread(iHandler, getContext(), Environment.getExternalStorageDirectory(), name);
             iThread.start();
             showDialog(PERFORM_IMPORT);
          }
@@ -438,7 +418,7 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
             filename.setAdapter(adapter);
             for(String file : files)
                adapter.add(file);
-         } else {
+         } else {   //FIXME - this will never fire! check files.length, and display an error message!
             filename = null;
             confirm = null;
             dismiss();
@@ -451,13 +431,13 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
       private final Button               confirm;
       private final View.OnClickListener exportListener = new ExportListener();
 
-      // FIXME - it might be good to make this appear very similar to the import listener (that is, start a new
-      // thread, and present the user with a progress dialog)
       private class ExportListener implements View.OnClickListener {
          public void onClick(View v) {
             String name = filename.getText().toString();
-            exportFile(name);
             dismiss();
+            DataExportThread exporter = new DataExportThread(eHandler,getContext(),Environment.getExternalStorageDirectory(), name);
+            exporter.start();
+            showDialog(PERFORM_EXPORT);
          }
       }
 
@@ -472,34 +452,6 @@ public class EditRecordsMenu extends ListActivity implements AnimationListener, 
          ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line,
                files);
          filename.setAdapter(adapter);
-      }
-   }
-
-   private class ImportProgressHandler extends Handler {
-      @Override
-      public void handleMessage(Message m) {
-         Bundle data = m.getData();
-         if(data.containsKey(ImportThread.IMPORT_MAX_STR)) {
-            // iProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            iProgress.setProgress(0);
-            iProgress.setMax(data.getInt(ImportThread.IMPORT_MAX_STR));
-         }
-         if(data.containsKey(ImportThread.IMPORT_PROGRESS_STR))
-            iProgress.setProgress(data.getInt(ImportThread.IMPORT_PROGRESS_STR));
-         else if(data.containsKey(ImportThread.IMPORT_FINISHED_STR)) {
-            iProgress.setProgress(iProgress.getMax()); // might not be
-            // worth updating
-            // this, but put
-            // it here, just
-            // in case
-            dismissDialog(PERFORM_IMPORT);
-            if(mAdapter != null)
-               mAdapter.getCursor().requery();
-            iThread = null;
-            Toast
-                  .makeText(getApplicationContext(), data.getString(ImportThread.IMPORT_FINISHED_STR),
-                        Toast.LENGTH_LONG).show();
-         }
       }
    }
 
