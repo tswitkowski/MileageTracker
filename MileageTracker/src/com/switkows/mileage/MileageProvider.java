@@ -1,5 +1,6 @@
 package com.switkows.mileage;
 
+import android.app.backup.BackupManager;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -30,6 +31,8 @@ public class MileageProvider extends ContentProvider {
    public static final int        ALL_CAR      = 0, ONE = 1, SPECIFIC_CAR = 2;
 
    private SharedPreferences      prefs;
+   private BackupManager          mBackup;
+   private boolean                mSuppressBackupUpdate;
 
    public static final UriMatcher sriMatcher;
    static {
@@ -44,7 +47,9 @@ public class MileageProvider extends ContentProvider {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
+      mBackup   = new BackupManager(getContext());
       mDatabase = new MileageDataSet(getContext());
+      mSuppressBackupUpdate = false;
       return true;
    }
 
@@ -72,6 +77,8 @@ public class MileageProvider extends ContentProvider {
       getContext().getContentResolver().notifyChange(uri, null);
       //FIXME - try to get rid of this. it's probably not needed..
       getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
+      if(count>0 && !mSuppressBackupUpdate)
+         mBackup.dataChanged();
       return count;
    }
 
@@ -86,6 +93,15 @@ public class MileageProvider extends ContentProvider {
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
+   }
+
+   @Override
+   public int bulkInsert(Uri uri, ContentValues[] values) {
+      // TODO Auto-generated method stub
+      mSuppressBackupUpdate = true;
+      int result = super.bulkInsert(uri, values);
+      mSuppressBackupUpdate = false;
+      return result;
    }
 
    @Override
@@ -107,6 +123,8 @@ public class MileageProvider extends ContentProvider {
          getContext().getContentResolver().notifyChange(noteUri, null);
          //FIXME - try to get rid of this. it's probably not needed..
          getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
+         if(!mSuppressBackupUpdate)
+            mBackup.dataChanged();
          return noteUri;
       }
       throw new SQLException("Failed to insert row into " + uri);
@@ -183,6 +201,8 @@ public class MileageProvider extends ContentProvider {
       getContext().getContentResolver().notifyChange(uri, null);
       //FIXME - try to get rid of this. it's probably not needed..
       getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
+      if(count>0 && !mSuppressBackupUpdate)
+         mBackup.dataChanged();
       return count;
    }
 

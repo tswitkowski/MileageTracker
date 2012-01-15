@@ -1,7 +1,6 @@
 package com.switkows.mileage;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -19,7 +18,6 @@ public class ChartViewer extends Activity {
    public static final String UNITS_KEY = "units";
    public static final String CHART_KEY = "chartID";
    private Cursor mCursor;
-   private Context mContext;
    private MileageChartManager chartManager;
 
    @Override
@@ -29,8 +27,7 @@ public class ChartViewer extends Activity {
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(pref, "Car1");
       Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
        mCursor = managedQuery(uri, null, null, null, null);
-       mContext = this;
-      chartManager = new MileageChartManager(mContext, mCursor);
+      chartManager = new MileageChartManager(this, mCursor);
 
        Intent i = getIntent();
        boolean isUS = i.getBooleanExtra(UNITS_KEY, true);
