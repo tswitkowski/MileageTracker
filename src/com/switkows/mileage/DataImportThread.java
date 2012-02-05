@@ -7,60 +7,59 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
-public class DataImportThread extends Thread {
-   Handler                    mHandler;
+public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    Context                    mContext;
-   String                     mFile;
-   File                       mDir;
+   private boolean            mShow;                //set to true to show the dialog box
+   String                     mFile;                //short file name (used for toast/log messages only)
+   private int                mMax;                 //holds the maximum value of the progress bar
+   private boolean            mShowIndeterminate;   //set to TRUE to show progress bar as indeterminate
+   
+   private ProgressDialog     mDialog;
+   private final EditRecordsListAdapter  mAdapter;
 
-   DataImportThread(Handler h, Context c, File dir, String f) {
-      mHandler  = h;
-      mContext  = c;
-      mFile     = f;
-      mDir      = dir;
-      // Log.d("TJS","Created ImportThread...");
+   public DataImportThread(Context context, EditRecordsListAdapter adapter) {
+      this(context,true,adapter);
    }
-
-   public void setHandler(Handler h) {
-      mHandler = h;
+   public DataImportThread(boolean showDialog) {
+      this(null,showDialog,null);
+   }
+   public DataImportThread(Context context, boolean showDialog, EditRecordsListAdapter adapter) {
+      mContext  = context;
+      mShow     = showDialog;
+      mAdapter  = adapter;
+      mMax      = 100;
    }
 
    @Override
-   public void run() {
-      // Log.d("TJS","Started ImportThread");
-      File in_file = new File(mDir, mFile);
-      String importMessage = "Error! could not access/read " + mFile;
+   protected Boolean doInBackground(File... params) {
+      if(params.length != 1)
+         return false;
+      File in_file = params[0];
+      mFile = in_file.getName();
       try {
          BufferedReader reader = new BufferedReader(new FileReader(in_file));
          String line;
-         clearDB(false);
-         int totalLineCount = 0;
-         while(reader.ready()) {
-            reader.readLine();
-            totalLineCount++;
-         }
-         Message msg;
-         Bundle b;
-         if(mHandler != null) {
-            msg = mHandler.obtainMessage();
-            b = new Bundle();
-            b.putInt(ImportExportProgressHandler.MAX_KEY, totalLineCount);
-            msg.setData(b);
-            mHandler.sendMessage(msg);
-         }
-
-         reader = new BufferedReader(new FileReader(in_file));
-         int lineCount = 0;
+         clearDB();
+         mMax = 0;
+         mShowIndeterminate = false;
+         Integer lineCount = 0;
          String currentCar = PreferenceManager.getDefaultSharedPreferences(mContext).getString(mContext.getString(R.string.carSelection), "Car45");
          ArrayList<ContentValues> newEntries = new ArrayList<ContentValues>();
+         while(reader.ready()) {
+            reader.readLine();
+            mMax++;
+         }
+         reader.close();
+         reader = new BufferedReader(new FileReader(in_file));
          while(reader.ready()) {
             line = reader.readLine();
             String[] fields = line.split(",");
@@ -85,14 +84,7 @@ public class DataImportThread extends Thread {
             MileageData record = new MileageData(mContext, fields);
             newEntries.add(record.getContent());
             lineCount++;
-            if(mHandler != null) {
-               msg = mHandler.obtainMessage();
-               b = new Bundle();
-               b.putInt(ImportExportProgressHandler.CURRENT_KEY, lineCount);
-               b.putInt(ImportExportProgressHandler.MAX_KEY, totalLineCount);
-               msg.setData(b);
-               mHandler.sendMessage(msg);
-            }
+            publishProgress(lineCount);
          }
          if(newEntries.size()>0) {
             ContentValues[] additions = new ContentValues[newEntries.size()];
@@ -100,24 +92,92 @@ public class DataImportThread extends Thread {
             mContext.getContentResolver().bulkInsert(MileageProvider.ALL_CONTENT_URI, additions);
          }
          reader.close();
-         importMessage = "Data Successfully imported from " + mFile;
-         Log.d("TJS", importMessage);
       } catch (FileNotFoundException e) {
          Log.e("TJS", e.toString());
       } catch (IOException e) {
          Log.e("TJS", e.toString());
       }
-      // Toast.makeText(this, importMessage, Toast.LENGTH_LONG);
-      if(mHandler != null) {
-         Message msg = mHandler.obtainMessage();
-         Bundle b = new Bundle();
-         b.putString(ImportExportProgressHandler.FINISHED_KEY, importMessage);
-         msg.setData(b);
-         mHandler.sendMessage(msg);
+      return true;
+   }
+
+   @Override
+   protected void onProgressUpdate(Integer... values) {
+      super.onProgressUpdate(values);
+      if(mShow) {
+         mDialog.setProgress(values[0].intValue());
+         if(values[0].intValue()>=mMax-1)
+            mShowIndeterminate = true;
+         updateProgressConfig();
+      }
+   }
+   @Override
+   protected void onPreExecute() {
+      super.onPreExecute();
+      createDialog();
+   }
+   @Override
+   protected void onPostExecute(Boolean result) {
+      super.onPostExecute(result);
+      if(mShow) {
+         String importMessage;
+         if(result)
+            importMessage = "Data Successfully imported from " + mFile;
+         else
+            importMessage = "Error! could not access/read " + mFile;
+   
+         Log.d("TJS", importMessage);
+         Toast.makeText(mContext, importMessage, Toast.LENGTH_LONG).show();
+         if(mAdapter!=null)
+            mAdapter.getCursor().requery();
+         if(mShow && mDialog!=null)
+            mDialog.dismiss();
+      } else {
+         Log.d("TJS","Data Successfully imported..");
+      }
+   }
+   public void clearDB() {
+      mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
+   }
+
+   private void createDialog() {
+      if(mShow) {
+         mDialog = new ProgressDialog(mContext);
+         mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+         mDialog.setMessage("Importing Data...");
+         mDialog.setCancelable(false);
+         updateProgressConfig();
+         mDialog.show();
       }
    }
 
-   public void clearDB(boolean repaint) {
-      mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
+   /**
+    * Updates the dialog configuration (i.e. can switch back and forth between indeterminate/determinate)
+    */
+   private void updateProgressConfig() {
+      if(mShowIndeterminate) {
+         mDialog.setIndeterminate(true);
+         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            mDialog.setProgressNumberFormat(null);
+            mDialog.setProgressPercentFormat(null);
+         }
+      } else {
+         mDialog.setMax(mMax);
+      }
+   }
+
+   /**
+    * Call once your activity is back in the foreground, and the thread can be 'resumed'
+    */
+   public void restart() {
+      createDialog();
+   }
+
+   /**
+    * Call when you need to 'suspend' the thread, due to activity going to background, orientation change, etc
+    */
+   public void pause() {
+      if(mDialog!=null)
+         mDialog.dismiss();
+      mDialog = null;
    }
 }

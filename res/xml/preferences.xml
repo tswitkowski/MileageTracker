@@ -8,6 +8,11 @@
       android:defaultValue="Car1"
       android:entries="@array/carArray"
       android:entryValues="@array/carValues" />
+   <PreferenceScreen
+           android:title="@string/editProfilePreferenceTitle"
+           android:summary="Define Car name(s)">
+       <intent android:action="com.switkows.mileage.EditProfiles"/>
+   </PreferenceScreen>
    <ListPreference
       android:key="@string/unitSelection"
       android:title="Select Units"

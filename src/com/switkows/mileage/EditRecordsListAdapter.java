@@ -2,9 +2,12 @@ package com.switkows.mileage;
 
 import java.util.HashSet;
 
+import com.switkows.mileage.EditRecordsMenu.EditRecordsMenuFragment;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +22,15 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    private final int idColumn;
    private final int mileageColumn;
    private final int dateColumn;
-   private final EditRecordsMenu mParent;
+   private long      mViewedId;
+   private final EditRecordsMenuFragment mParent;
 
    /**
     *
     * @param context
     *           - Render context
     */
-   public EditRecordsListAdapter(Context context, EditRecordsMenu parent, Cursor c, String[] from, int[] to) {
+   public EditRecordsListAdapter(Context context, EditRecordsMenuFragment parent, Cursor c, String[] from, int[] to) {
       super(context, R.layout.record_list_item, c, from, to);
       mContext = context;
       mParent  = parent;
@@ -34,6 +38,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       idColumn       = c.getColumnIndex("_id");
       dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
       mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
+      mViewedId      = -1;
    }
 
    /**
@@ -56,12 +61,17 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       Cursor cursor = getCursor();
       cursor.moveToPosition(position);
       view.mIDValue = cursor.getLong(idColumn);
+      view.mPosition = position;
 //      String date = MileageData.getDateFormatter().format(cursor.getLong(dateColumn));
 //      float mpg = cursor.getFloat(mileageColumn);
 //      mpg = MileageData.getEconomy(mpg, getPrefs(), mContext);
 //      view.setText(String.format("%s (%2.1f %s)", date, mpg, MileageData.getEconomyUnits(getPrefs(), mContext)));
       view.setText(MileageData.getSimpleDescription(cursor, dateColumn, mileageColumn, getPrefs(), mContext));
       view.setChecked(mSelected.contains(Long.valueOf(view.mIDValue)));
+      //FIXME - can't the ListView do this automatically?
+      //set the 'activated' state, which will cause the UI to add special styling in dualPane mode
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+         view.setActivated(mViewedId >= 0 && view.mIDValue==mViewedId);
 
       return convertView;
    }
@@ -75,25 +85,20 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       return prefs;
    }
 
-   public void setSelected(EditRecordListItem item, boolean isSelected) {
-      setSelected(item.mIDValue,isSelected);
-   }
-   
-   public void setSelected(long id, boolean isSelected) {
+   public void setSelected(long id, int position, boolean isSelected) {
       Long lID = Long.valueOf(id);
       if(isSelected)
          mSelected.add(lID);
       else
          mSelected.remove(lID);
-      mParent.handleSelection(mSelected.isEmpty());
+      mParent.handleSelection(mSelected.isEmpty(),position,isSelected);
    }
 
    public void clearSelected() {
       mSelected.clear();
-      notifyDataSetChanged();
    }
 
-   public HashSet<Long> getSelected() {
-      return mSelected;
+   public void setViewedItem(long id) {
+      mViewedId = id;
    }
 }
