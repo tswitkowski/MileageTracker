@@ -2,18 +2,19 @@
 <com.switkows.mileage.EditRecordListItem
    xmlns:android="http://schemas.android.com/apk/res/android"
    android:orientation="horizontal"
+   android:background="@drawable/edit_record_list_background"
    android:layout_width="fill_parent"
-   android:layout_height="wrap_content"
-   android:longClickable="true"
-   android:clickable="true">
+   android:layout_height="wrap_content">
    <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@android:id/text1"
+      android:focusable="false"
       android:layout_weight="1" />
    <CheckBox
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@android:id/checkbox"
+      android:focusable="false"
       android:layout_weight="0" />
 </com.switkows.mileage.EditRecordListItem>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item
+	    android:id="@+id/delete_entry"
+	    android:title="Delete Entry"
+	    android:showAsAction="always"
+	    android:icon="@android:drawable/ic_menu_delete"></item>
+	<item
+	    android:id="@+id/move_entry"
+	    android:title="Move Entry to other account"
+	    android:showAsAction="always"
+	    android:icon="@android:drawable/ic_menu_set_as"></item>
+	<item
+	    android:id="@+id/select_all"
+	    android:title="Select All"
+	    android:showAsAction="ifRoom|withText"></item>
+</menu>

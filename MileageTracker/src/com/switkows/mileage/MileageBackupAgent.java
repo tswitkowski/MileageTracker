@@ -1,5 +1,6 @@
 package com.switkows.mileage;
 
+import java.io.File;
 import java.io.IOException;
 
 import android.app.backup.BackupAgentHelper;
@@ -15,7 +16,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
 
    //using com.switkows.mileage_preferences because this is the 'default' naming convention for the preferences file
    static final String mPrefs     = "com.switkows.mileage_preferences";    //name of preferences XML file
-   static final String mPrefKey   = "mileage_pref_key"; //just a label to give the backup data
+   static final String mPrefKey   = "mileage_prefs"; //just a label to give the backup data
 	
    static final String mDataFile  = "export.csv";
    static final String mDataKey   = "mileage_data";
@@ -32,9 +33,14 @@ public class MileageBackupAgent extends BackupAgentHelper {
    @Override
    public void onRestore(BackupDataInput data, int appVersionCode,
          ParcelFileDescriptor newState) throws IOException {
-      super.onRestore(data, appVersionCode, newState);
-      DataImportThread thread = new DataImportThread(null, this, getFilesDir(), mDataFile);
-      thread.run();
+      try {
+         super.onRestore(data, appVersionCode, newState);
+         new DataImportThread(getApplicationContext(),false,null).execute(new File(getFilesDir(), mDataFile));
+      } catch(IOException e) {
+         e.printStackTrace();
+      } catch(IllegalStateException e) {
+         e.printStackTrace();
+      }
       //FIXME - delete file after import
    }
 
@@ -49,8 +55,8 @@ public class MileageBackupAgent extends BackupAgentHelper {
       
       @Override
       public void performBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) {
-         DataExportThread exporter = new DataExportThread(mContext,mContext.getFilesDir(),mDataFile,false);
-         exporter.run();  //write out all data to export.xml
+         DataExportThread exporter = new DataExportThread(mContext,false);
+         exporter.execute(new File(mContext.getFilesDir(),mDataFile));  //write out all data to export.xml
          super.performBackup(oldState, data, newState);
          //FIXME - delete file after backup is complete (will we know when it is?)
       }

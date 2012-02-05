@@ -19,16 +19,18 @@ import android.util.Log;
 public class MileageProvider extends ContentProvider {
    private static final String    DB_FILENAME  = "mileage_db";
    private static final String    DB_TABLE     = "mileageInfo";
-   private static final int       DB_VERSION   = 4;
+   private static final String    PROFILE_TABLE= "mileageProfiles";
+   private static final int       DB_VERSION   = 5;
 
    public static final String     AUTHORITY       = "com.switkows.mileage.MileageProvider";
    public static final Uri        CAR_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/car");
    public static final Uri        ALL_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/all");
+   public static final Uri        CAR_PROFILE_URI = Uri.parse("content://" + AUTHORITY + "/profile");
 
    public static final String     CONTENT_TYPE = "vnd.android.cursor.dir/vnd.google.mileage";
    public static final String     CONTENT_ITEM = "vnd.android.cursor.item/vnd.google.mileage";
 
-   public static final int        ALL_CAR      = 0, ONE = 1, SPECIFIC_CAR = 2;
+   public static final int        ALL_CAR      = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3, SINGLE_PROFILE_SELECT = 4;
 
    private SharedPreferences      prefs;
    private BackupManager          mBackup;
@@ -40,6 +42,8 @@ public class MileageProvider extends ContentProvider {
       sriMatcher.addURI(AUTHORITY, "all", ALL_CAR);
       sriMatcher.addURI(AUTHORITY, "car/*", SPECIFIC_CAR);
       sriMatcher.addURI(AUTHORITY, "all/#", ONE);
+      sriMatcher.addURI(AUTHORITY, "profile", PROFILE_SELECT);
+      sriMatcher.addURI(AUTHORITY, "profile/#", SINGLE_PROFILE_SELECT);
    }
 
    @Override
@@ -55,10 +59,33 @@ public class MileageProvider extends ContentProvider {
 
    private MileageDataSet mDatabase;
 
+   public static CharSequence[] getProfiles(Context context) {
+      Cursor cursor = context.getContentResolver().query(CAR_PROFILE_URI, null, null, null, null);
+      String[] cars = new String[cursor.getCount()];
+      for(int i=0 ; i < cursor.getCount() ; i++) {
+         cursor.moveToPosition(i);
+         cars[i] = cursor.getString(1); //FIXME - change to define!
+      }
+      cursor.close();
+      return cars;
+   }
+
+   //Convenience method to simplify adding new profiles
+   public static void addProfile(Context context, String profile) {
+      ContentValues values = new ContentValues();
+      values.put("carName", profile);
+      context.getContentResolver().insert(CAR_PROFILE_URI, values);
+   }
+
+   //returns the default 'sortBy' argument, to reverse-sort by date (i.e. newest record on top)
+   public static String defaultSort() {
+      return MileageData.ToDBNames[MileageData.DATE] + " desc";
+   }
    @Override
    public int delete(Uri uri, String where, String[] whereArgs) {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
       int count;
+      String id;
       String extra = where != null && where.length() > 0 ? " AND (" + where + ")" : "";
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
@@ -68,8 +95,12 @@ public class MileageProvider extends ContentProvider {
             count = db.delete(DB_TABLE, "carName = '" + uri.getPathSegments().get(1) + "'" + extra, whereArgs);
             break;
          case ONE:
-            String id = uri.getPathSegments().get(1);
+            id = uri.getPathSegments().get(1);
             count = db.delete(DB_TABLE, "_id=" + id + extra, whereArgs);
+            break;
+         case SINGLE_PROFILE_SELECT:
+            id = uri.getPathSegments().get(1);
+            count = db.delete(PROFILE_TABLE, "_id=" + id + extra, whereArgs);
             break;
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
@@ -87,6 +118,7 @@ public class MileageProvider extends ContentProvider {
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
          case SPECIFIC_CAR:
+         case PROFILE_SELECT:
             return CONTENT_TYPE;
          case ONE:
             return CONTENT_ITEM;
@@ -97,7 +129,6 @@ public class MileageProvider extends ContentProvider {
 
    @Override
    public int bulkInsert(Uri uri, ContentValues[] values) {
-      // TODO Auto-generated method stub
       mSuppressBackupUpdate = true;
       int result = super.bulkInsert(uri, values);
       mSuppressBackupUpdate = false;
@@ -106,9 +137,12 @@ public class MileageProvider extends ContentProvider {
 
    @Override
    public Uri insert(Uri uri, ContentValues initialValues) {
-      if(sriMatcher.match(uri) != ALL_CAR && sriMatcher.match(uri) != SPECIFIC_CAR) {
+      boolean isProfile = sriMatcher.match(uri) == PROFILE_SELECT; 
+      if(sriMatcher.match(uri) != ALL_CAR && sriMatcher.match(uri) != SPECIFIC_CAR && !isProfile) {
          throw new IllegalArgumentException("Unknown URI : '" + uri + "'");
       }
+      String table   = isProfile ? PROFILE_TABLE   : DB_TABLE;
+      Uri dataseturi = isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI; 
 
       ContentValues values;
       if(initialValues != null)
@@ -117,12 +151,12 @@ public class MileageProvider extends ContentProvider {
          values = new ContentValues();
 
       SQLiteDatabase db = mDatabase.getWritableDatabase();
-      long rowId = db.insert(DB_TABLE, null, values);
-      if(rowId > 0) {
-         Uri noteUri = ContentUris.withAppendedId(ALL_CONTENT_URI, rowId);
+      long rowId = db.insert(table, null, values);
+      if(rowId >= 0) {
+         Uri noteUri = ContentUris.withAppendedId(dataseturi, rowId);
          getContext().getContentResolver().notifyChange(noteUri, null);
          //FIXME - try to get rid of this. it's probably not needed..
-         getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
+         getContext().getContentResolver().notifyChange(dataseturi, null);
          if(!mSuppressBackupUpdate)
             mBackup.dataChanged();
          return noteUri;
@@ -171,6 +205,17 @@ public class MileageProvider extends ContentProvider {
             qb.setTables(DB_TABLE);
             qb.appendWhere("_id = " + uri.getPathSegments().get(1));
             break;
+         case PROFILE_SELECT:
+            qb.setTables(PROFILE_TABLE);
+            if(projection != null)
+               for(String proj : projection)
+                  if(!proj.equals("_id")) {
+                     if(groupBy == null)
+                        groupBy = "" + proj;
+                     else
+                        groupBy += proj;
+                  }
+            break;
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
@@ -184,23 +229,36 @@ public class MileageProvider extends ContentProvider {
    @Override
    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
+      boolean isProfile = sriMatcher.match(uri) == PROFILE_SELECT;
       int count;
+      String id, where;
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
          case SPECIFIC_CAR:
             count = db.update(DB_TABLE, values, selection, selectionArgs);
             break;
          case ONE:
-            String id = uri.getPathSegments().get(1);
-            String where = selection.length() > 0 ? " AND (" + selection + ")" : "";
+            id = uri.getPathSegments().get(1);
+            where = selection != null && selection.length() > 0 ? " AND (" + selection + ")" : "";
             count = db.update(DB_TABLE, values, "_id=" + id + where, selectionArgs);
+            break;
+         case PROFILE_SELECT:
+            //FIXME - add check to make sure URI has ID present! 
+            id = uri.getPathSegments().get(1);
+            where = selection != null && selection.length() > 0 ? " AND (" + selection + ")" : "";
+            count = db.update(PROFILE_TABLE, values, "_id=" + id + where, selectionArgs);
+            break;
+         case SINGLE_PROFILE_SELECT:
+            id = uri.getPathSegments().get(1);
+            where = selection != null && selection.length() > 0 ? " AND (" + selection + ")" : "";
+            count = db.update(PROFILE_TABLE, values, "_id=" + id + where, selectionArgs);
             break;
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
       getContext().getContentResolver().notifyChange(uri, null);
       //FIXME - try to get rid of this. it's probably not needed..
-      getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
+      getContext().getContentResolver().notifyChange(isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI, null);
       if(count>0 && !mSuppressBackupUpdate)
          mBackup.dataChanged();
       return count;
@@ -216,8 +274,7 @@ public class MileageProvider extends ContentProvider {
 
       @Override
       public void onUpgrade(SQLiteDatabase db, int oldVer, int newVer) {
-         // FIXME - add some way to upgrade the dababase, if required
-         if(oldVer == 3 && newVer == 4) {
+         if(oldVer == 3 && (newVer == 4 || newVer == 5)) {
             Log.d("TJS", "Trying to execute'" + mContext.getString(R.string.upgradeDBfrom3To4) + "'");
             db.execSQL(mContext.getString(R.string.upgradeDBfrom3To4)); // create the new column (supports infinite
             // number of users/cars)
@@ -226,6 +283,13 @@ public class MileageProvider extends ContentProvider {
             defaults.put(MileageData.ToDBNames[MileageData.CAR], carName);
             int rows = db.update(DB_TABLE, defaults, null, null); // add car name to all rows in old database
             Log.d("TJS", "Database successfully upgraded. " + rows + " records were added to " + carName + "'s stats");
+         } else if(oldVer == 4 && newVer == 5) {
+            db.execSQL(mContext.getString(R.string.initProfileTable));
+            ContentValues values = new ContentValues();
+            for(int i = 0 ; i < 3 ; i++) {
+               values.put("carName", "Car"+(i+1));
+               db.insert(PROFILE_TABLE, "", values);
+            }
          } else {
             String[] sql = mContext.getString(R.string.clearDb).split("\n");
             db.beginTransaction();

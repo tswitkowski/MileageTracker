@@ -32,11 +32,16 @@
       DOUBLE, trip DOUBLE, gallons, DOUBLE, price DOUBLE, compMileage
       DOUBLE, actMileage DOUBLE, totalPrice DOUBLE, mileageDiff DOUBLE);</string>
    <string
+       name="initProfileTable">
+       CREATE TABLE mileageProfiles (_id INTEGER PRIMARY KEY AUTOINCREMENT, carName TEXT);</string>
+   <string
       name="upgradeDBfrom3To4">ALTER TABLE mileageInfo ADD COLUMN carName TEXT;</string>
    <string
-      name="clearDb">DROP TABLE mileageInfo;</string>
+      name="clearDb">DROP TABLE mileageInfo;DROP TABLE mileageProfiles</string>
    <string
       name="confirm_delete">Delete the following records?</string>
+   <string
+      name="confirm_move">Move the following records?</string>
    <string
       name="confirm_import">Import</string>
    <string
@@ -45,6 +50,10 @@
    <!-- Preferences strings -->
    <string
       name="carSelection">carSelection</string>
+   <string
+       name="editProfilePreferenceTitle">Edit Profiles</string>
+   <string
+       name="add_profile_text">Add Profile</string>
    <string
       name="unitSelection">unitSelection</string>
    <string name="chart1Selection">chart1Selection</string>
