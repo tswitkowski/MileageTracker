@@ -59,8 +59,7 @@
    <string name="chart1Selection">chart1Selection</string>
    <string name="chart2Selection">chart2Selection</string>
    <string name="chart3Selection">chart3Selection</string>
-   <string name="deselectButton">Deselect</string>
-   <string name="deleteButton">Delete</string>
+   <string name="deleteButton">Delete Entry</string>
    <string name="submitButton">Submit Modifications</string>
    <string name="averageEcoLabel">Average economy: </string>
    <string name="unknownValue">\??</string>

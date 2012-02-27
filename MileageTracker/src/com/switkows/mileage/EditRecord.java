@@ -18,6 +18,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,7 +31,6 @@ import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CursorAdapter;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
@@ -65,6 +68,8 @@ public class EditRecord extends FragmentActivity {
       private Cursor               mCursor;
       private SharedPreferences    prefs;
       private boolean              isNewRecord;
+      private myListAdapter        stationAutocompleteAdapter;
+      private LoaderCallbacks      mLoaderCallbacks = new LoaderCallbacks();     
 
       private TextView             dateBox;
       private AutoCompleteTextView stationBox;
@@ -121,6 +126,7 @@ public class EditRecord extends FragmentActivity {
             getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
 
             mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, recordId);
+            //FIXME - replace with Loader? this is only loaded once, so maybe not worth it?
             mCursor = getActivity().managedQuery(mUri, null, null, null, null);
          } else if(newRecord) {
             isNewRecord = true;
@@ -144,8 +150,7 @@ public class EditRecord extends FragmentActivity {
             // original activity if they requested a result.
             if(mUri == null) {
                Log.e(TAG, "Failed to insert new record into " + car);
-   //            finish();
-               EditRecordFragment.this.getFragmentManager().beginTransaction().remove(EditRecordFragment.this).commit();
+               handleCompletion(1);
                return null;
             }
          }
@@ -174,14 +179,7 @@ public class EditRecord extends FragmentActivity {
          submit.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                updateDbRow();
-               if(getActivity().getIntent().hasExtra("starter"))
-                  startActivity(new Intent(getActivity(),MileageTracker.class));
-               boolean result = false;
-               if(mCallback!=null) {
-                  result = mCallback.messageUpdated(1);
-               }
-               if(!result)
-                  getActivity().finish();
+               handleCompletion(1);
             }
          });
          getTextFieldStruct(MileageData.DATE).setOnClickListener(new View.OnClickListener() {
@@ -234,16 +232,22 @@ public class EditRecord extends FragmentActivity {
          }
          // Try and grab all of the previously entered gas stations, to make data entry easier
          AutoCompleteTextView text = (AutoCompleteTextView) getTextFieldStruct(MileageData.STATION);
-         //FIXME - see if I need to do this or not (I thought this would fix a force-close, but I needed something else as well)
-         if(text.getAdapter()!=null) {
-            Cursor oldCursor = ((myListAdapter)text.getAdapter()).getCursor();
-//            getActivity().stopManagingCursor(oldCursor);
-            oldCursor.close();
+
+         //start us off with a null cursor (Loader will populate later)
+         stationAutocompleteAdapter = new myListAdapter(getActivity(), null);
+         getLoaderManager().initLoader(LoaderCallbacks.ID_STATION_LOADER, getArguments(), mLoaderCallbacks);
+         text.setAdapter(stationAutocompleteAdapter);
+      }
+
+      protected void handleCompletion(long id) {
+         if(getActivity().getIntent().hasExtra("starter"))
+            startActivity(new Intent(getActivity(),MileageTracker.class));
+         boolean result = false;
+         if(mCallback!=null) {
+            result = mCallback.messageUpdated(id);
          }
-         Uri uri = MileageProvider.ALL_CONTENT_URI;
-         Cursor cursor = getActivity().getContentResolver().query(uri, new String[] { "_id", MileageData.ToDBNames[MileageData.STATION] }, null, null,
-               null);
-         text.setAdapter(new myListAdapter(getActivity(), cursor));
+         if(!result)
+            getActivity().finish();
       }
 
       protected void setTextFields() {
@@ -380,6 +384,42 @@ public class EditRecord extends FragmentActivity {
          getTextFieldStruct(MileageData.DATE).setText(MileageData.getFormattedDate(month, day, year));
       }
 
+      private static final String STATION_NAME = MileageData.ToDBNames[MileageData.STATION];
+      private class LoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
+         protected static final int ID_STATION_LOADER = 0;
+         protected static final int ID_DATA_LOADER    = 1;
+//         protected final String     STATION_NAME      = MileageData.ToDBNames[MileageData.STATION];
+         protected final String[]   STATION_PROJ      = { "_id", STATION_NAME };
+         protected final String     STATION_SORT      = STATION_NAME + " DESC";
+
+         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            if(id == ID_STATION_LOADER) {
+               Uri uri = MileageProvider.ALL_CONTENT_URI;
+               String hint = args.getString("hint");
+               String filter = hint == null ? null : STATION_NAME + " like '%" + hint + "%'";
+               return new CursorLoader(getActivity(),uri, STATION_PROJ, filter, null, STATION_SORT);
+            } else if(id == ID_DATA_LOADER) {
+               return null;
+            } else {
+               return null;
+            }
+         }
+
+         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if(loader.getId() == ID_STATION_LOADER) {
+               stationAutocompleteAdapter.swapCursor(data);
+            }
+         }
+
+         public void onLoaderReset(Loader<Cursor> loader) {
+            if(loader.getId() == ID_STATION_LOADER) {
+               stationAutocompleteAdapter.swapCursor(null);
+            }
+         }
+         
+      }
+
+
       // FIXME - don't delete! this should be investigated as an enhancement to the
       // below implementation!!
       // public static class AutocompleteListAdapter extends CursorAdapter
@@ -433,53 +473,38 @@ public class EditRecord extends FragmentActivity {
       // //
       // // private ContentResolver mContent;
       // }
-      private class myListAdapter extends CursorAdapter {
-         private final String   ColumnName = MileageData.ToDBNames[MileageData.STATION];
-         private final String[] Columns    = { "_id", ColumnName };
+      private class myListAdapter extends SimpleCursorAdapter {
+//         private final String   ColumnName = MileageData.ToDBNames[MileageData.STATION];
    
          public myListAdapter(Context context, Cursor c) {
-            super(context, c);
-         }
-
-         @Override
-         public void bindView(View view, Context context, Cursor cursor) {
-            int columnIndex = cursor.getColumnIndexOrThrow(ColumnName);
-            TextView tview = (TextView) view;
-            tview.setText(cursor.getString(columnIndex));
+            super(context, android.R.layout.simple_dropdown_item_1line, c, new String[] {STATION_NAME}, new int[] {android.R.id.text1},NO_SELECTION);
          }
 
          @Override
          public String convertToString(Cursor cursor) {
-            int columnIndex = cursor.getColumnIndexOrThrow(ColumnName);
+            int columnIndex = cursor.getColumnIndexOrThrow(STATION_NAME);
             return cursor.getString(columnIndex);
          }
 
          @Override
          public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            final LayoutInflater inflater = LayoutInflater.from(context);
-            final TextView view = (TextView) inflater.inflate(android.R.layout.simple_dropdown_item_1line, parent, false);
-            int columnIndex = cursor.getColumnIndexOrThrow(ColumnName);
-            TextView tview = view;
-            tview.setText(cursor.getString(columnIndex));
-            tview.setTextSize(10);
-            tview.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
-            tview.setHeight(10); // FIXME - doesn't appear to have any affect
-            return view;
+            if(cursor!=null) {
+               TextView view = (TextView)super.newView(context, cursor, parent);
+               view.setTextSize(10);
+               view.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
+               view.setHeight(10); // FIXME - doesn't appear to have any affect
+               return view;
+            }
+            return null;
          }
 
          @Override
          public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
-            Activity activity = getActivity();
-            if(constraint == null)
-               return activity.getContentResolver().query(MileageProvider.ALL_CONTENT_URI, Columns, null, null, null);
-            // if (getFilterQueryProvider() != null)
-            // return getFilterQueryProvider().runQuery(constraint);
-            // return managedQuery(MileageProvider.CONTENT_URI,new String[]
-            // {ColumnName},ColumnName+" like '%?%'",new String[]
-            // {constraint.toString()},null);
-            Cursor cursor = activity.getContentResolver().query(MileageProvider.ALL_CONTENT_URI, Columns, ColumnName + " like '%"
-                  + constraint.toString() + "%'", null, ColumnName + " DESC");
-            return cursor;
+            Bundle args = new Bundle();
+            if(constraint != null)
+               args.putString("hint", constraint.toString());
+            getLoaderManager().restartLoader(LoaderCallbacks.ID_STATION_LOADER, args, mLoaderCallbacks);
+            return null;
          }
       }
    }

@@ -10,10 +10,4 @@
       android:layout_height="wrap_content"
       android:completionThreshold="1"
       android:id="@+id/file_list" />
-   <Button
-      android:id="@+id/export_button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/confirm_export"
-      android:layout_gravity="center_horizontal" />
 </LinearLayout>

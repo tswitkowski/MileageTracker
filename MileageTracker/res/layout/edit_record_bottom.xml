@@ -71,9 +71,10 @@
       <Button
          android:id="@+id/submit"
          android:text="@string/submitButton"
-         android:layout_width="wrap_content"
+         android:layout_width="250dp"
          android:layout_height="wrap_content"
          android:layout_below="@id/mpg_diff_reading"
+         style="?android:attr/buttonBarButtonStyle"
          android:layout_centerHorizontal="true" />
    </RelativeLayout>
 </merge>

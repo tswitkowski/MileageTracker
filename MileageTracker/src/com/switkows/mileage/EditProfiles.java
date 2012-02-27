@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,12 +17,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+//FIXME - add confirmation when deleting a profile which contains data
+//FIXME - upon confirmation (above), delete data associated with profile
 public class EditProfiles extends Activity {
    private final static int DELETE_PROFILE_DIALOG = 0,
                             ADD_PROFILE_DIALOG    = 1,
@@ -29,28 +32,86 @@ public class EditProfiles extends Activity {
    private final static int EDIT_TEXT_BOX         = 45;
 
    private ListView mList;
+   private int mListViewId;
+
+   private class Profile {
+      private long      mId;
+      private String    mName;
+      private boolean   mHasItems;
+      public Profile(long id, String name) {
+         mId        = id;
+         mName      = name;
+         mHasItems  = false;
+      }
+      public void setHasItems(boolean hasItems) {
+         mHasItems = hasItems;
+      }
+
+      public String toString() {
+         String result = mName;
+         if(mHasItems)
+            result += "*";
+         return result;
+      }
+      public long getId() {
+         return mId;
+      }
+      public String getName() {
+         return mName;
+      }
+   }
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.edit_profiles);
-      Cursor cursor = getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
-
-      SimpleCursorAdapter adapter;
       if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
-         adapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_multiple_choice,cursor, new String[] {"carName"},new int[] {android.R.id.text1});
+         mListViewId = android.R.layout.simple_list_item_multiple_choice;
       else
-         adapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_activated_1,cursor, new String[] {"carName"},new int[] {android.R.id.text1},SimpleCursorAdapter.FLAG_AUTO_REQUERY);
-      mList = (ListView)findViewById(android.R.id.list);
-      mList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-      mList.setAdapter(adapter);
-      
+         mListViewId = android.R.layout.simple_list_item_activated_1;
+
       findViewById(R.id.add_profile_button).setOnClickListener(new View.OnClickListener() {
          public void onClick(View v) {
             showDialog(ADD_PROFILE_DIALOG);
          }
       });
    }
+
+   @Override
+   protected void onResume() {
+      ArrayAdapter<Profile> newAdapter = new ArrayAdapter<Profile>(this, mListViewId);
+
+      mList = (ListView)findViewById(android.R.id.list);
+      mList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+      mList.setAdapter(newAdapter);
+      updateList();
+
+      super.onResume();
+   }
+
+   public void updateList() {
+      Cursor cursor = getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
+      @SuppressWarnings("unchecked")
+      ArrayAdapter<Profile> adapter = (ArrayAdapter<Profile>) mList.getAdapter();
+      Profile[] content = new Profile[cursor.getCount()];
+      int column    = cursor.getColumnIndex("carName");
+      int idColumn  = cursor.getColumnIndex("_id");
+      Uri u;
+//      Toast.makeText(this, "Trying to create new ArrayAdapter", Toast.LENGTH_LONG).show();
+      for(int i=0 ; i<content.length ; i++) {
+         cursor.moveToPosition(i);
+         content[i] = new Profile(cursor.getLong(idColumn),cursor.getString(column));
+         u = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI,content[i].getName());
+         Cursor c = getContentResolver().query(u, new String[] {"_id"}, null, null, null);
+         if(c.getCount()>0)
+            content[i].setHasItems(true);
+         c.close();
+      }
+      cursor.close();
+      adapter.clear();
+      adapter.addAll(content);
+   }
+
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
       MenuInflater inflater = getMenuInflater();
@@ -72,6 +133,12 @@ public class EditProfiles extends Activity {
       }
       return super.onOptionsItemSelected(item);
    }
+
+   private final OnClickListener mDefaultCancelListener = new OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+         dialog.dismiss();
+      }};
+
    @Override
    protected Dialog onCreateDialog(int id) {
       AlertDialog.Builder builder;
@@ -87,13 +154,10 @@ public class EditProfiles extends Activity {
                   long[] items = mList.getCheckedItemIds();
                   for(long id : items)
                      getContentResolver().delete(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI,id),null,null);
+                  updateList();
                }
             });
-            builder.setNegativeButton("Cancel", new OnClickListener() {
-               public void onClick(DialogInterface dialog, int which) {
-                  dialog.dismiss();
-               }
-            });
+            builder.setNegativeButton("Cancel", mDefaultCancelListener);
             return builder.create();
          case ADD_PROFILE_DIALOG:
             builder = new AlertDialog.Builder(this);
@@ -106,36 +170,32 @@ public class EditProfiles extends Activity {
                   EditText box = (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
                   String profileName = box.getText().toString();
                   MileageProvider.addProfile(EditProfiles.this, profileName);
+                  updateList();
                }
             });
-            builder.setNegativeButton("Cancel", new OnClickListener() {
-               public void onClick(DialogInterface dialog, int which) {
-                  dialog.dismiss();
-               }
-            });
+            builder.setNegativeButton("Cancel", mDefaultCancelListener);
             return builder.create();
          case EDIT_PROFILE_DIALOG:
             builder = new AlertDialog.Builder(this);
             editor = new EditText(this);
             editor.setId(EDIT_TEXT_BOX);
             SparseBooleanArray sel = mList.getCheckedItemPositions();
-            Cursor cursor = ((SimpleCursorAdapter)mList.getAdapter()).getCursor();
-            cursor.moveToPosition(sel.keyAt(0));
-            editor.setText(cursor.getString(1));
+            @SuppressWarnings("unchecked")
+            final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
+            String name = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getName();
+            editor.setText(name);
             builder.setView(editor);
             builder.setTitle("Enter modified Profile name:");
             builder.setPositiveButton("Confirm", new OnClickListener() {
                public void onClick(DialogInterface dialog, int which) {
                   //save off the old value, so we can update records appropriately
                   SparseBooleanArray sel = mList.getCheckedItemPositions();
-                  Cursor cursor = ((SimpleCursorAdapter)mList.getAdapter()).getCursor();
-                  cursor.moveToPosition(sel.keyAt(0));
-                  final long oldId = cursor.getLong(0);
-                  String oldName   = cursor.getString(1);
+                  Profile profile = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true)));
+                  final long oldId = profile.getId();
+                  String oldName   = profile.getName();
                   //get the new value
                   EditText box = (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
                   String profileName = box.getText().toString();
-//                  MileageProvider.addProfile(EditProfiles.this, profileName);
                   ContentValues values = new ContentValues();
                   values.put("carName", profileName);
                   //update profile configs
@@ -146,14 +206,11 @@ public class EditProfiles extends Activity {
                   String option = getString(R.string.carSelection);
                   String currentCar = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(option, "Car45");
                   if(currentCar.compareTo(oldName)==0)
-                     PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString(option, profileName);
+                     PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString(option, profileName).apply();
+                  updateList();
                }
             });
-            builder.setNegativeButton("Cancel", new OnClickListener() {
-               public void onClick(DialogInterface dialog, int which) {
-                  dialog.dismiss();
-               }
-            });
+            builder.setNegativeButton("Cancel", mDefaultCancelListener);
             return builder.create();
       }
       return super.onCreateDialog(id);
@@ -168,23 +225,24 @@ public class EditProfiles extends Activity {
             break;
          case EDIT_PROFILE_DIALOG:
             SparseBooleanArray sel = mList.getCheckedItemPositions();
-            Cursor cursor = ((SimpleCursorAdapter)mList.getAdapter()).getCursor();
-            cursor.moveToPosition(sel.keyAt(0));
+            @SuppressWarnings("unchecked")
+            ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
+            String name = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getName();
             EditText box = (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
-            box.setText(cursor.getString(1));
+            box.setText(name);
             break;
       }
       super.onPrepareDialog(id, dialog, args);
    }
-   
+
    private String getSelectedString() {
       SparseBooleanArray selected = mList.getCheckedItemPositions();
       String str = "";
-      Cursor c = ((SimpleCursorAdapter)mList.getAdapter()).getCursor();
+      @SuppressWarnings("unchecked")
+      ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
       for(int i=0 ; i < selected.size() ; i++) {
          if(selected.valueAt(i)) {
-            c.moveToPosition(selected.keyAt(i));
-            String name = c.getString(1);
+            String name = arrayAdapter.getItem(selected.keyAt(i)).toString();
             str = String.format("%s\n%s", str,name);
          }
       }

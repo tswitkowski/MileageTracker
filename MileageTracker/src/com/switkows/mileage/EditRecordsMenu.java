@@ -24,6 +24,9 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -34,7 +37,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -44,6 +46,7 @@ import android.widget.AbsListView.MultiChoiceModeListener;
 public class EditRecordsMenu extends FragmentActivity implements EditRecordFragment.UpdateCallback {
 
    private static final String LIST_FRAGMENT = "recordList";
+   private static final String RECORD_FRAGMENT = "recordViewer";
 
    // 'global' fields for handling Import of data within a separate thread
    protected DataImportThread   iThread;
@@ -64,8 +67,10 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          iThread = (DataImportThread) getLastCustomNonConfigurationInstance();
          iThread.restart();
       }
-      if(savedInstanceState!=null)
+      if(savedInstanceState!=null) {
          mViewedRecordId = savedInstanceState.getLong("currentView");
+         mLastUri        = (Uri)savedInstanceState.getParcelable("lastUri");
+      }
       else
          mViewedRecordId = -1;
    }
@@ -79,20 +84,19 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       Uri uri = getURI();
       if(mLastUri==null || uri.compareTo(mLastUri)!=0) {
          getIntent().setData(getURI());
-         EditRecordsMenuFragment fragment = (EditRecordsMenuFragment) getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
-         if(fragment!=null) {
-            stopManagingCursor(fragment.mAdapter.getCursor());
-            fragment.mAdapter.getCursor().close();
-         }
+
          //This fragment will persist indefinitely.
          ListFragment f = EditRecordsMenuFragment.newInstance(this,getIntent().getData());
          FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
          trans.replace(R.id.record_list_fragment, f, LIST_FRAGMENT);
          trans.commitAllowingStateLoss();
+         mViewedRecordId = -1;  //reset this, so we don't display data from the wrong profile
+         hideRecordView();
       }
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
          getActionBar().setDisplayHomeAsUpEnabled(true);
       }
+      //FIXME - should store the Fragment pointer, so we don't lose state on orientation-switches!!
       if(mViewedRecordId >= 0)
          updateRecordView(mViewedRecordId);
       mLastUri = uri;
@@ -114,6 +118,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    protected void onSaveInstanceState(Bundle outState) {
       super.onSaveInstanceState(outState);
       outState.putLong("currentView", mViewedRecordId);
+      outState.putParcelable("lastUri", mLastUri);
    }
 
    @Override
@@ -124,9 +129,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 	  //pre-honeycomb devices do not show CAB, so lets just add it to the menu!
       if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
          inflater.inflate(R.menu.edit_records_cab, menu);
-//         menu.add(0, R.id.delete_entry, 0, "Delete Entry").setIcon(android.R.drawable.ic_delete);
-//         menu.add()
-//         menu.add(0, MENU_MODIFY, 0, "Edit Entry");
       }
       return true;
    }
@@ -235,12 +237,14 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    protected void moveSelected(String profile) {
       EditRecordsMenuFragment fragment = getListFragment();
       if(fragment != null)
-         fragment.moveSelected(profile);
+         if(fragment.moveSelected(mViewedRecordId,profile))
+            hideRecordView();
    }
    protected void deleteSelected() {
       EditRecordsMenuFragment fragment = getListFragment();
       if(fragment != null)
-         fragment.deleteSelected();
+         if(fragment.deleteSelected(mViewedRecordId))
+            hideRecordView();
    }
    protected void deselectAll() {
       EditRecordsMenuFragment fragment = getListFragment();
@@ -276,7 +280,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       EditRecordFragment fragment = EditRecordFragment.newInstance(id, false);
       if(view!=null) {
          view.setVisibility(View.VISIBLE);
-         trans.replace(R.id.edit_record_fragment, fragment);
+         trans.replace(R.id.edit_record_fragment, fragment,RECORD_FRAGMENT);
          trans.commitAllowingStateLoss();
 
       } else {
@@ -285,6 +289,20 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          //cancel or an orientation-change. This allows us to save the state when
          //we transition back and forth between dualPane & singlePane modes
          startActivityForResult(new Intent(Intent.ACTION_EDIT, uri),0);
+      }
+   }
+
+   //delete active fragment, and hide view
+   protected void hideRecordView() {
+      View view = findViewById(R.id.edit_record_fragment);
+      if(view!=null) {
+         FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+         Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORD_FRAGMENT);
+         if(fragment!=null) {
+            trans.remove(fragment);
+            trans.commitAllowingStateLoss();
+            view.setVisibility(View.GONE);
+         }
       }
    }
 
@@ -320,6 +338,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       private EditRecordsListAdapter mAdapter;
       private boolean mSingleSelection;
       private long mSingleSelectionID;
+      private final RecordListLoaderCallbacks mLoaderCallback = new RecordListLoaderCallbacks(); 
 
       public static EditRecordsMenuFragment newInstance(Context c, Uri uri) {
          EditRecordsMenuFragment result = new EditRecordsMenuFragment();
@@ -337,9 +356,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       @Override
       public void onActivityCreated(Bundle savedInstanceState) {
          super.onActivityCreated(savedInstanceState);
-         Uri uri = Uri.parse(getArguments().getString("uri"));
-         Cursor c = getActivity().managedQuery(uri, null, null, null, MileageProvider.defaultSort());
-         mAdapter = new EditRecordsListAdapter(getActivity(), this, c, new String[] { MileageData.ToDBNames[MileageData.DATE] },
+         getLoaderManager().initLoader(0, getArguments(), mLoaderCallback);
+         mAdapter = new EditRecordsListAdapter(getActivity(), this, null, new String[] { MileageData.ToDBNames[MileageData.DATE] },
                new int[] { android.R.id.text1 });
          setListAdapter(mAdapter);
          setEmptyText("No records present");
@@ -349,20 +367,13 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          } else
             getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       }
-      @Override
-      public void onResume() {
-         super.onResume();
-         getActivity().stopManagingCursor(mAdapter.getCursor());
-         mAdapter.getCursor().close();
-         Uri uri = Uri.parse(getArguments().getString("uri"));
-         Cursor c = getActivity().managedQuery(uri, null, null, null, MileageProvider.defaultSort());
-         mAdapter.changeCursor(c);
-      }
+
       @Override
       public void onListItemClick(ListView l, View v, int position, long id) {
          ((EditRecordsMenu)getActivity()).updateRecordView(id);
          super.onListItemClick(l, v, position, id);
       }
+
       public void handleSelection(boolean hide, int position, boolean isSelected) {
             if(hide && position==-1)
                getListView().clearChoices();
@@ -370,36 +381,51 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       }
       public void updateRecordView(long id) { 
          mAdapter.setViewedItem(id);
+         getListView().invalidateViews();
 //         getListView().setSelected(true);
       }
-      protected void deleteSelected() {
+      protected boolean deleteSelected(long currentlyViewedId) {
    //      HashSet<Long> checked = mAdapter.getSelected();
+         boolean foundIt = false;    //set to true if the crrentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
          if(mSingleSelection)
             getActivity().getContentResolver().delete(ContentUris.withAppendedId(baseUri, mSingleSelectionID), null, null);
-         for(int id=0 ; id<checked.size() ; id++)
-            getActivity().getContentResolver().delete(ContentUris.withAppendedId(baseUri, getListAdapter().getItemId(checked.keyAt(id))), null, null);
+         long id;
+         for(int index=0 ; index<checked.size() ; index++) {
+            id = getListAdapter().getItemId(checked.keyAt(index));
+            getActivity().getContentResolver().delete(ContentUris.withAppendedId(baseUri, id), null, null);
+            if(id == currentlyViewedId)
+               foundIt = true;
+         }
    //      for(Long id : checked)
    //         getContentResolver().delete(ContentUris.withAppendedId(baseUri, id.longValue()), null, null);
          //FIXME - this is needed, apparently, since i'm not using the same URI as the adapter uses?!
-         mAdapter.getCursor().requery();
+         getLoaderManager().restartLoader(0, getArguments(), mLoaderCallback);
          mAdapter.notifyDataSetChanged();
    //      checked.clear();
+         return foundIt;
       }
-      //FIXME - merge deleteSelected & mergeSelected, since all code except the provider call is different
-      protected void moveSelected(String profile) {
+      //FIXME - merge deleteSelected & moveSelected, since all code except the provider call is different
+      protected boolean moveSelected(long currentlyViewedId,String destProfile) {
+         boolean foundIt = false;    //set to true if the crrentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
          ContentValues values = new ContentValues(1);
          if(mSingleSelection)
             getActivity().getContentResolver().update(ContentUris.withAppendedId(baseUri, mSingleSelectionID), values, null, null);
-         values.put(MileageData.ToDBNames[MileageData.CAR], profile);
-         for(int id=0 ; id<checked.size() ; id++)
-            getActivity().getContentResolver().update(ContentUris.withAppendedId(baseUri, getListAdapter().getItemId(checked.keyAt(id))), values, null, null);
+         values.put(MileageData.ToDBNames[MileageData.CAR], destProfile);
+         long id;
+         for(int index=0 ; index<checked.size() ; index++) {
+            id = getListAdapter().getItemId(checked.keyAt(index));
+            getActivity().getContentResolver().update(ContentUris.withAppendedId(baseUri, id), values, null, null);
+            if(id == currentlyViewedId)
+               foundIt = true;
+         }
          //FIXME - this is needed, apparently, since i'm not using the same URI as the adapter uses?!
-         mAdapter.getCursor().requery();
+         getLoaderManager().restartLoader(0, getArguments(), mLoaderCallback);
          mAdapter.notifyDataSetChanged();
+         return foundIt;
       }
    
       protected void deselectAll() {
@@ -426,6 +452,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 //            mySelected.add(Long.valueOf(mSingleSelectionID));
 
          Cursor cursor = mAdapter.getCursor();
+         if(cursor==null)
+            return ret;
          int idColumn   = cursor.getColumnIndex("_id");
          int dateColumn = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
          int mpgColumn  = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
@@ -480,13 +508,28 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          }
 
          public void onDestroyActionMode(ActionMode mode) {
-            mAdapter.clearSelected();
-            getListView().clearChoices();
          }
 
          public void onItemCheckedStateChanged(ActionMode mode, int position,
                long id, boolean checked) {
          }
+      }
+
+      private class RecordListLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
+
+         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Uri uri = Uri.parse(args.getString("uri"));
+            return new CursorLoader(getActivity(),uri,null, null, null, MileageProvider.defaultSort());
+         }
+
+         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            mAdapter.swapCursor(data);
+         }
+
+         public void onLoaderReset(Loader<Cursor> loader) {
+            mAdapter.swapCursor(null);
+         }
+         
       }
    }
 
@@ -543,15 +586,14 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       }
    }
 
-   protected class ImportDialog extends Dialog {
+   protected class ImportDialog extends AlertDialog {
       private final Spinner              filename;
-      private final Button               confirm;
-      private final View.OnClickListener importListener = new ImportListener();
+      private final DialogInterface.OnClickListener importListener = new ImportListener();
 
       // Upon the button being clicked, a new thread will be started, which imports the data into the database,
       // and presents a progress dialog box to the user
-      private class ImportListener implements View.OnClickListener {
-         public void onClick(View v) {
+      private class ImportListener implements DialogInterface.OnClickListener {
+         public void onClick(DialogInterface dialog, int which) {
             String name = (String) filename.getSelectedItem();
             dismiss();
             File file = new File(Environment.getExternalStorageDirectory(), name);
@@ -565,10 +607,11 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          String[] files = getCSVFiles();
          if(files != null) {
             setTitle("Select Import File:");
-            setContentView(R.layout.import_dialog);
-            filename = (Spinner) findViewById(R.id.file_list);
-            confirm = (Button) findViewById(R.id.import_button);
-            confirm.setOnClickListener(importListener);
+            View view = ((LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.import_dialog, null);
+            setView(view);
+            filename = (Spinner) view.findViewById(R.id.file_list);
+            setButton(BUTTON_POSITIVE,getString(R.string.confirm_import),importListener);
+            setButton(BUTTON_NEGATIVE,"Cancel",  new CancelClickListener());
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             filename.setAdapter(adapter);
@@ -576,19 +619,17 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
                adapter.add(file);
          } else {   //FIXME - this will never fire! check files.length, and display an error message!
             filename = null;
-            confirm = null;
             dismiss();
          }
       }
    };
 
-   protected class ExportDialog extends Dialog {
+   protected class ExportDialog extends AlertDialog {
       private final AutoCompleteTextView filename;
-      private final Button               confirm;
-      private final View.OnClickListener exportListener = new ExportListener();
+      private final DialogInterface.OnClickListener exportListener = new ExportListener();
 
-      private class ExportListener implements View.OnClickListener {
-         public void onClick(View v) {
+      private class ExportListener implements DialogInterface.OnClickListener {
+         public void onClick(DialogInterface dialog, int which) {
             String name = filename.getText().toString();
             dismiss();
             File file = new File(Environment.getExternalStorageDirectory(), name);
@@ -600,14 +641,15 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       public ExportDialog(Context context) {
          super(context);
          setTitle("Select Export File:");
-         setContentView(R.layout.export_dialog);
-         filename = (AutoCompleteTextView) findViewById(R.id.file_list);
-         confirm = (Button) findViewById(R.id.export_button);
-         confirm.setOnClickListener(exportListener);
+         View view = ((LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.export_dialog, null);
+         setView(view);
+         filename = (AutoCompleteTextView) view.findViewById(R.id.file_list);
          String[] files = getCSVFiles();
          ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line,
                files);
          filename.setAdapter(adapter);
+         setButton(BUTTON_POSITIVE, getString(R.string.confirm_export), exportListener);
+         setButton(BUTTON_NEGATIVE,"Cancel",  new CancelClickListener());
       }
    }
 
@@ -619,7 +661,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    }
 
    public boolean messageUpdated(long id) {
-      // TODO Auto-generated method stub
       return true;
    };
 

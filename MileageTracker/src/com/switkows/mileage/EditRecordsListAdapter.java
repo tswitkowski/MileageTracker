@@ -9,19 +9,19 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleCursorAdapter;
 
 public class EditRecordsListAdapter extends SimpleCursorAdapter {
 
    /** Remember our context so we can use it when constructing views. */
    private Context mContext;
    private final LayoutInflater mInflater;
-   private final int idColumn;
-   private final int mileageColumn;
-   private final int dateColumn;
+   private int idColumn;
+   private int mileageColumn;
+   private int dateColumn;
    private long      mViewedId;
    private final EditRecordsMenuFragment mParent;
 
@@ -31,14 +31,29 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
     *           - Render context
     */
    public EditRecordsListAdapter(Context context, EditRecordsMenuFragment parent, Cursor c, String[] from, int[] to) {
-      super(context, R.layout.record_list_item, c, from, to);
+      super(context, R.layout.record_list_item, c, from, to,NO_SELECTION);
       mContext = context;
       mParent  = parent;
       mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      idColumn       = c.getColumnIndex("_id");
-      dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
-      mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
+      if(c!=null) {
+         idColumn       = c.getColumnIndex("_id");
+         dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
+         mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
+      } else {
+         idColumn = dateColumn = mileageColumn = -1;
+      }
       mViewedId      = -1;
+   }
+
+   @Override
+   public Cursor swapCursor(Cursor c) {
+      if(c!=null) {
+         //FIXME - only do if they haven't been set already...
+         idColumn       = c.getColumnIndex("_id");
+         dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
+         mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
+      }
+      return super.swapCursor(c);
    }
 
    /**
