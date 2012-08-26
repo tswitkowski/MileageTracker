@@ -1,5 +1,6 @@
 package com.switkows.mileage;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -109,7 +110,8 @@ public class EditProfiles extends Activity {
       }
       cursor.close();
       adapter.clear();
-      adapter.addAll(content);
+      for (Profile item : content)
+         adapter.add(item);
    }
 
    @Override
@@ -180,6 +182,10 @@ public class EditProfiles extends Activity {
             editor = new EditText(this);
             editor.setId(EDIT_TEXT_BOX);
             SparseBooleanArray sel = mList.getCheckedItemPositions();
+            if(sel.indexOfValue(true)<0) {
+               Toast.makeText(this, "Please select a Profile", Toast.LENGTH_SHORT).show();
+               return null;
+            }
             @SuppressWarnings("unchecked")
             final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
             String name = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getName();
@@ -187,6 +193,7 @@ public class EditProfiles extends Activity {
             builder.setView(editor);
             builder.setTitle("Enter modified Profile name:");
             builder.setPositiveButton("Confirm", new OnClickListener() {
+               @TargetApi(9)
                public void onClick(DialogInterface dialog, int which) {
                   //save off the old value, so we can update records appropriately
                   SparseBooleanArray sel = mList.getCheckedItemPositions();

@@ -90,7 +90,7 @@ public class MileageVsStationChart extends TimeChartExtension {
          for(i=1 ; i<mData.length ; i++) {
             if(title.equals(mData[i-1].getStation())) {
                valueList.add(mData[i].getActualMileage(mContext,null));
-               timeList.add(new Double(mData[i].getDate()));
+               timeList.add(Double.valueOf(mData[i].getDate()));
             }
          }
          

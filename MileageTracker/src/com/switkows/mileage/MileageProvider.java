@@ -72,9 +72,12 @@ public class MileageProvider extends ContentProvider {
 
    //Convenience method to simplify adding new profiles
    public static void addProfile(Context context, String profile) {
+      context.getContentResolver().insert(CAR_PROFILE_URI, createProfileContent(profile));
+   }
+   public static ContentValues createProfileContent(String name) {
       ContentValues values = new ContentValues();
-      values.put("carName", profile);
-      context.getContentResolver().insert(CAR_PROFILE_URI, values);
+      values.put("carName", name);
+      return values;
    }
 
    //returns the default 'sortBy' argument, to reverse-sort by date (i.e. newest record on top)
@@ -97,6 +100,9 @@ public class MileageProvider extends ContentProvider {
          case ONE:
             id = uri.getPathSegments().get(1);
             count = db.delete(DB_TABLE, "_id=" + id + extra, whereArgs);
+            break;
+         case PROFILE_SELECT:
+            count = db.delete(PROFILE_TABLE, where, whereArgs);
             break;
          case SINGLE_PROFILE_SELECT:
             id = uri.getPathSegments().get(1);
@@ -318,6 +324,12 @@ public class MileageProvider extends ContentProvider {
             db.endTransaction();
          }
 
+         db.execSQL(mContext.getString(R.string.initProfileTable));
+         ContentValues values = new ContentValues();
+         for(int i = 0 ; i < 3 ; i++) {
+            values.put("carName", "Car"+(i+1));
+            db.insert(PROFILE_TABLE, "", values);
+         }
       }
 
       private void executeMultipleCommands(SQLiteDatabase db, String[] sql) {

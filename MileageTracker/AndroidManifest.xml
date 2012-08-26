@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="19"
+      android:versionCode="21"
       android:installLocation="auto"
-      android:versionName="2.1" package="com.switkows.mileage">
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="14"></uses-sdk>
+      android:versionName="2.1.2" package="com.switkows.mileage">
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="16"></uses-sdk>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
     <application    android:icon="@drawable/mileage_tracker_icon"
                     android:label="@string/app_name"
                     android:backupAgent="MileageBackupAgent"
-                    android:debuggable="false">
+                    >
       <activity android:name=".MileageTracker"
          android:label="@string/app_name">
          <intent-filter>
@@ -26,6 +26,7 @@
       <activity android:name="EditRecord"
          android:label="Edit Record"
          android:theme="@style/Theme.Dialog"
+         android:exported="false"
       >
             <!-- This filter says that we can view or edit the data of
                  a single note -->
@@ -52,7 +53,8 @@
          android:label="FIXME" />
          
       <activity android:name=".EditProfiles"
-         android:label="Edit User Profiles">
+         android:label="Edit User Profiles"
+         android:exported="false">
          <intent-filter android:label="Edit Profiles">
             <action android:name="com.switkows.mileage.EditProfiles" />
             <category android:name="android.intent.category.DEFAULT" />
@@ -60,7 +62,8 @@
       </activity>
 
       <activity android:name=".ShortcutAddEntry"
-         android:label="Add Mileage Entry">
+         android:label="Add Mileage Entry"
+         android:exported="false">
          <intent-filter>
              <action android:name=".Add" />
              <category android:name="android.intent.category.DEFAULT" />

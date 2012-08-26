@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 
 import com.switkows.mileage.EditRecord.EditRecordFragment;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -21,6 +22,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.Fragment;
@@ -43,7 +46,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.MultiChoiceModeListener;
 
-public class EditRecordsMenu extends FragmentActivity implements EditRecordFragment.UpdateCallback {
+public class EditRecordsMenu extends FragmentActivity implements EditRecordFragment.UpdateCallback,  android.support.v4.app.FragmentManager.OnBackStackChangedListener {
 
    private static final String LIST_FRAGMENT = "recordList";
    private static final String RECORD_FRAGMENT = "recordViewer";
@@ -77,6 +80,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 
    @Override
    public void onResume() {
+      getSupportFragmentManager().addOnBackStackChangedListener(this);
       // This might not be the best way to do this, but if we 'resume' this activity,
       // throw away the old cursor, and re-generate the data. This was needed to
       // support a user changing 'profiles' from the preferences screen
@@ -93,14 +97,20 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          mViewedRecordId = -1;  //reset this, so we don't display data from the wrong profile
          hideRecordView();
       }
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-         getActionBar().setDisplayHomeAsUpEnabled(true);
-      }
+      
+      setHomeEnabledHoneycomb();
       //FIXME - should store the Fragment pointer, so we don't lose state on orientation-switches!!
       if(mViewedRecordId >= 0)
          updateRecordView(mViewedRecordId);
       mLastUri = uri;
       super.onResume();
+   }
+   
+   @TargetApi(11)
+   private void setHomeEnabledHoneycomb() {
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+         getActionBar().setDisplayHomeAsUpEnabled(true);
+      }
    }
 
    // Save the import worker thread, so re-launching the program
@@ -279,6 +289,9 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
       EditRecordFragment fragment = EditRecordFragment.newInstance(id, false);
       if(view!=null) {
+         //add the fragment to the stack, so 'back' navigation properly hides it (hopefully)
+         if(view.getVisibility()!=View.VISIBLE)
+            trans.addToBackStack(null);
          view.setVisibility(View.VISIBLE);
          trans.replace(R.id.edit_record_fragment, fragment,RECORD_FRAGMENT);
          trans.commitAllowingStateLoss();
@@ -361,13 +374,19 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
                new int[] { android.R.id.text1 });
          setListAdapter(mAdapter);
          setEmptyText("No records present");
-         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-            getListView().setMultiChoiceModeListener(new EditRecordModeListener());
-         } else
+         if(setChoiceModeListenerHoneycomb(getListView()))
             getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       }
 
+      @TargetApi(11)
+      private boolean setChoiceModeListenerHoneycomb(ListView v) {
+         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            v.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            v.setMultiChoiceModeListener(new EditRecordModeListener());
+            return false;
+         }
+         return true;
+      }
       @Override
       public void onListItemClick(ListView l, View v, int position, long id) {
          ((EditRecordsMenu)getActivity()).updateRecordView(id);
@@ -476,6 +495,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          }
          return ret;
       }
+      @TargetApi(11)
       protected class EditRecordModeListener implements MultiChoiceModeListener {
          public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = getActivity().getMenuInflater();
@@ -483,7 +503,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
             mode.setTitle("Select Records");
             return true;
          }
-
+         
          public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             return true;
          }
@@ -662,6 +682,19 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 
    public boolean messageUpdated(long id) {
       return true;
+   }
+
+   public void onBackStackChanged() {
+      // TODO Auto-generated method stub
+      FragmentManager manager = getSupportFragmentManager();
+      int count = manager.getBackStackEntryCount();
+      if(count == 0) {
+         View view = findViewById(R.id.edit_record_fragment);
+         mViewedRecordId = -1;
+         getListFragment().updateRecordView(mViewedRecordId);
+         if(view != null)
+            view.setVisibility(View.GONE);
+      }
    };
 
 //   public void onClick(View v) {

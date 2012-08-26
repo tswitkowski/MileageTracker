@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -54,6 +56,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
          Integer lineCount = 0;
          String currentCar = PreferenceManager.getDefaultSharedPreferences(mContext).getString(mContext.getString(R.string.carSelection), "Car45");
          ArrayList<ContentValues> newEntries = new ArrayList<ContentValues>();
+         HashSet<ContentValues> profiles = new HashSet<ContentValues>();
          while(reader.ready()) {
             reader.readLine();
             mMax++;
@@ -83,6 +86,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             // Log.d("TJS","Read line '"+line+"', date = '"+fields[0]+"'...");
             MileageData record = new MileageData(mContext, fields);
             newEntries.add(record.getContent());
+            profiles.add(MileageProvider.createProfileContent(record.getCarName()));
             lineCount++;
             publishProgress(lineCount);
          }
@@ -90,6 +94,10 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             ContentValues[] additions = new ContentValues[newEntries.size()];
             additions = newEntries.toArray(additions);
             mContext.getContentResolver().bulkInsert(MileageProvider.ALL_CONTENT_URI, additions);
+            //push profile names
+            additions = new ContentValues[profiles.size()];
+            additions = profiles.toArray(additions);
+            mContext.getContentResolver().bulkInsert(MileageProvider.CAR_PROFILE_URI, additions);
          }
          reader.close();
       } catch (FileNotFoundException e) {
@@ -121,7 +129,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
       if(mShow) {
          String importMessage;
          if(result)
-            importMessage = "Data Successfully imported from " + mFile;
+            importMessage = "Data Successfully imported from\n" + mFile;
          else
             importMessage = "Error! could not access/read " + mFile;
    
@@ -137,6 +145,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    }
    public void clearDB() {
       mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
+      mContext.getContentResolver().delete(MileageProvider.CAR_PROFILE_URI, null, null);
    }
 
    private void createDialog() {
@@ -153,6 +162,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    /**
     * Updates the dialog configuration (i.e. can switch back and forth between indeterminate/determinate)
     */
+   @TargetApi(11)
    private void updateProgressConfig() {
       if(mShowIndeterminate) {
          mDialog.setIndeterminate(true);

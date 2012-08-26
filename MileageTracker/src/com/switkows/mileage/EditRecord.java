@@ -55,9 +55,9 @@ public class EditRecord extends FragmentActivity {
          getSupportFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
 
          //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-         LayoutParams params = getWindow().getAttributes();
-         params.width = LayoutParams.FILL_PARENT;
-         getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+//         LayoutParams params = getWindow().getAttributes();
+//         params.width = LayoutParams.FILL_PARENT;
+//         getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
       }
       setResult(RESULT_CANCELED);   //FIXME - needed?
    }
@@ -121,9 +121,9 @@ public class EditRecord extends FragmentActivity {
             // mState = STATE_EDIT;
             result =  inflater.inflate(R.layout.edit_record, null);
             //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-            LayoutParams params = getActivity().getWindow().getAttributes();
-            params.width = LayoutParams.FILL_PARENT;
-            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+//            LayoutParams params = getActivity().getWindow().getAttributes();
+//            params.width = LayoutParams.FILL_PARENT;
+//            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
 
             mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, recordId);
             //FIXME - replace with Loader? this is only loaded once, so maybe not worth it?
@@ -135,9 +135,9 @@ public class EditRecord extends FragmentActivity {
             else
                result =  inflater.inflate(R.layout.edit_record, null);
             //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-            LayoutParams params = getActivity().getWindow().getAttributes();
-            params.width = LayoutParams.FILL_PARENT;
-            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+//            LayoutParams params = getActivity().getWindow().getAttributes();
+//            params.width = LayoutParams.FILL_PARENT;
+//            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
             // Requested to insert: set that state, and create a new entry
             // in the container.
             // mState = STATE_INSERT;

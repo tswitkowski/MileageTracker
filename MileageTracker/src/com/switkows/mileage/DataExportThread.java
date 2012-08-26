@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.Cursor;
@@ -87,7 +88,7 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
       if(mShow) {
          String importMessage;
          if(result)
-            importMessage = "Data Successfully Saved to " + mFilename + "(new)";
+            importMessage = "Data Successfully Saved to\n" + mFilename + "(new)";
          else
             importMessage = "Error! could not access/read " + mFilename;
    
@@ -118,6 +119,7 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
    /**
     * Updates the dialog configuration (i.e. can switch back and forth between indeterminate/determinate)
     */
+   @TargetApi(11)
    private void updateProgressConfig() {
       if(mShowIndeterminate) {
          mDialog.setIndeterminate(true);

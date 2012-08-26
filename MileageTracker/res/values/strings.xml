@@ -63,4 +63,5 @@
    <string name="submitButton">Submit Modifications</string>
    <string name="averageEcoLabel">Average economy: </string>
    <string name="unknownValue">\??</string>
+   <string name="moveToPrompt">To Profile:</string>
 </resources>

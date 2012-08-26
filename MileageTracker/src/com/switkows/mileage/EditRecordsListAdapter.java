@@ -4,6 +4,7 @@ import java.util.HashSet;
 
 import com.switkows.mileage.EditRecordsMenu.EditRecordsMenuFragment;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -85,10 +86,15 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       view.setChecked(mSelected.contains(Long.valueOf(view.mIDValue)));
       //FIXME - can't the ListView do this automatically?
       //set the 'activated' state, which will cause the UI to add special styling in dualPane mode
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-         view.setActivated(mViewedId >= 0 && view.mIDValue==mViewedId);
+      setListActivatedHoneycomb(view);
 
       return convertView;
+   }
+   
+   @TargetApi(11)
+   private void setListActivatedHoneycomb(EditRecordListItem v) {
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+         v.setActivated(mViewedId >= 0 && v.mIDValue==mViewedId);
    }
    private SharedPreferences prefs;
 
