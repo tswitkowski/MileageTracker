@@ -2,6 +2,7 @@ package com.switkows.mileage;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -227,8 +228,8 @@ public class MileageData {
    }
 
    public static String getFormattedDate(int month, int day, int year) {
-      Date dt = new Date(year - 1900, month, day);
-      return getDateFormatter().format(dt);
+      GregorianCalendar cal = new GregorianCalendar(year, month, day);
+      return getDateFormatter().format(cal.getTime());
    }
    
    public static String getSimpleDescription(Cursor c, int dateColumn, int mpgColumn, SharedPreferences prefs, Context context) {

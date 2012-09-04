@@ -95,7 +95,7 @@ public class EditProfiles extends Activity {
       @SuppressWarnings("unchecked")
       ArrayAdapter<Profile> adapter = (ArrayAdapter<Profile>) mList.getAdapter();
       Profile[] content = new Profile[cursor.getCount()];
-      int column    = cursor.getColumnIndex("carName");
+      int column    = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
       int idColumn  = cursor.getColumnIndex("_id");
       Uri u;
 //      Toast.makeText(this, "Trying to create new ArrayAdapter", Toast.LENGTH_LONG).show();
@@ -204,7 +204,7 @@ public class EditProfiles extends Activity {
                   EditText box = (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
                   String profileName = box.getText().toString();
                   ContentValues values = new ContentValues();
-                  values.put("carName", profileName);
+                  values.put(MileageProvider.PROFILE_NAME, profileName);
                   //update profile configs
                   getContentResolver().update(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI, oldId), values, null, null);
                   //move all data to new profile name!

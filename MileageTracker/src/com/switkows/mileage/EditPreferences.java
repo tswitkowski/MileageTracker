@@ -8,12 +8,17 @@ import android.preference.PreferenceActivity;
 import android.view.MenuItem;
 
 public class EditPreferences extends PreferenceActivity {
-   @TargetApi(11)
+   @SuppressWarnings("deprecation")
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       addPreferencesFromResource(R.xml.preferences);
       // setTitle("MileageTracker Preferences");
+      configureActionBar();
+   }
+   
+   @TargetApi(11)
+   private void configureActionBar() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
          getActionBar().setDisplayHomeAsUpEnabled(true);
       }
@@ -31,6 +36,7 @@ public class EditPreferences extends PreferenceActivity {
    protected void onResume() {
       super.onResume();
       //get the list of profiles from the Content Provider, and populate preference
+      @SuppressWarnings("deprecation")
       ListPreference list = (ListPreference)findPreference(getString(R.string.carSelection));
       CharSequence[] cars = MileageProvider.getProfiles(this);
       list.setEntries(cars);

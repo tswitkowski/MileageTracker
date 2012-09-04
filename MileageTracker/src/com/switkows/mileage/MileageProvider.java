@@ -21,6 +21,7 @@ public class MileageProvider extends ContentProvider {
    private static final String    DB_TABLE     = "mileageInfo";
    private static final String    PROFILE_TABLE= "mileageProfiles";
    private static final int       DB_VERSION   = 5;
+   public  static final String    PROFILE_NAME = "carName";
 
    public static final String     AUTHORITY       = "com.switkows.mileage.MileageProvider";
    public static final Uri        CAR_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/car");
@@ -76,7 +77,7 @@ public class MileageProvider extends ContentProvider {
    }
    public static ContentValues createProfileContent(String name) {
       ContentValues values = new ContentValues();
-      values.put("carName", name);
+      values.put(PROFILE_NAME, name);
       return values;
    }
 
@@ -293,7 +294,7 @@ public class MileageProvider extends ContentProvider {
             db.execSQL(mContext.getString(R.string.initProfileTable));
             ContentValues values = new ContentValues();
             for(int i = 0 ; i < 3 ; i++) {
-               values.put("carName", "Car"+(i+1));
+               values.put(PROFILE_NAME, "Car"+(i+1));
                db.insert(PROFILE_TABLE, "", values);
             }
          } else {
@@ -327,7 +328,7 @@ public class MileageProvider extends ContentProvider {
          db.execSQL(mContext.getString(R.string.initProfileTable));
          ContentValues values = new ContentValues();
          for(int i = 0 ; i < 3 ; i++) {
-            values.put("carName", "Car"+(i+1));
+            values.put(PROFILE_NAME, "Car"+(i+1));
             db.insert(PROFILE_TABLE, "", values);
          }
       }

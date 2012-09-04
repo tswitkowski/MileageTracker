@@ -1,7 +1,7 @@
 package com.switkows.mileage;
 
 import java.util.Calendar;
-import java.util.Date;
+import java.util.GregorianCalendar;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
@@ -44,7 +44,10 @@ public class EditRecord extends FragmentActivity {
       boolean isNew  = MileageTracker.ACTION_INSERT.equals(action);
       if(!isNew && getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE) {
          //if we're in landscape, we'll use a two-pane interface, so dismiss this activity!
-         setResult(RESULT_OK);
+         int id = -2;
+         if(!isNew)
+            id = Integer.parseInt(getIntent().getData().getPathSegments().get(1));
+         setResult(id+1);
          finish();
          return;
       } else if(savedInstanceState==null){
@@ -126,9 +129,8 @@ public class EditRecord extends FragmentActivity {
 //            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
 
             mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, recordId);
-            //FIXME - replace with Loader? this is only loaded once, so maybe not worth it?
-            mCursor = getActivity().managedQuery(mUri, null, null, null, null);
-         } else if(newRecord) {
+            getLoaderManager().initLoader(LoaderCallbacks.ID_DATA_LOADER, null, mLoaderCallbacks);
+         } else {
             isNewRecord = true;
             if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)
                result =  inflater.inflate(R.layout.edit_record_landscape_floating, null);
@@ -219,13 +221,8 @@ public class EditRecord extends FragmentActivity {
             getActivity().setTitle(getText(R.string.new_record_title)+indicator);
          else
             getActivity().setTitle(getText(R.string.edit_record_title)+indicator);
-         // If we didn't have any trouble retrieving the data, it is now
-         // time to get at the stuff.
-         if(mCursor != null) {
-            // Make sure we are at the one and only row in the cursor.
-            mCursor.moveToFirst();
-            setTextFields();
-         } else {
+         //Note : assumes mCursor is not NULL if we are editing a record (so this call doesn't distrub the data..
+         if(isNewRecord) {
             Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR), month = c.get(Calendar.MONTH), day = c.get(Calendar.DAY_OF_MONTH);
             getTextFieldStruct(MileageData.DATE).setText(MileageData.getFormattedDate(month, day, year));
@@ -369,8 +366,9 @@ public class EditRecord extends FragmentActivity {
 
       protected Dialog createDialog() {
          String date = getTextFieldStruct(MileageData.DATE).getText().toString();
-         Date dt = new Date(MileageData.parseDate(date));
-         return new DatePickerDialog(getActivity(), dateListener, dt.getYear() + 1900, dt.getMonth(), dt.getDate());
+         GregorianCalendar cal1 = new GregorianCalendar();
+         cal1.setTimeInMillis(MileageData.parseDate(date));
+         return new DatePickerDialog(getActivity(), dateListener, cal1.get(Calendar.YEAR), cal1.get(Calendar.MONTH), cal1.get(Calendar.DAY_OF_MONTH));
       }
 
       private final DatePickerDialog.OnDateSetListener dateListener = new DatePickerDialog.OnDateSetListener() {
@@ -399,7 +397,8 @@ public class EditRecord extends FragmentActivity {
                String filter = hint == null ? null : STATION_NAME + " like '%" + hint + "%'";
                return new CursorLoader(getActivity(),uri, STATION_PROJ, filter, null, STATION_SORT);
             } else if(id == ID_DATA_LOADER) {
-               return null;
+               CursorLoader loader = new CursorLoader(getActivity(),mUri, null, null, null, null);
+               return loader;
             } else {
                return null;
             }
@@ -408,12 +407,18 @@ public class EditRecord extends FragmentActivity {
          public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if(loader.getId() == ID_STATION_LOADER) {
                stationAutocompleteAdapter.swapCursor(data);
+            } else if(loader.getId() == ID_DATA_LOADER) {
+               mCursor = data;
+               mCursor.moveToFirst();
+               setTextFields();
             }
          }
 
          public void onLoaderReset(Loader<Cursor> loader) {
             if(loader.getId() == ID_STATION_LOADER) {
                stationAutocompleteAdapter.swapCursor(null);
+            } else if(loader.getId() == ID_DATA_LOADER) {
+               mCursor = null;
             }
          }
          

@@ -23,7 +23,6 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.Fragment;
@@ -224,11 +223,13 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    }
 
    @Override
-   protected void onActivityResult(int arg0, int arg1, Intent arg2) {
-      super.onActivityResult(arg0, arg1, arg2);
-      if(arg0 == 0) {
-         if(arg1 == RESULT_CANCELED)
+   protected void onActivityResult(int requestCode, int resultCode, Intent arg2) {
+      super.onActivityResult(requestCode, resultCode, arg2);
+      if(requestCode == 0) {
+         if(resultCode == RESULT_CANCELED)
             mViewedRecordId = -1;
+         else
+            mViewedRecordId = resultCode-1;
       }
    }
 
@@ -286,17 +287,19 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       if(mViewedRecordId == id && (view != null && view.getVisibility()==View.VISIBLE) )
          return;
       mViewedRecordId = id;
-      FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-      EditRecordFragment fragment = EditRecordFragment.newInstance(id, false);
       if(view!=null) {
+         FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+         EditRecordFragment fragment = EditRecordFragment.newInstance(id, false);
          //add the fragment to the stack, so 'back' navigation properly hides it (hopefully)
          if(view.getVisibility()!=View.VISIBLE)
-            trans.addToBackStack(null);
+            trans.addToBackStack(RECORD_FRAGMENT);
          view.setVisibility(View.VISIBLE);
          trans.replace(R.id.edit_record_fragment, fragment,RECORD_FRAGMENT);
          trans.commitAllowingStateLoss();
 
       } else {
+         //pop the back stack
+         getSupportFragmentManager().popBackStack();
          Uri uri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, id);
          //wait for result so we know whether the the activity was closed due to a
          //cancel or an orientation-change. This allows us to save the state when
@@ -685,7 +688,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    }
 
    public void onBackStackChanged() {
-      // TODO Auto-generated method stub
       FragmentManager manager = getSupportFragmentManager();
       int count = manager.getBackStackEntryCount();
       if(count == 0) {

@@ -5,7 +5,6 @@ import com.switkows.mileage.MileageTracker.ShowLargeChart;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -19,9 +18,8 @@ import com.switkows.mileage.Charts.*;
  * @author switkows
  * 
  */
-public class MileageChartManager extends DataSetObserver {
+public class MileageChartManager {
    private Context              mContext;
-   private Cursor               mCursor;
    private MileageData[]        dataSet;
    private SharedPreferences    prefs;
 
@@ -29,16 +27,14 @@ public class MileageChartManager extends DataSetObserver {
 
    public MileageChartManager(Context c, Cursor cursor) {
       mContext = c;
-      mCursor = cursor;
-      loadData();
-      mCursor.registerDataSetObserver(this);
+      loadData(cursor);
    }
 
-   private void loadData() {
-      dataSet = new MileageData[mCursor.getCount()];
-      for(int i = 0; i < mCursor.getCount(); i++) {
-         mCursor.moveToPosition(i);
-         dataSet[i] = new MileageData(mContext, mCursor);
+   private void loadData(Cursor cursor) {
+      dataSet = new MileageData[cursor.getCount()];
+      for(int i = 0; i < cursor.getCount(); i++) {
+         cursor.moveToPosition(i);
+         dataSet[i] = new MileageData(mContext, cursor);
 
       }
    }
@@ -58,7 +54,7 @@ public class MileageChartManager extends DataSetObserver {
       return MileageData.getEconomyUnits(getPrefs(), mContext);
    }
 
-   // FIXME - this should not go in the chartManager, but it's conventient..
+   // FIXME - this should not go in the chartManager, but it's convenient..
    // should be moved to the content provider, instead
    public float getAverageMPG() {
       if(dataSet == null || dataSet.length == 0)
