@@ -15,12 +15,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -29,7 +31,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -144,16 +145,19 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
+      DialogFragment fragment;
       switch(item.getItemId()) {
          case R.id.add_item:
             Uri uri = getIntent().getData();
             startActivity(new Intent(MileageTracker.ACTION_INSERT, uri));
             return true;
          case R.id.delete_entry:
-            showDialog(R.id.delete_entry);
+            fragment = DeleteConfirmFragment.newInstance(getSelectedMessage());
+            fragment.show(getSupportFragmentManager(), "dialog");
             return true;
          case R.id.move_entry:
-            showDialog(R.id.move_entry);
+            fragment = MoveDialogFragment.newInstance(getSelectedMessage());
+            fragment.show(getSupportFragmentManager(), "dialog");
             return true;
          case R.id.select_all:
             selectAll();
@@ -181,45 +185,32 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    private void checkSDState(int menuId) {
       String state = Environment.getExternalStorageState();
       if(state.equals(Environment.MEDIA_MOUNTED)) {
-         showDialog(menuId);
+         DialogFragment fragment = null;
+         switch(menuId) {
+            case R.id.import_csv:
+               fragment = ImportDialogFragment.newInstance();
+               break;
+            case R.id.export_csv:
+               fragment = ExportDialogFragment.newInstance();
+               break;
+         }
+         if(fragment != null)
+            fragment.show(getSupportFragmentManager(), "dialog");
       } else {
          Toast.makeText(this, "Error! SDCARD not accessible!", Toast.LENGTH_LONG).show();
       }
    }
 
-   @Override
-   protected Dialog onCreateDialog(int id) {
-      switch(id) {
-         case R.id.delete_entry:
-            return new DeleteConfirm(this);
-         case R.id.move_entry:
-            return new MoveDialog(this);
-         case R.id.import_csv:
-            return new ImportDialog(this);
-         case R.id.export_csv:
-            return new ExportDialog(this);
-      }
-      Log.i("TJS", "Got here. should not have!");
-      return null;
+   protected void performImport(String filename) {
+      File file = new File(Environment.getExternalStorageDirectory(), filename);
+      iThread = new DataImportThread(this,getListAdapter());
+      iThread.execute(file);
    }
 
-   @Override
-   protected void onPrepareDialog(int id, Dialog dialog) {
-      super.onPrepareDialog(id, dialog);
-      switch(id) {
-         case R.id.delete_entry:
-            ((DeleteConfirm) dialog).computeMessage();
-            break;
-         case R.id.move_entry:
-            ((MoveDialog)dialog).computeMessage();
-            break;
-         case R.id.import_csv:
-            dialog = new ImportDialog(this);
-            break;
-         case R.id.export_csv:
-            dialog = new ExportDialog(this);
-            break;
-      }
+   protected void performExport(String filename) {
+       File file = new File(Environment.getExternalStorageDirectory(), filename);
+       DataExportThread exporter = new DataExportThread(this);
+       exporter.execute(file);
    }
 
    @Override
@@ -513,12 +504,15 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 
          public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             Activity activity = getActivity();
+            DialogFragment fragment;
             switch(item.getItemId()) {
                case R.id.delete_entry:
-                  activity.showDialog(R.id.delete_entry);
+                  fragment = DeleteConfirmFragment.newInstance(getSelectedMessage());
+                  fragment.show(getActivity().getSupportFragmentManager(), "dialog");
                   return true;
                case R.id.move_entry:
-                  activity.showDialog(R.id.move_entry);
+                  fragment = MoveDialogFragment.newInstance(getSelectedMessage());
+                  fragment.show(getActivity().getSupportFragmentManager(), "dialog");
                   return true;
                case R.id.select_all:
                   selectAll();
@@ -556,123 +550,141 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       }
    }
 
-   protected class DeleteConfirm extends AlertDialog {
-      private final OnClickListener acceptListener;
-      public DeleteConfirm(Context context) {
-         super(context);
-         setTitle(R.string.confirm_delete);
-         acceptListener = new OnClickListener() {
+   public static class DeleteConfirmFragment extends DialogFragment {
+      public static DeleteConfirmFragment newInstance(String selected) {
+         DeleteConfirmFragment frag = new DeleteConfirmFragment();
+         Bundle args = new Bundle();
+         args.putString("selected", selected);
+         frag.setArguments(args);
+         return frag;
+     }
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+         final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         String message = getArguments().getString("selected");
+         OnClickListener acceptListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-               deleteSelected();
-               deselectAll();
+               activity.deleteSelected();
+               activity.deselectAll();
             }
          };
-         computeMessage();
-         setButton(BUTTON_POSITIVE, "Yes", acceptListener);
-         setButton(BUTTON_NEGATIVE, "No", new CancelClickListener());
-      }
-
-      public void computeMessage() {
-         setMessage(getSelectedMessage());
+         return new AlertDialog.Builder(getActivity())
+               .setTitle(R.string.confirm_delete)
+               .setMessage(message)
+               .setPositiveButton("Yes", acceptListener)
+               .setNegativeButton("No", activity.new CancelClickListener())
+               .create();
       }
    }
    
-   private class MoveDialog extends AlertDialog {
-      private TextView mText;
-      public MoveDialog(Context context) {
-         super(context);
-         setTitle(R.string.confirm_move);
-         View view = ((LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.move_dialog, null);
-         setView(view);
-         mText = (TextView) view.findViewById(android.R.id.text1);
-         ArrayAdapter<CharSequence> newAdapter = new ArrayAdapter<CharSequence>(context, android.R.layout.simple_spinner_dropdown_item);
+   public static class MoveDialogFragment extends DialogFragment {
+      public static MoveDialogFragment newInstance(String selected) {
+         MoveDialogFragment frag = new MoveDialogFragment();
+         Bundle args = new Bundle();
+         args.putString("selected", selected);
+         frag.setArguments(args);
+         return frag;
+     }
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+         final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.move_dialog, null);
+         String message = getArguments().getString("selected");
+         TextView text = (TextView) view.findViewById(android.R.id.text1);
+         text.setText(message);
+         ArrayAdapter<CharSequence> newAdapter = new ArrayAdapter<CharSequence>(activity, android.R.layout.simple_spinner_dropdown_item);
          //replace code with addAll once we drop support for pre-honeycomb devices!
-         CharSequence[] cars = MileageProvider.getProfiles(context);
+         CharSequence[] cars = MileageProvider.getProfiles(activity);
          for(CharSequence car : cars)
             newAdapter.add(car);
-//         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.carValues, android.R.layout.simple_spinner_dropdown_item);
          Spinner s = (Spinner)view.findViewById(R.id.move_to_spinner);
          s.setAdapter(newAdapter);
          OnClickListener acceptListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-               Spinner s = (Spinner)findViewById(R.id.move_to_spinner);
-               moveSelected((String)s.getSelectedItem());
-               deselectAll();
+               Spinner s = (Spinner)activity.findViewById(R.id.move_to_spinner);
+               activity.moveSelected((String)s.getSelectedItem());
+               activity.deselectAll();
             }
          };
-         setButton(BUTTON_POSITIVE,"Yes", acceptListener);
-         setButton(BUTTON_NEGATIVE,"No",  new CancelClickListener());
-      }
-      
-      public void computeMessage() {
-         mText.setText(getSelectedMessage());
+         return new AlertDialog.Builder(getActivity())
+               .setTitle(R.string.confirm_move)
+               .setView(view)
+               .setPositiveButton("Yes", acceptListener)
+               .setNegativeButton("No", activity.new CancelClickListener())
+               .create();
       }
    }
 
-   protected class ImportDialog extends AlertDialog {
-      private final Spinner              filename;
-      private final DialogInterface.OnClickListener importListener = new ImportListener();
-
-      // Upon the button being clicked, a new thread will be started, which imports the data into the database,
-      // and presents a progress dialog box to the user
-      private class ImportListener implements DialogInterface.OnClickListener {
-         public void onClick(DialogInterface dialog, int which) {
-            String name = (String) filename.getSelectedItem();
-            dismiss();
-            File file = new File(Environment.getExternalStorageDirectory(), name);
-            iThread = new DataImportThread(getContext(),getListAdapter());
-            iThread.execute(file);
-         }
-      }
-
-      public ImportDialog(Context context) {
-         super(context);
-         String[] files = getCSVFiles();
+   public static class ImportDialogFragment extends DialogFragment {
+      public static ImportDialogFragment newInstance() {
+         ImportDialogFragment frag = new ImportDialogFragment();
+         return frag;
+     }
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+         final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         String[] files = activity.getCSVFiles();
          if(files != null) {
-            setTitle("Select Import File:");
-            View view = ((LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.import_dialog, null);
-            setView(view);
-            filename = (Spinner) view.findViewById(R.id.file_list);
-            setButton(BUTTON_POSITIVE,getString(R.string.confirm_import),importListener);
-            setButton(BUTTON_NEGATIVE,"Cancel",  new CancelClickListener());
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
+            
+            View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.import_dialog, null);
+            final Spinner filename = (Spinner) view.findViewById(R.id.file_list);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             filename.setAdapter(adapter);
             for(String file : files)
                adapter.add(file);
+
+            DialogInterface.OnClickListener importListener = new DialogInterface.OnClickListener() {
+               // Upon the button being clicked, a new thread will be started, which imports the data into the database,
+               // and presents a progress dialog box to the user
+               public void onClick(DialogInterface dialog, int which) {
+                  String name = (String) filename.getSelectedItem();
+                  dismiss();
+                  activity.performImport(name);
+               }
+            };
+            return new AlertDialog.Builder(activity)
+                  .setTitle("Select Import File:")
+                  .setView(view)
+                  .setPositiveButton(R.string.confirm_import, importListener)
+                  .setNegativeButton("Cancel", activity.new CancelClickListener())
+                  .create();
          } else {   //FIXME - this will never fire! check files.length, and display an error message!
-            filename = null;
-            dismiss();
+            return null;
          }
       }
-   };
+   }
 
-   protected class ExportDialog extends AlertDialog {
-      private final AutoCompleteTextView filename;
-      private final DialogInterface.OnClickListener exportListener = new ExportListener();
-
-      private class ExportListener implements DialogInterface.OnClickListener {
-         public void onClick(DialogInterface dialog, int which) {
-            String name = filename.getText().toString();
-            dismiss();
-            File file = new File(Environment.getExternalStorageDirectory(), name);
-            DataExportThread exporter = new DataExportThread(getContext());
-            exporter.execute(file);
-         }
-      }
-
-      public ExportDialog(Context context) {
-         super(context);
-         setTitle("Select Export File:");
-         View view = ((LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.export_dialog, null);
-         setView(view);
+   public static class ExportDialogFragment extends DialogFragment {
+      public static ExportDialogFragment newInstance() {
+         ExportDialogFragment frag = new ExportDialogFragment();
+         return frag;
+     }
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+         final AutoCompleteTextView filename;
+         final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.export_dialog, null);
          filename = (AutoCompleteTextView) view.findViewById(R.id.file_list);
-         String[] files = getCSVFiles();
-         ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line,
+         String[] files = activity.getCSVFiles();
+         ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_dropdown_item_1line,
                files);
          filename.setAdapter(adapter);
-         setButton(BUTTON_POSITIVE, getString(R.string.confirm_export), exportListener);
-         setButton(BUTTON_NEGATIVE,"Cancel",  new CancelClickListener());
+
+         DialogInterface.OnClickListener exportListener = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+               String name = filename.getText().toString();
+               dismiss();
+               activity.performExport(name);
+            }
+         };
+
+         return new AlertDialog.Builder(activity)
+               .setTitle("Select Export File:")
+               .setView(view)
+               .setPositiveButton(R.string.confirm_export, exportListener)
+               .setNegativeButton("Cancel", activity.new CancelClickListener())
+               .create();
       }
    }
 

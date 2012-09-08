@@ -70,6 +70,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       super.onResume();
       // FIXME - maybe be a bit smarter about when we generate charts!
       getSupportLoaderManager().restartLoader(45, null, this);
+      loadActionBarNavItems();
    }
 
    @TargetApi(11)
@@ -82,6 +83,10 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          bar.setListNavigationCallbacks(mProfileAdapter, callbacks);
          bar.setSelectedNavigationItem(mProfileAdapter.getSelectedPosition());
       }
+   }
+   @TargetApi(11)
+   private void loadActionBarNavItems() {
+      mProfileAdapter.updateCursor();
    }
 
    public void generateCharts(Cursor cursor) {
@@ -304,12 +309,19 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       public CarAdapter(Context context, int layout, Cursor c,
             String[] from, int[] to) {
          super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},NO_SELECTION);
-         Cursor cursor = context.getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
-         swapCursor(cursor);
+         updateCursor();
+      }
+      
+      public void updateCursor() {
+         Cursor c = getApplicationContext().getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
+         updateCursor(c);
+      }
+      public void updateCursor(Cursor c) {
+         swapCursor(c);
          //modify the cursor to position at the appropriate point 
          getSelectedPosition();
       }
-      
+
       protected int getSelectedPosition() {
          Cursor cursor = getCursor();
          String currentProfile = getCurrentProfile();
