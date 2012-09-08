@@ -72,7 +72,7 @@ public class EditRecord extends FragmentActivity {
       private SharedPreferences    prefs;
       private boolean              isNewRecord;
       private myListAdapter        stationAutocompleteAdapter;
-      private LoaderCallbacks      mLoaderCallbacks = new LoaderCallbacks();     
+      private LoaderCallbacks      mLoaderCallbacks = new LoaderCallbacks();
 
       private TextView             dateBox;
       private AutoCompleteTextView stationBox;

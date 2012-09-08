@@ -22,10 +22,12 @@ public class MileageDiffChart extends TimeChartExtension {
       super(c, mTitles[0], "% diff", mTitles, colors, styles, data);
    }
 
+   @Override
    protected void appendDataToSeries(long date, float[] values) {
       appendDataToSeries(date, AVERAGE_MPG_DIFF, values[0]);
    }
 
+   @Override
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] mpg_diff = new double[data.length];
       List<double[]> values = new ArrayList<double[]>();

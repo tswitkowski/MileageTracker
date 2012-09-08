@@ -127,7 +127,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
       return uri;
    }
-   
+
    public String getCurrentProfile() {
       String option = this.getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(mContext).getString(option, "Car45");
@@ -136,8 +136,8 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
 
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
-	  MenuInflater inflater = getMenuInflater();
-	  inflater.inflate(R.menu.main_menu, menu);
+      MenuInflater inflater = getMenuInflater();
+      inflater.inflate(R.menu.main_menu, menu);
       return true;
    }
 
@@ -167,8 +167,8 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          super();
          mLabels = getResources().getStringArray(R.array.StatisticsLabels);
          mList = new HashMap<String, FloatWithUnits>();
-         for(int i = 0; i < mLabels.length; i++) {
-            mList.put(mLabels[i], new FloatWithUnits(-1, "??"));
+         for (String label : mLabels) {
+            mList.put(label, new FloatWithUnits(-1, "??"));
          }
          mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       }
@@ -213,7 +213,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
             return;
          String label = mLabels[pos];
          if(mList.containsKey(label)) {
-            FloatWithUnits val = (FloatWithUnits) mList.get(label);
+            FloatWithUnits val = mList.get(label);
             val.setUnits(units);
             val.setValue(value);
          } else {
@@ -311,14 +311,14 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},NO_SELECTION);
          updateCursor();
       }
-      
+
       public void updateCursor() {
          Cursor c = getApplicationContext().getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
          updateCursor(c);
       }
       public void updateCursor(Cursor c) {
          swapCursor(c);
-         //modify the cursor to position at the appropriate point 
+         //modify the cursor to position at the appropriate point
          getSelectedPosition();
       }
 
@@ -334,7 +334,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          return cursor.getPosition();
       }
    }
-   
+
    /**
     * Handle changes to Action Bar's drop down list change
     * @author Trevor
@@ -344,7 +344,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       @TargetApi(9)
       public boolean onNavigationItemSelected(int itemPosition, long itemId) {
          if(mProfileAdapter!=null) {
-            Cursor c = (Cursor)mProfileAdapter.getCursor();
+            Cursor c = mProfileAdapter.getCursor();
             c.moveToPosition(itemPosition);
             String profile = c.getString(c.getColumnIndex(MileageProvider.PROFILE_NAME));
             Editor prefs = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
@@ -356,7 +356,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          }
          return false;
       }
-      
+
    }
 
    /**

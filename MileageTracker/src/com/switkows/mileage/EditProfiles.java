@@ -21,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 //import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +46,7 @@ public class EditProfiles extends FragmentActivity {
          mHasItems = hasItems;
       }
 
+      @Override
       public String toString() {
          String result = mName;
          if(mHasItems)
@@ -125,7 +125,7 @@ public class EditProfiles extends FragmentActivity {
       }
       updateList();
    }
-   
+
    @TargetApi(9)
    protected void renameSelectedProfile(String newName) {
       @SuppressWarnings("unchecked")
@@ -167,10 +167,10 @@ public class EditProfiles extends FragmentActivity {
             fragment = DeleteProfileDialogFragment.newInstance(getSelectedString());
             break;
          case R.id.change_name:
-             SparseBooleanArray sel = mList.getCheckedItemPositions();
-             @SuppressWarnings("unchecked")
+            SparseBooleanArray sel = mList.getCheckedItemPositions();
+            @SuppressWarnings("unchecked")
             final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
-             String name = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getName();
+            String name = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getName();
 
             fragment = EditProfileDialogFragment.newInstance(name);
             break;
@@ -195,12 +195,12 @@ public class EditProfiles extends FragmentActivity {
       }
       return str;
    }
-   
+
    public static class CreateProfileDialogFragment extends DialogFragment {
       public static CreateProfileDialogFragment newInstance() {
          CreateProfileDialogFragment frag = new CreateProfileDialogFragment();
          return frag;
-     }
+      }
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
@@ -233,7 +233,7 @@ public class EditProfiles extends FragmentActivity {
          args.putString("selected", selected);
          frag.setArguments(args);
          return frag;
-     }
+      }
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
@@ -260,7 +260,7 @@ public class EditProfiles extends FragmentActivity {
          args.putString("selected", selected);
          frag.setArguments(args);
          return frag;
-     }
+      }
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();

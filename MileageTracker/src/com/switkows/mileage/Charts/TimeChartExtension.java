@@ -26,7 +26,7 @@ public abstract class TimeChartExtension {
    private final String         mTitle;
    private final String         mYLabel;
    private boolean              mIsPanZoomable;
-   
+
    protected String[]             mTitles;
    protected int[]                mColors;
    protected PointStyle[]         mStyles;
@@ -68,7 +68,7 @@ public abstract class TimeChartExtension {
          mRenderer.setZoomEnabled(true,true);
          Configuration config = mContext.getResources().getConfiguration();
          if(config.touchscreen == Configuration.TOUCHSCREEN_NOTOUCH)
-        	 mRenderer.setZoomButtonsVisible(true);
+            mRenderer.setZoomButtonsVisible(true);
       } else {
          mRenderer.setPanEnabled(false,false);
          mRenderer.setZoomEnabled(false,false);
@@ -81,23 +81,23 @@ public abstract class TimeChartExtension {
          buildChart();
       return mView;
    }
-   
+
    public void setTitles(String[] titles) {
       mTitles = titles;
    }
-   
+
    public void setColors(int[] colors) {
       mColors = colors;
    }
-   
+
    public void setStyles(PointStyle[] s) {
       mStyles = s;
    }
-   
+
    public void setPanZoomable(boolean setting) {
       mIsPanZoomable = setting;
    }
-   
+
    public void setNormalizedValue(float value) {
       mNormalize = value;
    }
@@ -129,8 +129,8 @@ public abstract class TimeChartExtension {
       XYSeries[] allSeries = mDataSet.getSeries();
       for(XYSeries series : allSeries)
          mDataSet.removeSeries(series);
-      for(int i = 0; i < mTitles.length; i++)
-         mDataSet.addSeries(new XYSeries(mTitles[i]));
+      for (String title : mTitles)
+         mDataSet.addSeries(new XYSeries(title));
    }
 
    protected void appendDataToSeries(long date, int ser, float value) {

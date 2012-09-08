@@ -144,12 +144,12 @@ public class MileageProvider extends ContentProvider {
 
    @Override
    public Uri insert(Uri uri, ContentValues initialValues) {
-      boolean isProfile = sriMatcher.match(uri) == PROFILE_SELECT; 
+      boolean isProfile = sriMatcher.match(uri) == PROFILE_SELECT;
       if(sriMatcher.match(uri) != ALL_CAR && sriMatcher.match(uri) != SPECIFIC_CAR && !isProfile) {
          throw new IllegalArgumentException("Unknown URI : '" + uri + "'");
       }
       String table   = isProfile ? PROFILE_TABLE   : DB_TABLE;
-      Uri dataseturi = isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI; 
+      Uri dataseturi = isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI;
 
       ContentValues values;
       if(initialValues != null)
@@ -250,7 +250,7 @@ public class MileageProvider extends ContentProvider {
             count = db.update(DB_TABLE, values, "_id=" + id + where, selectionArgs);
             break;
          case PROFILE_SELECT:
-            //FIXME - add check to make sure URI has ID present! 
+            //FIXME - add check to make sure URI has ID present!
             id = uri.getPathSegments().get(1);
             where = selection != null && selection.length() > 0 ? " AND (" + selection + ")" : "";
             count = db.update(PROFILE_TABLE, values, "_id=" + id + where, selectionArgs);

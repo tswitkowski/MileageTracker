@@ -23,10 +23,12 @@ public class MilesChart extends TimeChartExtension {
       super(c, mTitles[isUS ? 0 : 1], mUnits[isUS ? 0 : 1], mLineTitles, colors, styles, data);
    }
 
+   @Override
    protected void appendDataToSeries(long date, float[] values) {
       appendDataToSeries(date, TOTAL_MILES, values[0]);
    }
 
+   @Override
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] miles = new double[data.length];
       List<double[]> values = new ArrayList<double[]>();

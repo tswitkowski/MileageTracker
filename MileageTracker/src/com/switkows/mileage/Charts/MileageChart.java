@@ -23,11 +23,13 @@ public class MileageChart extends TimeChartExtension {
       super(c, mTitles[isUS ? 0 : 1], mUnits[isUS ? 0 : 1], mLineTitles, colors, styles, data);
    }
 
+   @Override
    protected void appendDataToSeries(long date, float[] values) {
       appendDataToSeries(date, COMPUTER_MILEAGE, values[0]);
       appendDataToSeries(date, ACTUAL_MILEAGE, values[1]);
    }
 
+   @Override
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] comp_mpg = new double[data.length];
       double[] act_mpg = new double[data.length];

@@ -17,10 +17,10 @@ public class MileageBackupAgent extends BackupAgentHelper {
    //using com.switkows.mileage_preferences because this is the 'default' naming convention for the preferences file
    static final String mPrefs     = "com.switkows.mileage_preferences";    //name of preferences XML file
    static final String mPrefKey   = "mileage_prefs"; //just a label to give the backup data
-	
+
    static final String mDataFile  = "export.csv";
    static final String mDataKey   = "mileage_data";
-	
+
    @Override
    public void onCreate() {
       SharedPreferencesBackupHelper prefBackup = new SharedPreferencesBackupHelper(this, mPrefs);
@@ -29,7 +29,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
       FileBackupHelper dataBackup = new MyFileBackupHelper(this, mDataFile);
       addHelper(mDataKey, dataBackup);
    }
-	
+
    @Override
    public void onRestore(BackupDataInput data, int appVersionCode,
          ParcelFileDescriptor newState) throws IOException {
@@ -52,7 +52,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
          super(context, files);
          mContext = context;
       }
-      
+
       @Override
       public void performBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) {
          DataExportThread exporter = new DataExportThread(mContext,false);
@@ -60,5 +60,5 @@ public class MileageBackupAgent extends BackupAgentHelper {
          super.performBackup(oldState, data, newState);
          //FIXME - delete file after backup is complete (will we know when it is?)
       }
-	}
+   }
 }

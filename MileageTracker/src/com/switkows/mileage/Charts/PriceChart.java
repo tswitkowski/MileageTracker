@@ -22,10 +22,12 @@ public class PriceChart extends TimeChartExtension {
       super(c, mTitles[isUS ? 0 : 1], "Price($)", mLineTitles, colors, styles, data);
    }
 
+   @Override
    protected void appendDataToSeries(long date, float[] values) {
       appendDataToSeries(date, PRICE, values[0]);
    }
 
+   @Override
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] price = new double[data.length];
       List<double[]> values = new ArrayList<double[]>();

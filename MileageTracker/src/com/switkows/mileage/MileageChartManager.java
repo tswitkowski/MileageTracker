@@ -80,8 +80,8 @@ public class MileageChartManager {
 
    public float getTotal(int field) {
       float total = 0;
-      for(int i = 0; i < dataSet.length; i++)
-         total += dataSet[i].getFloatValue(field);
+      for (MileageData item : dataSet)
+         total += item.getFloatValue(field);
       return total;
    }
 
@@ -94,8 +94,8 @@ public class MileageChartManager {
    public float getBest(int field) {
       float best = 0;
       float curVal;
-      for(int i = 0; i < dataSet.length; i++) {
-         curVal = dataSet[i].getFloatValue(field);
+      for (MileageData item : dataSet) {
+         curVal = item.getFloatValue(field);
          if(curVal > best)
             best = curVal;
       }
@@ -114,7 +114,7 @@ public class MileageChartManager {
          }
       }
    }
-   
+
    public void genAddChart(LinearLayout view, ShowLargeChart listener, SharedPreferences prefs, int key) {
       if(!prefs.contains(mContext.getString(key))) {
          Log.e("TJS","Error. key wasn't found...bad news...");
@@ -142,30 +142,30 @@ public class MileageChartManager {
       }
       view.setVisibility(val == NO_CHART ? View.GONE : View.VISIBLE);
    }
-   
+
    public View createChart(int chartID, boolean isPanZoomable, boolean isUS) {
       TimeChartExtension chart = null;
 //      float average = 0;
       switch(chartID) {
-       case MPG_CHART:
-           chart = new MileageChart(mContext, dataSet, isUS);
+         case MPG_CHART:
+            chart = new MileageChart(mContext, dataSet, isUS);
 //           average = getAverageMPG();
-           break;
-        case MPG_DIFF_CHART:
-           chart = new MileageDiffChart(mContext, dataSet, isUS);
+            break;
+         case MPG_DIFF_CHART:
+            chart = new MileageDiffChart(mContext, dataSet, isUS);
 //           average = getAverageDiff();
-           break;
-        case PRICE_CHART:
-           chart = new PriceChart(mContext, dataSet, isUS);
+            break;
+         case PRICE_CHART:
+            chart = new PriceChart(mContext, dataSet, isUS);
 //           average = getAverage(MileageData.PRICE);
-           break;
-        case MPG_STATION_CHART:
-           chart = new MileageVsStationChart(mContext, dataSet, isUS);
+            break;
+         case MPG_STATION_CHART:
+            chart = new MileageVsStationChart(mContext, dataSet, isUS);
 //           average = getAverageMPG();
-           break;
-        case ODO_CHART:
-           chart = new MilesChart(mContext, dataSet, isUS);
-           break;
+            break;
+         case ODO_CHART:
+            chart = new MilesChart(mContext, dataSet, isUS);
+            break;
       }
       if(chart != null) {
          chart.setPanZoomable(isPanZoomable);
@@ -175,5 +175,5 @@ public class MileageChartManager {
       }
       return null;
    }
-   
+
 }

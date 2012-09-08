@@ -16,7 +16,7 @@ public class EditPreferences extends PreferenceActivity {
       // setTitle("MileageTracker Preferences");
       configureActionBar();
    }
-   
+
    @TargetApi(11)
    private void configureActionBar() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {

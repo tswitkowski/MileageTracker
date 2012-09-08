@@ -24,7 +24,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    String                     mFile;                //short file name (used for toast/log messages only)
    private int                mMax;                 //holds the maximum value of the progress bar
    private boolean            mShowIndeterminate;   //set to TRUE to show progress bar as indeterminate
-   
+
    private ProgressDialog     mDialog;
    private final EditRecordsListAdapter  mAdapter;
 
@@ -132,7 +132,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             importMessage = "Data Successfully imported from\n" + mFile;
          else
             importMessage = "Error! could not access/read " + mFile;
-   
+
          Log.d("TJS", importMessage);
          Toast.makeText(mContext, importMessage, Toast.LENGTH_LONG).show();
          if(mAdapter!=null)
