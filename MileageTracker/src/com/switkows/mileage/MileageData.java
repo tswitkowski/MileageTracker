@@ -41,8 +41,8 @@ public class MileageData {
 
    public static final int      DATA_LEN  = 8;
 
-   public final static String[] ToDBNames = { "date", "station", "odometer", "trip", "gallons", "price", "compMileage",
-      "actMileage", "totalPrice", "mileageDiff", "carName" };
+   public final static String[] ToDBNames = {"date", "station", "odometer", "trip", "gallons", "price", "compMileage",
+         "actMileage", "totalPrice", "mileageDiff", "carName"};
 
    // main entry point. takes the 'inputs', computes the 3 computed values
    public MileageData(Context c, String car, String dt, String station, float odo, float trip, float gallons,
@@ -134,8 +134,7 @@ public class MileageData {
       }
       // Log.d("TJS","parseDate("+dt+") = "+getFormattedDate(loc_dt));
       if(!dt.equalsIgnoreCase(dateDecoder.format(loc_dt))) {
-         Log.e("TJS", "Error: parseDate did not output correct results! parseDate(" + dt + ") != "
-               + dateDecoder.format(loc_dt));
+         Log.e("TJS", "Error: parseDate did not output correct results! parseDate(" + dt + ") != " + dateDecoder.format(loc_dt));
       }
       return loc_dt;
    }
@@ -216,7 +215,7 @@ public class MileageData {
 
    public static String exportCSVTitle() {
       String str = "";
-      for (String name : ToDBNames)
+      for(String name : ToDBNames)
          str += name.concat(",");
       return str;
    }
@@ -252,10 +251,10 @@ public class MileageData {
 
    // Unit conversion helpers:
    public static final int      US                   = 0, METRIC = 1;
-   public static final String[] ECONOMY_UNIT_LABELS  = { "mpg", "km/L" };
-   public static final String[] DISTANCE_UNIT_LABELS = { "mi", "km" };
-   public static final float    LITER_PER_GALLON     = (float) 3.78541178;
-   public static final float    KM_PER_MILE          = (float) 1.609344;
+   public static final String[] ECONOMY_UNIT_LABELS  = {"mpg", "km/L"};
+   public static final String[] DISTANCE_UNIT_LABELS = {"mi", "km"};
+   public static final float    LITER_PER_GALLON     = (float)3.78541178;
+   public static final float    KM_PER_MILE          = (float)1.609344;
 
    public static final boolean isMilesGallons(SharedPreferences prefs, Context context) {
       String units = prefs.getString(context.getString(R.string.unitSelection), "mpg");

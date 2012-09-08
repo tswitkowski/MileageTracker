@@ -13,11 +13,11 @@ public class MileageChart extends TimeChartExtension {
    // strings which will return series index
    public static final int           COMPUTER_MILEAGE = 0, ACTUAL_MILEAGE = 1;
 
-   private static final String[]     mTitles          = { "MPG over Time", "Km/L over Time" };
-   private static final String[]     mUnits           = { "MPG", "Km/L" };
-   private static final String[]     mLineTitles      = { "Computer Mileage", "Actual Mileage" };
-   private static final int[]        colors           = { Color.BLUE, Color.RED };
-   private static final PointStyle[] styles           = { PointStyle.CIRCLE, PointStyle.SQUARE };
+   private static final String[]     mTitles          = {"MPG over Time", "Km/L over Time"};
+   private static final String[]     mUnits           = {"MPG", "Km/L"};
+   private static final String[]     mLineTitles      = {"Computer Mileage", "Actual Mileage"};
+   private static final int[]        colors           = {Color.BLUE, Color.RED};
+   private static final PointStyle[] styles           = {PointStyle.CIRCLE, PointStyle.SQUARE};
 
    public MileageChart(Context c, MileageData[] data, boolean isUS) {
       super(c, mTitles[isUS ? 0 : 1], mUnits[isUS ? 0 : 1], mLineTitles, colors, styles, data);
@@ -36,8 +36,8 @@ public class MileageChart extends TimeChartExtension {
       List<double[]> values = new ArrayList<double[]>();
       for(int i = 0; i < mTitles.length; i++) {
          for(int row = 0; row < data.length; row++) {
-            comp_mpg[row] = data[row].getComputerMileage(mContext,null);
-            act_mpg[row] = data[row].getActualMileage(mContext,null);
+            comp_mpg[row] = data[row].getComputerMileage(mContext, null);
+            act_mpg[row] = data[row].getActualMileage(mContext, null);
          }
       }
       values.add(comp_mpg);

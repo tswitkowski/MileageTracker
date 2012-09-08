@@ -13,11 +13,11 @@ public class MilesChart extends TimeChartExtension {
    // strings which will return series index
    public static final int           TOTAL_MILES = 0;
 
-   private static final String[]     mTitles          = { "Miles over time", "Km over Time" };
-   private static final String[]     mUnits           = { "MPG", "Km/L" };
-   private static final String[]     mLineTitles      = { "Total Distance"};
-   private static final int[]        colors           = { Color.BLUE};
-   private static final PointStyle[] styles           = { PointStyle.CIRCLE};
+   private static final String[]     mTitles     = {"Miles over time", "Km over Time"};
+   private static final String[]     mUnits      = {"MPG", "Km/L"};
+   private static final String[]     mLineTitles = {"Total Distance"};
+   private static final int[]        colors      = {Color.BLUE};
+   private static final PointStyle[] styles      = {PointStyle.CIRCLE};
 
    public MilesChart(Context c, MileageData[] data, boolean isUS) {
       super(c, mTitles[isUS ? 0 : 1], mUnits[isUS ? 0 : 1], mLineTitles, colors, styles, data);
@@ -34,7 +34,7 @@ public class MilesChart extends TimeChartExtension {
       List<double[]> values = new ArrayList<double[]>();
       for(int i = 0; i < mTitles.length; i++) {
          for(int row = 0; row < data.length; row++) {
-            miles[row] = data[row].getOdometerReading(mContext,null);
+            miles[row] = data[row].getOdometerReading(mContext, null);
          }
       }
       values.add(miles);

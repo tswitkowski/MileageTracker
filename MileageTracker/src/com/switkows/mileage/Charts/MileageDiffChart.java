@@ -14,9 +14,9 @@ public class MileageDiffChart extends TimeChartExtension {
    // strings which will return series index
    public static int                 AVERAGE_MPG_DIFF = 0;
 
-   private static final String[]     mTitles          = { "Computer Inaccuracy" };
-   private static final int[]        colors           = { Color.BLUE };
-   private static final PointStyle[] styles           = { PointStyle.SQUARE };
+   private static final String[]     mTitles          = {"Computer Inaccuracy"};
+   private static final int[]        colors           = {Color.BLUE};
+   private static final PointStyle[] styles           = {PointStyle.SQUARE};
 
    public MileageDiffChart(Context c, MileageData[] data, boolean isUS) {
       super(c, mTitles[0], "% diff", mTitles, colors, styles, data);

@@ -18,12 +18,12 @@ import android.view.ViewGroup;
 public class EditRecordsListAdapter extends SimpleCursorAdapter {
 
    /** Remember our context so we can use it when constructing views. */
-   private Context mContext;
-   private final LayoutInflater mInflater;
-   private int idColumn;
-   private int mileageColumn;
-   private int dateColumn;
-   private long      mViewedId;
+   private Context                       mContext;
+   private final LayoutInflater          mInflater;
+   private int                           idColumn;
+   private int                           mileageColumn;
+   private int                           dateColumn;
+   private long                          mViewedId;
    private final EditRecordsMenuFragment mParent;
 
    /**
@@ -32,23 +32,23 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
     *           - Render context
     */
    public EditRecordsListAdapter(Context context, EditRecordsMenuFragment parent, Cursor c, String[] from, int[] to) {
-      super(context, R.layout.record_list_item, c, from, to,NO_SELECTION);
+      super(context, R.layout.record_list_item, c, from, to, NO_SELECTION);
       mContext = context;
       mParent  = parent;
-      mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      if(c!=null) {
+      mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      if(c != null) {
          idColumn       = c.getColumnIndex("_id");
          dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
          mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
       } else {
          idColumn = dateColumn = mileageColumn = -1;
       }
-      mViewedId      = -1;
+      mViewedId = -1;
    }
 
    @Override
    public Cursor swapCursor(Cursor c) {
-      if(c!=null) {
+      if(c != null) {
          //FIXME - only do if they haven't been set already...
          idColumn       = c.getColumnIndex("_id");
          dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
@@ -94,11 +94,12 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    @TargetApi(11)
    private void setListActivatedHoneycomb(EditRecordListItem v) {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-         v.setActivated(mViewedId >= 0 && v.mIDValue==mViewedId);
+         v.setActivated(mViewedId >= 0 && v.mIDValue == mViewedId);
    }
+
    private SharedPreferences prefs;
 
-   private HashSet<Long> mSelected = new HashSet<Long>();
+   private HashSet<Long>     mSelected = new HashSet<Long>();
 
    public SharedPreferences getPrefs() {
       if(prefs == null)
@@ -112,7 +113,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
          mSelected.add(lID);
       else
          mSelected.remove(lID);
-      mParent.handleSelection(mSelected.isEmpty(),position,isSelected);
+      mParent.handleSelection(mSelected.isEmpty(), position, isSelected);
    }
 
    public void clearSelected() {

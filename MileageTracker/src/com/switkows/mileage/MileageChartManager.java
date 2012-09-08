@@ -19,9 +19,9 @@ import com.switkows.mileage.Charts.*;
  * 
  */
 public class MileageChartManager {
-   private Context              mContext;
-   private MileageData[]        dataSet;
-   private SharedPreferences    prefs;
+   private Context           mContext;
+   private MileageData[]     dataSet;
+   private SharedPreferences prefs;
 
    public static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2, MPG_STATION_CHART = 3, ODO_CHART = 4, NO_CHART = 100;
 
@@ -80,7 +80,7 @@ public class MileageChartManager {
 
    public float getTotal(int field) {
       float total = 0;
-      for (MileageData item : dataSet)
+      for(MileageData item : dataSet)
          total += item.getFloatValue(field);
       return total;
    }
@@ -94,7 +94,7 @@ public class MileageChartManager {
    public float getBest(int field) {
       float best = 0;
       float curVal;
-      for (MileageData item : dataSet) {
+      for(MileageData item : dataSet) {
          curVal = item.getFloatValue(field);
          if(curVal > best)
             best = curVal;
@@ -105,11 +105,11 @@ public class MileageChartManager {
    public void addCharts(LinearLayout[] charts, ShowLargeChart[] listeners, LayoutParams params) {
       SharedPreferences locPrefs = getPrefs();
       if(charts.length > 0) {
-         genAddChart(charts[0],listeners[0],locPrefs,R.string.chart1Selection);
+         genAddChart(charts[0], listeners[0], locPrefs, R.string.chart1Selection);
          if(charts.length > 1) {
-            genAddChart(charts[1],listeners[1],locPrefs,R.string.chart2Selection);
+            genAddChart(charts[1], listeners[1], locPrefs, R.string.chart2Selection);
             if(charts.length > 2) {
-               genAddChart(charts[2],listeners[2],locPrefs,R.string.chart3Selection);
+               genAddChart(charts[2], listeners[2], locPrefs, R.string.chart3Selection);
             }
          }
       }
@@ -117,14 +117,16 @@ public class MileageChartManager {
 
    public void genAddChart(LinearLayout view, ShowLargeChart listener, SharedPreferences prefs, int key) {
       if(!prefs.contains(mContext.getString(key))) {
-         Log.e("TJS","Error. key wasn't found...bad news...");
+         Log.e("TJS", "Error. key wasn't found...bad news...");
          return;
       }
       String strVal = prefs.getString(mContext.getString(key), "100");
       int val = NO_CHART;
       try {
          val = Integer.parseInt(strVal);
-      } catch(NumberFormatException e) {Log.e("TJS",e.toString());}
+      } catch (NumberFormatException e) {
+         Log.e("TJS", e.toString());
+      }
       boolean isUS = MileageData.isMilesGallons(prefs, mContext);
       switch(val) {
          case NO_CHART:
@@ -135,7 +137,7 @@ public class MileageChartManager {
          case MPG_STATION_CHART:
          case ODO_CHART:
             listener.setID(val);
-            View chart = createChart(val,false, isUS);
+            View chart = createChart(val, false, isUS);
             chart.setOnClickListener(listener);
             view.addView(chart);
             break;

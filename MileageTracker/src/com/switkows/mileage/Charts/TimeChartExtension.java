@@ -21,17 +21,17 @@ public abstract class TimeChartExtension {
    private XYMultipleSeriesDataset    mDataSet;
    protected XYMultipleSeriesRenderer mRenderer;
 
-   private GraphicalView        mView;
-   protected final Context      mContext;
-   private final String         mTitle;
-   private final String         mYLabel;
-   private boolean              mIsPanZoomable;
+   private GraphicalView              mView;
+   protected final Context            mContext;
+   private final String               mTitle;
+   private final String               mYLabel;
+   private boolean                    mIsPanZoomable;
 
-   protected String[]             mTitles;
-   protected int[]                mColors;
-   protected PointStyle[]         mStyles;
-   protected MileageData[]        mData;
-   protected float                mNormalize = 0;
+   protected String[]                 mTitles;
+   protected int[]                    mColors;
+   protected PointStyle[]             mStyles;
+   protected MileageData[]            mData;
+   protected float                    mNormalize = 0;
 
    /**
     * creates the renderer and GraphicalView
@@ -57,25 +57,26 @@ public abstract class TimeChartExtension {
       List<double[]> values = buildValuesList(mData);
       int length = mRenderer.getSeriesRendererCount();
       for(int i = 0; i < length; i++) {
-         ((XYSeriesRenderer) mRenderer.getSeriesRendererAt(i)).setFillPoints(true);
+         ((XYSeriesRenderer)mRenderer.getSeriesRendererAt(i)).setFillPoints(true);
       }
       mDataSet = buildDataset(mTitles, x, values);
       setChartSettings(mRenderer, mTitle, "Date", mYLabel, 0, 100, 0, 100, Color.LTGRAY, Color.GRAY);
       mRenderer.setYLabels(10);
       mRenderer.setFitLegend(true);
       if(mIsPanZoomable) {
-         mRenderer.setPanEnabled(true,true);
-         mRenderer.setZoomEnabled(true,true);
+         mRenderer.setPanEnabled(true, true);
+         mRenderer.setZoomEnabled(true, true);
          Configuration config = mContext.getResources().getConfiguration();
          if(config.touchscreen == Configuration.TOUCHSCREEN_NOTOUCH)
             mRenderer.setZoomButtonsVisible(true);
       } else {
-         mRenderer.setPanEnabled(false,false);
-         mRenderer.setZoomEnabled(false,false);
+         mRenderer.setPanEnabled(false, false);
+         mRenderer.setZoomEnabled(false, false);
       }
       autoFitChart();
       mView = ChartFactory.getTimeChartView(mContext, mDataSet, mRenderer, "MMM yyyy");
    }
+
    public GraphicalView getChart() {
       if(mView == null)
          buildChart();
@@ -122,14 +123,13 @@ public abstract class TimeChartExtension {
       return x;
    }
 
-
    protected abstract void appendDataToSeries(long date, float[] values);
 
    public void clearData() {
       XYSeries[] allSeries = mDataSet.getSeries();
       for(XYSeries series : allSeries)
          mDataSet.removeSeries(series);
-      for (String title : mTitles)
+      for(String title : mTitles)
          mDataSet.addSeries(new XYSeries(title));
    }
 
@@ -209,7 +209,7 @@ public abstract class TimeChartExtension {
       renderer.setYTitle(yTitle);
 //      renderer.setMarginsColor(Color.TRANSPARENT);
 //      renderer.setBackgroundColor(Color.GREEN);
-      renderer.setRange(new double[] {xMin,xMax,yMin,yMax});
+      renderer.setRange(new double[] {xMin, xMax, yMin, yMax});
       renderer.setAxesColor(axesColor);
       renderer.setLabelsColor(labelsColor);
       renderer.setShowGrid(false);
@@ -229,8 +229,8 @@ public abstract class TimeChartExtension {
          // Log.d("TJS","val["+i+"].x = "+series.getX(i));
          // Log.d("TJS","val["+i+"].y = "+series.getY(i));
          // }
-         double locMinX = series.getMinX(), locMinY = series.getMinY(), locMaxX = series.getMaxX(), locMaxY = series
-               .getMaxY();
+         double locMinX = series.getMinX(), locMinY = series.getMinY(), locMaxX = series.getMaxX(), locMaxY =
+                                                                                                              series.getMaxY();
          if(locMinX < minX)
             minX = locMinX;
          if(locMinY < minY)
@@ -241,7 +241,7 @@ public abstract class TimeChartExtension {
             maxY = locMaxY;
       }
       // Log.d("TJS","xmin="+minX+", xmax="+maxX+", ymin="+minY+", ymax="+maxY);
-      double [] range = {minX, maxX, minY, maxY};
+      double[] range = {minX, maxX, minY, maxY};
       mRenderer.setRange(range);
       mRenderer.setInitialRange(range);
 //      mRenderer.setLegendHeight(((int)((mDataSet.getSeriesCount())/3)+3)*15);
@@ -265,7 +265,7 @@ public abstract class TimeChartExtension {
          XYSeries series = new XYSeries(titles[i]);
          double[] xV = xValues.get(i);
          double[] yV = yValues.get(i);
-         int seriesLength = yV.length;             //assume x is >= length of y, but y may be less than x!
+         int seriesLength = yV.length; //assume x is >= length of y, but y may be less than x!
          for(int k = 0; k < seriesLength; k++) {
             series.add(xV[k], yV[k]);
          }

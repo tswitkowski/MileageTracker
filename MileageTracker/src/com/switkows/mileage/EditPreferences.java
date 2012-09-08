@@ -23,6 +23,7 @@ public class EditPreferences extends PreferenceActivity {
          getActionBar().setDisplayHomeAsUpEnabled(true);
       }
    }
+
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
@@ -32,6 +33,7 @@ public class EditPreferences extends PreferenceActivity {
       }
       return false;
    }
+
    @Override
    protected void onResume() {
       super.onResume();

@@ -1,6 +1,5 @@
 package com.switkows.mileage;
 
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -10,15 +9,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class EditRecordListItem extends LinearLayout implements Checkable {
-   public long        mIDValue;            //Database ID for this list item
-   public int         mPosition;           //list position
-   private TextView   mLabel;
-   private CheckBox   mCheckBox;
-   private EditRecordsListAdapter mAdapter;   //pointer to parent (so we can tell them we've been selected)
+   public long                    mIDValue;  //Database ID for this list item
+   public int                     mPosition; //list position
+   private TextView               mLabel;
+   private CheckBox               mCheckBox;
+   private EditRecordsListAdapter mAdapter;  //pointer to parent (so we can tell them we've been selected)
 
    public EditRecordListItem(Context context, AttributeSet att) {
-      super(context,att);
+      super(context, att);
    }
+
    public EditRecordListItem(Context context) {
       super(context);
    }
@@ -38,7 +38,7 @@ public class EditRecordListItem extends LinearLayout implements Checkable {
 
    private void updateSelected() {
       if(mAdapter != null)
-         mAdapter.setSelected(mIDValue,mPosition,mCheckBox.isChecked());
+         mAdapter.setSelected(mIDValue, mPosition, mCheckBox.isChecked());
       mCheckBox.toggle();
    }
 
@@ -62,6 +62,7 @@ public class EditRecordListItem extends LinearLayout implements Checkable {
    public boolean isChecked() {
       return mCheckBox.isChecked();
    }
+
    public void toggle() {
       setChecked(!isChecked());
    }

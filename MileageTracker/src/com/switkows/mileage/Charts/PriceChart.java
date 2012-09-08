@@ -13,10 +13,10 @@ public class PriceChart extends TimeChartExtension {
    // strings which will return series index
    public static final int           PRICE       = 0;
 
-   private static final String[]     mTitles     = { "Price Per Gallon vs. Time", "Price Per Liter vs. Time" };
-   private static final String[]     mLineTitles = { "Price" };
-   private static final int[]        colors      = { Color.BLUE };
-   private static final PointStyle[] styles      = { PointStyle.SQUARE };
+   private static final String[]     mTitles     = {"Price Per Gallon vs. Time", "Price Per Liter vs. Time"};
+   private static final String[]     mLineTitles = {"Price"};
+   private static final int[]        colors      = {Color.BLUE};
+   private static final PointStyle[] styles      = {PointStyle.SQUARE};
 
    public PriceChart(Context c, MileageData[] data, boolean isUS) {
       super(c, mTitles[isUS ? 0 : 1], "Price($)", mLineTitles, colors, styles, data);

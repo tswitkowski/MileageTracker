@@ -28,8 +28,9 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
       mMax      = 100;
       mShow     = showMessage;
    }
+
    public DataExportThread(Context context) {
-      this(context,true);
+      this(context, true);
    }
 
    @Override
@@ -54,7 +55,7 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
          Integer lineCount = 0;
 
          while(cursor.moveToNext()) {
-            MileageData data = new MileageData(mContext.getApplicationContext(),cursor);
+            MileageData data = new MileageData(mContext.getApplicationContext(), cursor);
             writer.println(data.exportCSV());
             lineCount++;
             publishProgress(lineCount);
@@ -67,21 +68,24 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
       }
       return false;
    }
+
    @Override
    protected void onProgressUpdate(Integer... values) {
       super.onProgressUpdate(values);
       if(mShow) {
          mDialog.setProgress(values[0].intValue());
-         if(values[0].intValue()>=mMax-1)
+         if(values[0].intValue() >= mMax - 1)
             mShowIndeterminate = true;
          updateProgressConfig();
       }
    }
+
    @Override
    protected void onPreExecute() {
       super.onPreExecute();
       createDialog();
    }
+
    @Override
    protected void onPostExecute(Boolean result) {
       super.onPostExecute(result);
@@ -94,12 +98,13 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
 
          Log.d("TJS", importMessage);
          Toast.makeText(mContext, importMessage, Toast.LENGTH_LONG).show();
-         if(mShow && mDialog!=null)
+         if(mShow && mDialog != null)
             mDialog.dismiss();
       } else {
          Log.d("TJS", "Data Successfully exported..");
       }
    }
+
    public void clearDB() {
       mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
    }
@@ -143,7 +148,7 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
     * Call when you need to 'suspend' the thread, due to activity going to background, orientation change, etc
     */
    public void pause() {
-      if(mDialog!=null)
+      if(mDialog != null)
          mDialog.dismiss();
       mDialog = null;
    }

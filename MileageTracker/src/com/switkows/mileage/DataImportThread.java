@@ -19,21 +19,23 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
-   Context                    mContext;
-   private boolean            mShow;                //set to true to show the dialog box
-   String                     mFile;                //short file name (used for toast/log messages only)
-   private int                mMax;                 //holds the maximum value of the progress bar
-   private boolean            mShowIndeterminate;   //set to TRUE to show progress bar as indeterminate
+   Context                              mContext;
+   private boolean                      mShow;              //set to true to show the dialog box
+   String                               mFile;              //short file name (used for toast/log messages only)
+   private int                          mMax;               //holds the maximum value of the progress bar
+   private boolean                      mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
 
-   private ProgressDialog     mDialog;
-   private final EditRecordsListAdapter  mAdapter;
+   private ProgressDialog               mDialog;
+   private final EditRecordsListAdapter mAdapter;
 
    public DataImportThread(Context context, EditRecordsListAdapter adapter) {
-      this(context,true,adapter);
+      this(context, true, adapter);
    }
+
    public DataImportThread(boolean showDialog) {
-      this(null,showDialog,null);
+      this(null, showDialog, null);
    }
+
    public DataImportThread(Context context, boolean showDialog, EditRecordsListAdapter adapter) {
       mContext  = context;
       mShow     = showDialog;
@@ -90,7 +92,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             lineCount++;
             publishProgress(lineCount);
          }
-         if(newEntries.size()>0) {
+         if(newEntries.size() > 0) {
             ContentValues[] additions = new ContentValues[newEntries.size()];
             additions = newEntries.toArray(additions);
             mContext.getContentResolver().bulkInsert(MileageProvider.ALL_CONTENT_URI, additions);
@@ -113,16 +115,18 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
       super.onProgressUpdate(values);
       if(mShow) {
          mDialog.setProgress(values[0].intValue());
-         if(values[0].intValue()>=mMax-1)
+         if(values[0].intValue() >= mMax - 1)
             mShowIndeterminate = true;
          updateProgressConfig();
       }
    }
+
    @Override
    protected void onPreExecute() {
       super.onPreExecute();
       createDialog();
    }
+
    @Override
    protected void onPostExecute(Boolean result) {
       super.onPostExecute(result);
@@ -135,14 +139,15 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
 
          Log.d("TJS", importMessage);
          Toast.makeText(mContext, importMessage, Toast.LENGTH_LONG).show();
-         if(mAdapter!=null)
+         if(mAdapter != null)
             mAdapter.getCursor().requery();
-         if(mShow && mDialog!=null)
+         if(mShow && mDialog != null)
             mDialog.dismiss();
       } else {
-         Log.d("TJS","Data Successfully imported..");
+         Log.d("TJS", "Data Successfully imported..");
       }
    }
+
    public void clearDB() {
       mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
       mContext.getContentResolver().delete(MileageProvider.CAR_PROFILE_URI, null, null);
@@ -186,7 +191,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
     * Call when you need to 'suspend' the thread, due to activity going to background, orientation change, etc
     */
    public void pause() {
-      if(mDialog!=null)
+      if(mDialog != null)
          mDialog.dismiss();
       mDialog = null;
    }

@@ -17,21 +17,22 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class MileageProvider extends ContentProvider {
-   private static final String    DB_FILENAME  = "mileage_db";
-   private static final String    DB_TABLE     = "mileageInfo";
-   private static final String    PROFILE_TABLE= "mileageProfiles";
-   private static final int       DB_VERSION   = 5;
-   public  static final String    PROFILE_NAME = "carName";
+   private static final String    DB_FILENAME     = "mileage_db";
+   private static final String    DB_TABLE        = "mileageInfo";
+   private static final String    PROFILE_TABLE   = "mileageProfiles";
+   private static final int       DB_VERSION      = 5;
+   public static final String     PROFILE_NAME    = "carName";
 
    public static final String     AUTHORITY       = "com.switkows.mileage.MileageProvider";
    public static final Uri        CAR_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/car");
    public static final Uri        ALL_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/all");
    public static final Uri        CAR_PROFILE_URI = Uri.parse("content://" + AUTHORITY + "/profile");
 
-   public static final String     CONTENT_TYPE = "vnd.android.cursor.dir/vnd.google.mileage";
-   public static final String     CONTENT_ITEM = "vnd.android.cursor.item/vnd.google.mileage";
+   public static final String     CONTENT_TYPE    = "vnd.android.cursor.dir/vnd.google.mileage";
+   public static final String     CONTENT_ITEM    = "vnd.android.cursor.item/vnd.google.mileage";
 
-   public static final int        ALL_CAR      = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3, SINGLE_PROFILE_SELECT = 4;
+   public static final int        ALL_CAR         = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3,
+         SINGLE_PROFILE_SELECT = 4;
 
    private SharedPreferences      prefs;
    private BackupManager          mBackup;
@@ -63,7 +64,7 @@ public class MileageProvider extends ContentProvider {
    public static CharSequence[] getProfiles(Context context) {
       Cursor cursor = context.getContentResolver().query(CAR_PROFILE_URI, null, null, null, null);
       String[] cars = new String[cursor.getCount()];
-      for(int i=0 ; i < cursor.getCount() ; i++) {
+      for(int i = 0; i < cursor.getCount(); i++) {
          cursor.moveToPosition(i);
          cars[i] = cursor.getString(1); //FIXME - change to define!
       }
@@ -75,6 +76,7 @@ public class MileageProvider extends ContentProvider {
    public static void addProfile(Context context, String profile) {
       context.getContentResolver().insert(CAR_PROFILE_URI, createProfileContent(profile));
    }
+
    public static ContentValues createProfileContent(String name) {
       ContentValues values = new ContentValues();
       values.put(PROFILE_NAME, name);
@@ -85,6 +87,7 @@ public class MileageProvider extends ContentProvider {
    public static String defaultSort() {
       return MileageData.ToDBNames[MileageData.DATE] + " desc";
    }
+
    @Override
    public int delete(Uri uri, String where, String[] whereArgs) {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
@@ -115,7 +118,7 @@ public class MileageProvider extends ContentProvider {
       getContext().getContentResolver().notifyChange(uri, null);
       //FIXME - try to get rid of this. it's probably not needed..
       getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
-      if(count>0 && !mSuppressBackupUpdate)
+      if(count > 0 && !mSuppressBackupUpdate)
          mBackup.dataChanged();
       return count;
    }
@@ -266,7 +269,7 @@ public class MileageProvider extends ContentProvider {
       getContext().getContentResolver().notifyChange(uri, null);
       //FIXME - try to get rid of this. it's probably not needed..
       getContext().getContentResolver().notifyChange(isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI, null);
-      if(count>0 && !mSuppressBackupUpdate)
+      if(count > 0 && !mSuppressBackupUpdate)
          mBackup.dataChanged();
       return count;
    }
@@ -293,8 +296,8 @@ public class MileageProvider extends ContentProvider {
          } else if(oldVer == 4 && newVer == 5) {
             db.execSQL(mContext.getString(R.string.initProfileTable));
             ContentValues values = new ContentValues();
-            for(int i = 0 ; i < 3 ; i++) {
-               values.put(PROFILE_NAME, "Car"+(i+1));
+            for(int i = 0; i < 3; i++) {
+               values.put(PROFILE_NAME, "Car" + (i + 1));
                db.insert(PROFILE_TABLE, "", values);
             }
          } else {
@@ -327,8 +330,8 @@ public class MileageProvider extends ContentProvider {
 
          db.execSQL(mContext.getString(R.string.initProfileTable));
          ContentValues values = new ContentValues();
-         for(int i = 0 ; i < 3 ; i++) {
-            values.put(PROFILE_NAME, "Car"+(i+1));
+         for(int i = 0; i < 3; i++) {
+            values.put(PROFILE_NAME, "Car" + (i + 1));
             db.insert(PROFILE_TABLE, "", values);
          }
       }

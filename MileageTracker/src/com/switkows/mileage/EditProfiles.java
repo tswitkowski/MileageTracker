@@ -28,20 +28,22 @@ import android.widget.Toast;
 //FIXME - add confirmation when deleting a profile which contains data
 //FIXME - upon confirmation (above), delete data associated with profile
 public class EditProfiles extends FragmentActivity {
-   private final static int EDIT_TEXT_BOX         = 45;
+   private final static int EDIT_TEXT_BOX = 45;
 
-   private ListView mList;
-   private int mListViewId;
+   private ListView         mList;
+   private int              mListViewId;
 
    private class Profile {
-      private long      mId;
-      private String    mName;
-      private boolean   mHasItems;
+      private long    mId;
+      private String  mName;
+      private boolean mHasItems;
+
       public Profile(long id, String name) {
          mId        = id;
          mName      = name;
          mHasItems  = false;
       }
+
       public void setHasItems(boolean hasItems) {
          mHasItems = hasItems;
       }
@@ -53,9 +55,11 @@ public class EditProfiles extends FragmentActivity {
             result += "*";
          return result;
       }
+
       public long getId() {
          return mId;
       }
+
       public String getName() {
          return mName;
       }
@@ -93,24 +97,24 @@ public class EditProfiles extends FragmentActivity {
    public void updateList() {
       Cursor cursor = getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
       @SuppressWarnings("unchecked")
-      ArrayAdapter<Profile> adapter = (ArrayAdapter<Profile>) mList.getAdapter();
+      ArrayAdapter<Profile> adapter = (ArrayAdapter<Profile>)mList.getAdapter();
       Profile[] content = new Profile[cursor.getCount()];
       int column    = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
       int idColumn  = cursor.getColumnIndex("_id");
       Uri u;
 //      Toast.makeText(this, "Trying to create new ArrayAdapter", Toast.LENGTH_LONG).show();
-      for(int i=0 ; i<content.length ; i++) {
+      for(int i = 0; i < content.length; i++) {
          cursor.moveToPosition(i);
-         content[i] = new Profile(cursor.getLong(idColumn),cursor.getString(column));
-         u = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI,content[i].getName());
+         content[i] = new Profile(cursor.getLong(idColumn), cursor.getString(column));
+         u = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, content[i].getName());
          Cursor c = getContentResolver().query(u, new String[] {"_id"}, null, null, null);
-         if(c.getCount()>0)
+         if(c.getCount() > 0)
             content[i].setHasItems(true);
          c.close();
       }
       cursor.close();
       adapter.clear();
-      for (Profile item : content)
+      for(Profile item : content)
          adapter.add(item);
    }
 
@@ -119,9 +123,9 @@ public class EditProfiles extends FragmentActivity {
       long id;
       @SuppressWarnings("unchecked")
       final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
-      for(int index=0 ; index<sel.size() ; index++) {
+      for(int index = 0; index < sel.size(); index++) {
          id = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getId();
-         getContentResolver().delete(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI,id),null,null);
+         getContentResolver().delete(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI, id), null, null);
       }
       updateList();
    }
@@ -145,7 +149,7 @@ public class EditProfiles extends FragmentActivity {
       Toast.makeText(getApplicationContext(), "Successfully re-named " + oldName + " to " + newName, Toast.LENGTH_LONG).show();
       String option = getString(R.string.carSelection);
       String currentCar = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(option, "Car45");
-      if(currentCar.compareTo(oldName)==0)
+      if(currentCar.compareTo(oldName) == 0)
          PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString(option, newName).apply();
       updateList();
    }
@@ -156,10 +160,11 @@ public class EditProfiles extends FragmentActivity {
       inflater.inflate(R.menu.edit_profiles_menu, menu);
       return true;
    }
+
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
       DialogFragment fragment = null;
-      switch (item.getItemId()) {
+      switch(item.getItemId()) {
          case R.id.add_item:
             fragment = CreateProfileDialogFragment.newInstance();
             break;
@@ -187,10 +192,10 @@ public class EditProfiles extends FragmentActivity {
       String str = "";
       @SuppressWarnings("unchecked")
       ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
-      for(int i=0 ; i < selected.size() ; i++) {
+      for(int i = 0; i < selected.size(); i++) {
          if(selected.valueAt(i)) {
             String name = arrayAdapter.getItem(selected.keyAt(i)).toString();
-            str = String.format("%s\n%s", str,name);
+            str = String.format("%s\n%s", str, name);
          }
       }
       return str;
@@ -201,6 +206,7 @@ public class EditProfiles extends FragmentActivity {
          CreateProfileDialogFragment frag = new CreateProfileDialogFragment();
          return frag;
       }
+
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
@@ -214,15 +220,13 @@ public class EditProfiles extends FragmentActivity {
          };
          EditText editor = new EditText(activity);
          editor.setId(EDIT_TEXT_BOX);
-         return new AlertDialog.Builder(activity)
-               .setTitle("Enter new Profile name:")
-               .setView(editor)
-               .setPositiveButton("Add", acceptListener)
-               .setNegativeButton("Cancel", new OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                     dialog.dismiss();
-                  }})
-               .create();
+         return new AlertDialog.Builder(activity).setTitle("Enter new Profile name:").setView(editor)
+                                                 .setPositiveButton("Add", acceptListener)
+                                                 .setNegativeButton("Cancel", new OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                       dialog.dismiss();
+                                                    }
+                                                 }).create();
       }
    }
 
@@ -234,22 +238,22 @@ public class EditProfiles extends FragmentActivity {
          frag.setArguments(args);
          return frag;
       }
+
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
          String message = getArguments().getString("selected");
-         return new AlertDialog.Builder(activity)
-               .setTitle("Are you sure you want to delete the following Profiles:")
-               .setMessage(message)
-               .setPositiveButton("Delete", new OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                     activity.deleteSelectedProfiles();
-                  }})
-               .setNegativeButton("Cancel", new OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                     dialog.dismiss();
-                  }})
-               .create();
+         return new AlertDialog.Builder(activity).setTitle("Are you sure you want to delete the following Profiles:")
+                                                 .setMessage(message)
+                                                 .setPositiveButton("Delete", new OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                       activity.deleteSelectedProfiles();
+                                                    }
+                                                 }).setNegativeButton("Cancel", new OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                       dialog.dismiss();
+                                                    }
+                                                 }).create();
       }
    }
 
@@ -261,31 +265,31 @@ public class EditProfiles extends FragmentActivity {
          frag.setArguments(args);
          return frag;
       }
+
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
          String name = getArguments().getString("selected");
-         if(name.length()==0) {
+         if(name.length() == 0) {
             Toast.makeText(activity, "Please select a Profile", Toast.LENGTH_SHORT).show();
             return null;
          }
          EditText editor = new EditText(activity);
          editor.setId(EDIT_TEXT_BOX);
          editor.setText(name);
-         return new AlertDialog.Builder(activity)
-               .setTitle("Enter modified Profile name:")
-               .setView(editor)
-               .setPositiveButton("Confirm",  new OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                     EditText box = (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
-                     String profileName = box.getText().toString();
-                     activity.renameSelectedProfile(profileName);
-                  }})
-               .setNegativeButton("Cancel", new OnClickListener() {
-                  public void onClick(DialogInterface dialog, int which) {
-                     dialog.dismiss();
-                  }})
-               .create();
+         return new AlertDialog.Builder(activity).setTitle("Enter modified Profile name:").setView(editor)
+                                                 .setPositiveButton("Confirm", new OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                       EditText box =
+                                                                      (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
+                                                       String profileName = box.getText().toString();
+                                                       activity.renameSelectedProfile(profileName);
+                                                    }
+                                                 }).setNegativeButton("Cancel", new OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                       dialog.dismiss();
+                                                    }
+                                                 }).create();
       }
    }
 }

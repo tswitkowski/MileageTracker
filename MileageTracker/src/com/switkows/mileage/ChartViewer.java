@@ -15,8 +15,8 @@ import android.view.ViewGroup.LayoutParams;
 /**
  * 
  * @author Trevor
- * This is a pretty simple activity: display the specified
- * chart (with correct units), based on the Intent.
+ *         This is a pretty simple activity: display the specified
+ *         chart (with correct units), based on the Intent.
  */
 public class ChartViewer extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
    public static final String UNITS_KEY = "units";
@@ -32,7 +32,7 @@ public class ChartViewer extends FragmentActivity implements LoaderManager.Loade
       String pref = this.getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(pref, "Car1");
       Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
-      CursorLoader loader = new CursorLoader(this,uri, null, null, null, null);
+      CursorLoader loader = new CursorLoader(this, uri, null, null, null, null);
       return loader;
    }
 
@@ -43,7 +43,7 @@ public class ChartViewer extends FragmentActivity implements LoaderManager.Loade
       boolean isUS = i.getBooleanExtra(UNITS_KEY, true);
       int chartID = i.getIntExtra(CHART_KEY, MileageChartManager.NO_CHART);
       View view = chartManager.createChart(chartID, true, isUS);
-      addContentView(view, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+      addContentView(view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
    }
 
    public void onLoaderReset(Loader<Cursor> arg0) {

@@ -39,14 +39,14 @@ import android.widget.TextView;
 //2. removing EditRecordsMenu Activity
 //3. correctly replacing new Activity calls with Fragment transactions
 public class MileageTracker extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-   public static final String ACTION_INSERT = "com.switkows.mileage.INSERT";
+   public static final String       ACTION_INSERT = "com.switkows.mileage.INSERT";
    /** Called when the activity is first created. */
    private static LinearLayout[]    charts;
    private ShowLargeChart[]         chartListeners;
    private MileageChartManager      chartManager;
    private static ListView          mStatsView;
    private static StatisticsAdapter mStatsAdapter;
-   protected      CarAdapter        mProfileAdapter;
+   protected CarAdapter             mProfileAdapter;
 
    private Context                  mContext;
 
@@ -84,6 +84,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          bar.setSelectedNavigationItem(mProfileAdapter.getSelectedPosition());
       }
    }
+
    @TargetApi(11)
    private void loadActionBarNavItems() {
       mProfileAdapter.updateCursor();
@@ -111,14 +112,14 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
    public void initalizePointers() {
       // root = (LinearLayout)findViewById(R.id.root);
       charts = new LinearLayout[3];
-      charts[0] = (LinearLayout) findViewById(R.id.chart1);
-      charts[1] = (LinearLayout) findViewById(R.id.chart2);
-      charts[2] = (LinearLayout) findViewById(R.id.chart3);
+      charts[0] = (LinearLayout)findViewById(R.id.chart1);
+      charts[1] = (LinearLayout)findViewById(R.id.chart2);
+      charts[2] = (LinearLayout)findViewById(R.id.chart3);
       chartListeners = new ShowLargeChart[3];
       chartListeners[0] = new ShowLargeChart(mContext, 0);
       chartListeners[1] = new ShowLargeChart(mContext, 0);
       chartListeners[2] = new ShowLargeChart(mContext, 0);
-      mStatsView = (ListView) findViewById(R.id.statistics_list);
+      mStatsView = (ListView)findViewById(R.id.statistics_list);
       mStatsView.setAdapter(mStatsAdapter);
    }
 
@@ -167,10 +168,10 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          super();
          mLabels = getResources().getStringArray(R.array.StatisticsLabels);
          mList = new HashMap<String, FloatWithUnits>();
-         for (String label : mLabels) {
+         for(String label : mLabels) {
             mList.put(label, new FloatWithUnits(-1, "??"));
          }
-         mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+         mInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       }
 
       @Override
@@ -199,9 +200,9 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          Log.d("TJS", "Trying to build view for item " + position + "...");
          StatisticsView stats;
          if(convertView == null) {
-            stats = (StatisticsView) mInflater.inflate(R.layout.statistics_item, null);
+            stats = (StatisticsView)mInflater.inflate(R.layout.statistics_item, null);
          } else {
-            stats = (StatisticsView) convertView;
+            stats = (StatisticsView)convertView;
          }
          stats.setValue(getItem(position).getFormattedString());
          stats.setLabel(mLabels[position]);
@@ -234,8 +235,8 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       @Override
       public void onFinishInflate() {
          super.onFinishInflate();
-         mLabel = (TextView) findViewById(android.R.id.text1);
-         mValue = (TextView) findViewById(android.R.id.text2);
+         mLabel = (TextView)findViewById(android.R.id.text1);
+         mValue = (TextView)findViewById(android.R.id.text2);
       }
 
       public void setLabel(String label) {
@@ -302,13 +303,14 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
 
    /**
     * Bind Profile names to Action Bar's drop down list
+    * 
     * @author Trevor
-    *
+    * 
     */
    private class CarAdapter extends SimpleCursorAdapter {
-      public CarAdapter(Context context, int layout, Cursor c,
-            String[] from, int[] to) {
-         super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},NO_SELECTION);
+      public CarAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
+         super(context, android.R.layout.simple_spinner_dropdown_item, null,
+               new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1}, NO_SELECTION);
          updateCursor();
       }
 
@@ -316,6 +318,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          Cursor c = getApplicationContext().getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
          updateCursor(c);
       }
+
       public void updateCursor(Cursor c) {
          swapCursor(c);
          //modify the cursor to position at the appropriate point
@@ -326,7 +329,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
          Cursor cursor = getCursor();
          String currentProfile = getCurrentProfile();
          int columnIndex = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
-         for(int i=0 ; i < cursor.getCount() ; i++) {
+         for(int i = 0; i < cursor.getCount(); i++) {
             cursor.moveToPosition(i);
             if(cursor.getString(columnIndex).equalsIgnoreCase(currentProfile))
                break;
@@ -337,13 +340,14 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
 
    /**
     * Handle changes to Action Bar's drop down list change
+    * 
     * @author Trevor
     *
     */
    private class CarActionBarCallbacks implements OnNavigationListener {
       @TargetApi(9)
       public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-         if(mProfileAdapter!=null) {
+         if(mProfileAdapter != null) {
             Cursor c = mProfileAdapter.getCursor();
             c.moveToPosition(itemPosition);
             String profile = c.getString(c.getColumnIndex(MileageProvider.PROFILE_NAME));
