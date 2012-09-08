@@ -20,9 +20,9 @@ import android.widget.Toast;
 
 public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    Context                              mContext;
-   private boolean                      mShow;              //set to true to show the dialog box
-   String                               mFile;              //short file name (used for toast/log messages only)
-   private int                          mMax;               //holds the maximum value of the progress bar
+   private boolean                      mShow;             //set to true to show the dialog box
+   String                               mFile;             //short file name (used for toast/log messages only)
+   private int                          mMax;              //holds the maximum value of the progress bar
    private boolean                      mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
 
    private ProgressDialog               mDialog;

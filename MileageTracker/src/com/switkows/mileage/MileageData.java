@@ -26,8 +26,8 @@ public class MileageData {
    public static final SimpleDateFormat dateDecoder   = new SimpleDateFormat("MM/dd/yyyy");
    // This one is used to generate a string from an integer
    public static final SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-   public static final int              DATE          = 0, STATION = 1, ODOMETER = 2, TRIP = 3, GALLONS = 4, PRICE = 5,
-         COMPUTER_MILEAGE = 6, ACTUAL_MILEAGE = 7, TOTAL_PRICE = 8, MPG_DIFF = 9, CAR = 10;
+   public static final int              DATE          = 0, STATION = 1, ODOMETER = 2, TRIP = 3, GALLONS = 4, PRICE = 5, COMPUTER_MILEAGE = 6,
+         ACTUAL_MILEAGE = 7, TOTAL_PRICE = 8, MPG_DIFF = 9, CAR = 10;
 
    public static final int DbColToArrIdx(int idx) {
       if(idx > STATION)
@@ -41,19 +41,18 @@ public class MileageData {
 
    public static final int      DATA_LEN  = 8;
 
-   public final static String[] ToDBNames = {"date", "station", "odometer", "trip", "gallons", "price", "compMileage",
-         "actMileage", "totalPrice", "mileageDiff", "carName"};
+   public final static String[] ToDBNames = {"date", "station", "odometer", "trip", "gallons", "price", "compMileage", "actMileage", "totalPrice",
+         "mileageDiff", "carName"         };
 
    // main entry point. takes the 'inputs', computes the 3 computed values
-   public MileageData(Context c, String car, String dt, String station, float odo, float trip, float gallons,
-         float price, float comp_mpg) {
+   public MileageData(Context c, String car, String dt, String station, float odo, float trip, float gallons, float price, float comp_mpg) {
       this(c, car, 0, station, odo, trip, gallons, price, comp_mpg, trip / gallons, gallons * price, 0);
       date = parseDate(dt);
       values[DbColToArrIdx(MPG_DIFF)] = Math.abs((comp_mpg - values[5])) / values[5];
    }
 
-   public MileageData(Context c, String dt, String station, float odo, float trip, float gallons, float price,
-         float comp_mpg, float act_mpg, float total_price, float mpg_diff) {
+   public MileageData(Context c, String dt, String station, float odo, float trip, float gallons, float price, float comp_mpg, float act_mpg,
+         float total_price, float mpg_diff) {
       this(c, "", parseDate(dt), station, odo, trip, gallons, price, comp_mpg, act_mpg, total_price, mpg_diff);
    }
 
@@ -83,8 +82,8 @@ public class MileageData {
    /**
     * used by MileageData(float[]) and MileageData(float,float,float,float,float)
     */
-   public MileageData(Context c, String car, long dt, String station, float odo, float trip, float gallons,
-         float price, float comp_mpg, float act_mpg, float total_price, float mpg_diff) {
+   public MileageData(Context c, String car, long dt, String station, float odo, float trip, float gallons, float price, float comp_mpg, float act_mpg,
+         float total_price, float mpg_diff) {
       date = dt;
       gas_station = station;
       carName = car;

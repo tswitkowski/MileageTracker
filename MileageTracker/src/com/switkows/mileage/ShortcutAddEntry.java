@@ -57,7 +57,7 @@ public class ShortcutAddEntry extends Activity {
       intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
       intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, "Stop 4 gas");
 
-      intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, overlay(R.drawable.mileage_tracker_icon,android.R.drawable.ic_menu_add));
+      intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, overlay(R.drawable.mileage_tracker_icon, android.R.drawable.ic_menu_add));
 
       // Now, return the result to the launcher
 

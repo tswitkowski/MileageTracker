@@ -27,7 +27,6 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    private final EditRecordsMenuFragment mParent;
 
    /**
-    *
     * @param context
     *           - Render context
     */
@@ -60,7 +59,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    /**
     * Do not recycle a view if one is already there, if not the data could get corrupted and the checkbox state could be
     * lost.
-    *
+    * 
     * @param convertView
     *           The old view to overwrite
     * @returns a CheckBoxifiedTextView that holds wraps around an CheckBoxifiedText

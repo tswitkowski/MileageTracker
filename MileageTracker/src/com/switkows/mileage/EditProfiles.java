@@ -145,7 +145,7 @@ public class EditProfiles extends FragmentActivity {
       //update profile configs
       getContentResolver().update(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI, oldId), values, null, null);
       //move all data to new profile name!
-      getContentResolver().update(MileageProvider.ALL_CONTENT_URI, values, MileageData.ToDBNames[MileageData.CAR]+"=?", new String[] {oldName});
+      getContentResolver().update(MileageProvider.ALL_CONTENT_URI, values, MileageData.ToDBNames[MileageData.CAR] + "=?", new String[] {oldName});
       Toast.makeText(getApplicationContext(), "Successfully re-named " + oldName + " to " + newName, Toast.LENGTH_LONG).show();
       String option = getString(R.string.carSelection);
       String currentCar = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(option, "Car45");

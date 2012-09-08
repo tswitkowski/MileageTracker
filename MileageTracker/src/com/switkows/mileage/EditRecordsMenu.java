@@ -638,7 +638,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          if(files != null) {
 
             View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.import_dialog, null);
-            final Spinner filename = (Spinner) view.findViewById(R.id.file_list);
+            final Spinner filename = (Spinner)view.findViewById(R.id.file_list);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             filename.setAdapter(adapter);
@@ -675,7 +675,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          final AutoCompleteTextView filename;
          final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
          View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.export_dialog, null);
-         filename = (AutoCompleteTextView) view.findViewById(R.id.file_list);
+         filename = (AutoCompleteTextView)view.findViewById(R.id.file_list);
          String[] files = activity.getCSVFiles();
          ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_dropdown_item_1line, files);
          filename.setAdapter(adapter);

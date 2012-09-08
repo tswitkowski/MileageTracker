@@ -16,8 +16,7 @@ public class MileageVsStationChart extends TimeChartExtension {
 
    private static final String[]     mChartTitles = {"MPG over Time", "Km/L over Time"};
    private static final String[]     mUnits       = {"MPG", "Km/L"};
-   private static final int[]        allColors    = {Color.BLUE, Color.RED, Color.GREEN, Color.GRAY, Color.WHITE,
-         Color.CYAN, Color.MAGENTA                };
+   private static final int[]        allColors    = {Color.BLUE, Color.RED, Color.GREEN, Color.GRAY, Color.WHITE, Color.CYAN, Color.MAGENTA};
    private static final PointStyle[] allStyles    = {PointStyle.CIRCLE, PointStyle.SQUARE};
 
    private List<double[]>            mValues;

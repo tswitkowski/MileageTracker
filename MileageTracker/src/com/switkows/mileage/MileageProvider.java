@@ -31,8 +31,7 @@ public class MileageProvider extends ContentProvider {
    public static final String     CONTENT_TYPE    = "vnd.android.cursor.dir/vnd.google.mileage";
    public static final String     CONTENT_ITEM    = "vnd.android.cursor.item/vnd.google.mileage";
 
-   public static final int        ALL_CAR         = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3,
-         SINGLE_PROFILE_SELECT = 4;
+   public static final int        ALL_CAR         = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3, SINGLE_PROFILE_SELECT = 4;
 
    private SharedPreferences      prefs;
    private BackupManager          mBackup;

@@ -305,12 +305,11 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
     * Bind Profile names to Action Bar's drop down list
     * 
     * @author Trevor
-    * 
     */
    private class CarAdapter extends SimpleCursorAdapter {
       public CarAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
-         super(context, android.R.layout.simple_spinner_dropdown_item, null,
-               new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1}, NO_SELECTION);
+         super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},
+               NO_SELECTION);
          updateCursor();
       }
 
@@ -342,7 +341,6 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
     * Handle changes to Action Bar's drop down list change
     * 
     * @author Trevor
-    *
     */
    private class CarActionBarCallbacks implements OnNavigationListener {
       @TargetApi(9)

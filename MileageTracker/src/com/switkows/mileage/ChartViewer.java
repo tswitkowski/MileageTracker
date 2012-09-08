@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
 /**
- * 
  * @author Trevor
  *         This is a pretty simple activity: display the specified
  *         chart (with correct units), based on the Intent.

@@ -40,8 +40,7 @@ public abstract class TimeChartExtension {
     * @param colors
     * @param styles
     */
-   public TimeChartExtension(Context c, String title, String ylabel, String[] titles, int[] colors,
-         PointStyle[] styles, MileageData[] data) {
+   public TimeChartExtension(Context c, String title, String ylabel, String[] titles, int[] colors, PointStyle[] styles, MileageData[] data) {
       mContext = c;
       mTitle = title;
       mYLabel = ylabel;
@@ -202,8 +201,8 @@ public abstract class TimeChartExtension {
     * @param labelsColor
     *           the labels color
     */
-   protected void setChartSettings(XYMultipleSeriesRenderer renderer, String title, String xTitle, String yTitle,
-         double xMin, double xMax, double yMin, double yMax, int axesColor, int labelsColor) {
+   protected void setChartSettings(XYMultipleSeriesRenderer renderer, String title, String xTitle, String yTitle, double xMin, double xMax, double yMin,
+         double yMax, int axesColor, int labelsColor) {
       renderer.setChartTitle(title);
       renderer.setXTitle(xTitle);
       renderer.setYTitle(yTitle);
@@ -229,8 +228,7 @@ public abstract class TimeChartExtension {
          // Log.d("TJS","val["+i+"].x = "+series.getX(i));
          // Log.d("TJS","val["+i+"].y = "+series.getY(i));
          // }
-         double locMinX = series.getMinX(), locMinY = series.getMinY(), locMaxX = series.getMaxX(), locMaxY =
-                                                                                                              series.getMaxY();
+         double locMinX = series.getMinX(), locMinY = series.getMinY(), locMaxX = series.getMaxX(), locMaxY = series.getMaxY();
          if(locMinX < minX)
             minX = locMinX;
          if(locMinY < minY)

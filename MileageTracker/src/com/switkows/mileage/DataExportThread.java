@@ -14,13 +14,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
-   private Context            mContext;
-   private boolean            mShow;                //set to true to show the dialog box
-   private String             mFilename;
-   private int                mMax;                 //holds the maximum value of the progress bar
-   private boolean            mShowIndeterminate;   //set to TRUE to show progress bar as indeterminate
+   private Context        mContext;
+   private boolean        mShow;              //set to true to show the dialog box
+   private String         mFilename;
+   private int            mMax;               //holds the maximum value of the progress bar
+   private boolean        mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
 
-   private ProgressDialog     mDialog;
+   private ProgressDialog mDialog;
 
    public DataExportThread(Context context, boolean showMessage) {
       super();

@@ -62,11 +62,11 @@ public class EditRecord extends FragmentActivity {
 //         params.width = LayoutParams.FILL_PARENT;
 //         getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
       }
-      setResult(RESULT_CANCELED);   //FIXME - needed?
+      setResult(RESULT_CANCELED); //FIXME - needed?
    }
 
    public static class EditRecordFragment extends Fragment {
-      private static final String  TAG         = "TJS - EditRecord";
+      private static final String  TAG              = "TJS - EditRecord";
       private Uri                  mUri;
       private Cursor               mCursor;
       private SharedPreferences    prefs;
@@ -86,7 +86,7 @@ public class EditRecord extends FragmentActivity {
       private TextView             mpgDiffBox;
       private UpdateCallback       mCallback;
 
-      private boolean              viewAttached;                             //boolean to determine whether we have a View attached (or whether the fragment is in the background)
+      private boolean              viewAttached;                            //boolean to determine whether we have a View attached (or whether the fragment is in the background)
 
       public static EditRecordFragment newInstance(long id, boolean isNew) {
          EditRecordFragment result = new EditRecordFragment();
@@ -165,8 +165,7 @@ public class EditRecord extends FragmentActivity {
          super.onAttach(activity);
          try {
             mCallback = (UpdateCallback)activity;
-         } catch (ClassCastException e) {
-         }
+         } catch (ClassCastException e) {}
       }
 
       @Override
@@ -264,24 +263,23 @@ public class EditRecord extends FragmentActivity {
             case MileageData.DATE:
                return dateBox == null ? dateBox = (TextView)getActivity().findViewById(R.id.date_reading) : dateBox;
             case MileageData.STATION:
-               return stationBox == null ? stationBox = (AutoCompleteTextView) getActivity().findViewById(R.id.gas_station_reading)
-                     : stationBox;
+               return stationBox == null ? stationBox = (AutoCompleteTextView)getActivity().findViewById(R.id.gas_station_reading) : stationBox;
             case MileageData.ODOMETER:
                return odoBox == null ? odoBox = (TextView)getActivity().findViewById(R.id.odo_reading) : odoBox;
             case MileageData.TRIP:
                return tripBox == null ? tripBox = (TextView)getActivity().findViewById(R.id.trip_reading) : tripBox;
             case MileageData.GALLONS:
-               return gallonsBox == null ? gallonsBox = (TextView) getActivity().findViewById(R.id.gallons_reading) : gallonsBox;
+               return gallonsBox == null ? gallonsBox = (TextView)getActivity().findViewById(R.id.gallons_reading) : gallonsBox;
             case MileageData.PRICE:
                return priceBox == null ? priceBox = (TextView)getActivity().findViewById(R.id.price_reading) : priceBox;
             case MileageData.COMPUTER_MILEAGE:
-               return compMpgBox == null ? compMpgBox = (TextView) getActivity().findViewById(R.id.comp_mileage_reading) : compMpgBox;
+               return compMpgBox == null ? compMpgBox = (TextView)getActivity().findViewById(R.id.comp_mileage_reading) : compMpgBox;
             case MileageData.ACTUAL_MILEAGE:
-               return actMpgBox == null ? actMpgBox = (TextView) getActivity().findViewById(R.id.actual_mileage_reading) : actMpgBox;
+               return actMpgBox == null ? actMpgBox = (TextView)getActivity().findViewById(R.id.actual_mileage_reading) : actMpgBox;
             case MileageData.TOTAL_PRICE:
-               return totPriceBox == null ? totPriceBox = (TextView) getActivity().findViewById(R.id.total_price_reading) : totPriceBox;
+               return totPriceBox == null ? totPriceBox = (TextView)getActivity().findViewById(R.id.total_price_reading) : totPriceBox;
             case MileageData.MPG_DIFF:
-               return mpgDiffBox == null ? mpgDiffBox = (TextView) getActivity().findViewById(R.id.mpg_diff_reading) : mpgDiffBox;
+               return mpgDiffBox == null ? mpgDiffBox = (TextView)getActivity().findViewById(R.id.mpg_diff_reading) : mpgDiffBox;
          }
          return null;
       }
@@ -335,9 +333,8 @@ public class EditRecord extends FragmentActivity {
             gal = gal / MileageData.getVolume(1, getPrefs(), getActivity());
          }
          return new MileageData(getActivity(), getPrefs().getString(getString(R.string.carSelection), "Car45"),
-                                getTextFieldStruct(MileageData.DATE).getText().toString(),
-                                getTextFieldStruct(MileageData.STATION).getText().toString(), odo, trip, gal, price,
-                                diff);
+                                getTextFieldStruct(MileageData.DATE).getText().toString(), getTextFieldStruct(MileageData.STATION).getText().toString(), odo,
+                                trip, gal, price, diff);
       }
 
       protected String dateToString(long date) {
@@ -374,8 +371,7 @@ public class EditRecord extends FragmentActivity {
       }
 
       private final DatePickerDialog.OnDateSetListener dateListener = new DatePickerDialog.OnDateSetListener() {
-                                                                       public void onDateSet(DatePicker view, int year,
-                                                                             int monthOfYear, int dayOfMonth) {
+                                                                       public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                                                                           setDateDisplay(monthOfYear, dayOfMonth, year);
                                                                        }
                                                                     };
@@ -484,7 +480,7 @@ public class EditRecord extends FragmentActivity {
 //         private final String   ColumnName = MileageData.ToDBNames[MileageData.STATION];
 
          public myListAdapter(Context context, Cursor c) {
-            super(context, android.R.layout.simple_dropdown_item_1line, c, new String[] {STATION_NAME}, new int[] {android.R.id.text1},NO_SELECTION);
+            super(context, android.R.layout.simple_dropdown_item_1line, c, new String[] {STATION_NAME}, new int[] {android.R.id.text1}, NO_SELECTION);
          }
 
          @Override

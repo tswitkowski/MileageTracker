@@ -16,14 +16,13 @@ import com.switkows.mileage.Charts.*;
  * This class holds all charts that will be rentered for this application.
  * 
  * @author switkows
- * 
  */
 public class MileageChartManager {
    private Context           mContext;
    private MileageData[]     dataSet;
    private SharedPreferences prefs;
 
-   public static final int     MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2, MPG_STATION_CHART = 3, ODO_CHART = 4, NO_CHART = 100;
+   public static final int   MPG_CHART = 0, MPG_DIFF_CHART = 1, PRICE_CHART = 2, MPG_STATION_CHART = 3, ODO_CHART = 4, NO_CHART = 100;
 
    public MileageChartManager(Context c, Cursor cursor) {
       mContext = c;
