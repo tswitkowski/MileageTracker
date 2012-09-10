@@ -3,6 +3,8 @@ package com.switkows.mileage;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
+
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -23,12 +25,12 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -62,17 +64,19 @@ public class EditRecord extends FragmentActivity {
 //         params.width = LayoutParams.FILL_PARENT;
 //         getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
       }
+      requestWindowFeature(Window.FEATURE_ACTION_BAR);
       setResult(RESULT_CANCELED); //FIXME - needed?
    }
 
-   public static class EditRecordFragment extends Fragment {
-      private static final String  TAG              = "TJS - EditRecord";
+   public static class EditRecordFragment extends Fragment implements ProfileSelectorCallbacks {
       private Uri                  mUri;
+      private String               mProfileName;
       private Cursor               mCursor;
       private SharedPreferences    prefs;
       private boolean              isNewRecord;
       private myListAdapter        stationAutocompleteAdapter;
       private LoaderCallbacks      mLoaderCallbacks = new LoaderCallbacks();
+      protected ProfileSelector    mProfileAdapter;
 
       private TextView             dateBox;
       private AutoCompleteTextView stationBox;
@@ -124,9 +128,10 @@ public class EditRecord extends FragmentActivity {
             // mState = STATE_EDIT;
             result = inflater.inflate(R.layout.edit_record, null);
             //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-//            LayoutParams params = getActivity().getWindow().getAttributes();
-//            params.width = LayoutParams.FILL_PARENT;
-//            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+            LayoutParams params = getActivity().getWindow().getAttributes();
+//            params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwise action bar cannot be used!
+            params.height = LayoutParams.WRAP_CONTENT;
+            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
 
             mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, recordId);
             getLoaderManager().initLoader(LoaderCallbacks.ID_DATA_LOADER, null, mLoaderCallbacks);
@@ -137,24 +142,15 @@ public class EditRecord extends FragmentActivity {
             else
                result = inflater.inflate(R.layout.edit_record, null);
             //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-//            LayoutParams params = getActivity().getWindow().getAttributes();
-//            params.width = LayoutParams.FILL_PARENT;
-//            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+            LayoutParams params = getActivity().getWindow().getAttributes();
+//            params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwiser action bar cannot be used!
+            params.height = LayoutParams.WRAP_CONTENT;
+            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
             // Requested to insert: set that state, and create a new entry
             // in the container.
             // mState = STATE_INSERT;
             // mUri = getContentResolver().insert(intent.getData(), null);
-            String car = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(this.getString(R.string.carSelection), "Car45");
-            mUri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
-
-            // If we were unable to create a new record, then just finish
-            // this activity. A RESULT_CANCELED will be sent back to the
-            // original activity if they requested a result.
-            if(mUri == null) {
-               Log.e(TAG, "Failed to insert new record into " + car);
-               handleCompletion(1);
-               return null;
-            }
+            mProfileName = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(this.getString(R.string.carSelection), "Car45");
          }
 
          return result;
@@ -216,11 +212,14 @@ public class EditRecord extends FragmentActivity {
 
          if(!viewAttached)
             return;
-         String indicator = "(" + getPrefs().getString(getString(R.string.carSelection), "Car45") + "):";
-         if(isNewRecord)
-            getActivity().setTitle(getText(R.string.new_record_title) + indicator);
-         else
+         if(isNewRecord) {
+            getActivity().setTitle(getText(R.string.new_record_title));
+            if(mProfileAdapter == null)
+               mProfileAdapter = ProfileSelector.setupActionBar(getActivity(), this);
+         } else {
+            String indicator = "(" + getPrefs().getString(getString(R.string.carSelection), "Car45") + "):";
             getActivity().setTitle(getText(R.string.edit_record_title) + indicator);
+         }
          //Note : assumes mCursor is not NULL if we are editing a record (so this call doesn't distrub the data..
          if(isNewRecord) {
             Calendar c = Calendar.getInstance();
@@ -234,6 +233,10 @@ public class EditRecord extends FragmentActivity {
          stationAutocompleteAdapter = new myListAdapter(getActivity(), null);
          getLoaderManager().initLoader(LoaderCallbacks.ID_STATION_LOADER, getArguments(), mLoaderCallbacks);
          text.setAdapter(stationAutocompleteAdapter);
+      }
+
+      public void setInsertProfile(String newProfile) {
+         mProfileName = newProfile;
       }
 
       protected void handleCompletion(long id) {
@@ -293,14 +296,17 @@ public class EditRecord extends FragmentActivity {
       protected void updateDbRow() {
          MileageData data = createDataStructure();
          ContentValues values = data.getContent();
-         if(isNewRecord)
+         if(isNewRecord) {
+            mUri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, mProfileName);
             getActivity().getContentResolver().insert(mUri, values);
-         else
+         } else
             getActivity().getContentResolver().update(mUri, values, "_id = " + mCursor.getInt(mCursor.getColumnIndex("_id")), null);
       }
 
       protected MileageData createDataStructure() {
          float odo, trip, gal, price, diff;
+         if(mProfileName.length() == 0)
+            mProfileName = getPrefs().getString(getString(R.string.carSelection), "Car45");
          try {
             odo = Float.parseFloat(getTextFieldStruct(MileageData.ODOMETER).getText().toString());
          } catch (NumberFormatException e) {
@@ -332,9 +338,8 @@ public class EditRecord extends FragmentActivity {
             trip = trip / MileageData.getDistance(1, getPrefs(), getActivity());
             gal = gal / MileageData.getVolume(1, getPrefs(), getActivity());
          }
-         return new MileageData(getActivity(), getPrefs().getString(getString(R.string.carSelection), "Car45"),
-                                getTextFieldStruct(MileageData.DATE).getText().toString(), getTextFieldStruct(MileageData.STATION).getText().toString(), odo,
-                                trip, gal, price, diff);
+         return new MileageData(getActivity(), mProfileName, getTextFieldStruct(MileageData.DATE).getText().toString(),
+                                getTextFieldStruct(MileageData.STATION).getText().toString(), odo, trip, gal, price, diff);
       }
 
       protected String dateToString(long date) {
@@ -378,6 +383,10 @@ public class EditRecord extends FragmentActivity {
 
       private void setDateDisplay(int month, int day, int year) {
          getTextFieldStruct(MileageData.DATE).setText(MileageData.getFormattedDate(month, day, year));
+      }
+
+      public void onProfileChange(String newProfile) {
+         setInsertProfile(newProfile);
       }
 
       private static final String STATION_NAME = MileageData.ToDBNames[MileageData.STATION];

@@ -2,22 +2,18 @@ package com.switkows.mileage;
 
 import java.util.HashMap;
 
-import android.annotation.TargetApi;
-import android.app.ActionBar;
-import android.app.ActionBar.OnNavigationListener;
+import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
+
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,7 +34,7 @@ import android.widget.TextView;
 //1. mvoing most code from MileageTracker Activity to a Fragment
 //2. removing EditRecordsMenu Activity
 //3. correctly replacing new Activity calls with Fragment transactions
-public class MileageTracker extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MileageTracker extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor>, ProfileSelectorCallbacks {
    public static final String       ACTION_INSERT = "com.switkows.mileage.INSERT";
    /** Called when the activity is first created. */
    private static LinearLayout[]    charts;
@@ -46,7 +42,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
    private MileageChartManager      chartManager;
    private static ListView          mStatsView;
    private static StatisticsAdapter mStatsAdapter;
-   protected CarAdapter             mProfileAdapter;
+   protected ProfileSelector        mProfileAdapter;
 
    private Context                  mContext;
 
@@ -60,8 +56,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       // grab pointers to all my graphical elements
       initalizePointers();
       getSupportLoaderManager().initLoader(45, null, this);
-      setupActionBar();
-
+      mProfileAdapter = ProfileSelector.setupActionBar(this, null);
       // Log.d("TJS", "Finished opening/creating database");
    }
 
@@ -70,24 +65,8 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       super.onResume();
       // FIXME - maybe be a bit smarter about when we generate charts!
       getSupportLoaderManager().restartLoader(45, null, this);
-      loadActionBarNavItems();
-   }
-
-   @TargetApi(11)
-   private void setupActionBar() {
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-         ActionBar bar = getActionBar();
-         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-         mProfileAdapter = new CarAdapter(this, 0, null, null, null);
-         CarActionBarCallbacks callbacks = new CarActionBarCallbacks();
-         bar.setListNavigationCallbacks(mProfileAdapter, callbacks);
-         bar.setSelectedNavigationItem(mProfileAdapter.getSelectedPosition());
-      }
-   }
-
-   @TargetApi(11)
-   private void loadActionBarNavItems() {
-      mProfileAdapter.updateCursor();
+      if(mProfileAdapter != null)
+         mProfileAdapter.loadActionBarNavItems();
    }
 
    public void generateCharts(Cursor cursor) {
@@ -302,66 +281,6 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
    }
 
    /**
-    * Bind Profile names to Action Bar's drop down list
-    * 
-    * @author Trevor
-    */
-   private class CarAdapter extends SimpleCursorAdapter {
-      public CarAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
-         super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},
-               NO_SELECTION);
-         updateCursor();
-      }
-
-      public void updateCursor() {
-         Cursor c = getApplicationContext().getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
-         updateCursor(c);
-      }
-
-      public void updateCursor(Cursor c) {
-         swapCursor(c);
-         //modify the cursor to position at the appropriate point
-         getSelectedPosition();
-      }
-
-      protected int getSelectedPosition() {
-         Cursor cursor = getCursor();
-         String currentProfile = getCurrentProfile();
-         int columnIndex = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
-         for(int i = 0; i < cursor.getCount(); i++) {
-            cursor.moveToPosition(i);
-            if(cursor.getString(columnIndex).equalsIgnoreCase(currentProfile))
-               break;
-         }
-         return cursor.getPosition();
-      }
-   }
-
-   /**
-    * Handle changes to Action Bar's drop down list change
-    * 
-    * @author Trevor
-    */
-   private class CarActionBarCallbacks implements OnNavigationListener {
-      @TargetApi(9)
-      public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-         if(mProfileAdapter != null) {
-            Cursor c = mProfileAdapter.getCursor();
-            c.moveToPosition(itemPosition);
-            String profile = c.getString(c.getColumnIndex(MileageProvider.PROFILE_NAME));
-            Editor prefs = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
-            String option = getApplicationContext().getString(R.string.carSelection);
-            prefs.putString(option, profile);
-            prefs.apply();
-            getSupportLoaderManager().restartLoader(45, null, MileageTracker.this);
-            return true;
-         }
-         return false;
-      }
-
-   }
-
-   /**
     * Data loader for any cursor's to be used by this activity
     * (only handles querying mileage data for a specific profile)
     */
@@ -377,5 +296,10 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
 
    public void onLoaderReset(Loader<Cursor> cursor) {
       chartManager = null;
+   }
+
+   public void onProfileChange(String newProfile) {
+      mProfileAdapter.applyPreferenceChange(newProfile);
+      getSupportLoaderManager().restartLoader(45, null, this);
    }
 }

@@ -600,7 +600,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
-         View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.move_dialog, null);
+         final View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.move_dialog, null);
          String message = getArguments().getString("selected");
          TextView text = (TextView)view.findViewById(android.R.id.text1);
          text.setText(message);
@@ -613,7 +613,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          s.setAdapter(newAdapter);
          OnClickListener acceptListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-               Spinner s = (Spinner)activity.findViewById(R.id.move_to_spinner);
+               Spinner s = (Spinner)view.findViewById(R.id.move_to_spinner);
                activity.moveSelected((String)s.getSelectedItem());
                activity.deselectAll();
             }

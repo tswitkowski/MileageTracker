@@ -3,12 +3,11 @@
    <style name="Theme" parent="android:Theme.DeviceDefault">
    </style>
    <style name="Theme.Dialog" parent="android:Theme.Holo.Dialog">
-      <item name="android:windowTitleStyle">@style/TitleStyle</item>
-      <item name="android:windowTitleSize">10dip</item>
-      <item name="android:actionBarSize">10dip</item>
+      <item name="android:windowIsFloating">false</item>
+      <item name="android:windowContentOverlay">@null</item>
+      <item name="android:windowActionModeOverlay">true</item>
+      <item name="android:windowIsTranslucent">true</item>
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_height">wrap_content</item>
    </style>
-   <style name="TitleStyle" parent="android:TextAppearance.Holo.DialogWindowTitle">
-      <item name="android:textSize">18sp</item>
-   </style>
-
 </resources>
