@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import com.switkows.mileage.EditRecord.EditRecordFragment;
+import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -47,7 +48,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.MultiChoiceModeListener;
 
-public class EditRecordsMenu extends FragmentActivity implements EditRecordFragment.UpdateCallback, OnBackStackChangedListener {
+public class EditRecordsMenu extends FragmentActivity implements EditRecordFragment.UpdateCallback, OnBackStackChangedListener, ProfileSelectorCallbacks {
 
    private static final String LIST_FRAGMENT   = "recordList";
    private static final String RECORD_FRAGMENT = "recordViewer";
@@ -56,6 +57,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    protected DataImportThread  iThread;
    protected long              mViewedRecordId;
    private Uri                 mLastUri;
+   protected ProfileSelector   mProfileAdapter;
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       if(i.getData() == null) {
          i.setData(getURI());
       }
+
+      mProfileAdapter = ProfileSelector.setupActionBar(this, null);
 
       // restore ImportThread pointer, if we got here by way of an orientation change
       if(getLastCustomNonConfigurationInstance() != null) {
@@ -87,7 +91,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       //FIXME - is this okay? should i always reset the data?!
       Uri uri = getURI();
       if(mLastUri == null || uri.compareTo(mLastUri) != 0) {
-         getIntent().setData(getURI());
+         getIntent().setData(uri);
 
          //This fragment will persist indefinitely.
          ListFragment f = EditRecordsMenuFragment.newInstance(this, getIntent().getData());
@@ -99,6 +103,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       }
 
       setHomeEnabledHoneycomb();
+      if(mProfileAdapter != null)
+         mProfileAdapter.loadActionBarNavItems(this);
       //FIXME - should store the Fragment pointer, so we don't lose state on orientation-switches!!
       if(mViewedRecordId >= 0)
          updateRecordView(mViewedRecordId);
@@ -219,8 +225,10 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       if(requestCode == 0) {
          if(resultCode == RESULT_CANCELED)
             mViewedRecordId = -1;
-         else
+         else {
             mViewedRecordId = resultCode - 1;
+            messageUpdated(mViewedRecordId);
+         }
       }
    }
 
@@ -348,8 +356,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 
    public static class EditRecordsMenuFragment extends ListFragment {
       private EditRecordsListAdapter          mAdapter;
-      private boolean                         mSingleSelection;
-      private long                            mSingleSelectionID;
       private final RecordListLoaderCallbacks mLoaderCallback = new RecordListLoaderCallbacks();
 
       public static EditRecordsMenuFragment newInstance(Context c, Uri uri) {
@@ -358,12 +364,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          args.putString("uri", uri.toString());
          result.setArguments(args);
          return result;
-      }
-
-      public EditRecordsMenuFragment() {
-         super();
-         mSingleSelection = false;
-         mSingleSelectionID = -1;
       }
 
       @Override
@@ -407,12 +407,9 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       }
 
       protected boolean deleteSelected(long currentlyViewedId) {
-//         HashSet<Long> checked = mAdapter.getSelected();
          boolean foundIt = false; //set to true if the crrentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
-         if(mSingleSelection)
-            getActivity().getContentResolver().delete(ContentUris.withAppendedId(baseUri, mSingleSelectionID), null, null);
          long id;
          for(int index = 0; index < checked.size(); index++) {
             id = getListAdapter().getItemId(checked.keyAt(index));
@@ -420,12 +417,9 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
             if(id == currentlyViewedId)
                foundIt = true;
          }
-//         for(Long id : checked)
-//            getContentResolver().delete(ContentUris.withAppendedId(baseUri, id.longValue()), null, null);
          //FIXME - this is needed, apparently, since i'm not using the same URI as the adapter uses?!
          getLoaderManager().restartLoader(0, getArguments(), mLoaderCallback);
          mAdapter.notifyDataSetChanged();
-//         checked.clear();
          return foundIt;
       }
 
@@ -435,8 +429,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
          ContentValues values = new ContentValues(1);
-         if(mSingleSelection)
-            getActivity().getContentResolver().update(ContentUris.withAppendedId(baseUri, mSingleSelectionID), values, null, null);
          values.put(MileageData.ToDBNames[MileageData.CAR], destProfile);
          long id;
          for(int index = 0; index < checked.size(); index++) {
@@ -451,6 +443,10 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          return foundIt;
       }
 
+      protected boolean messageUpdated(long id) {
+         getLoaderManager().restartLoader(0, getArguments(), mLoaderCallback);
+         return true;
+      }
       protected void deselectAll() {
          getListView().clearChoices();
 //         mAdapter.clearSelected();
@@ -470,11 +466,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       //FIXME - use getList()'s item's getText() instead of cursor?
       protected String getSelectedMessage() {
          String ret = "";
-//         HashSet<Long> mySelected = (HashSet<Long>) mAdapter.getSelected().clone();
          long[] mySelected = getListView().getCheckedItemIds();
-         if(mSingleSelection)
-            mySelected = new long[] {mSingleSelectionID};
-//            mySelected.add(Long.valueOf(mSingleSelectionID));
 
          Cursor cursor = mAdapter.getCursor();
          if(cursor == null)
@@ -487,7 +479,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
             cursor.moveToPosition(i);
             long id = cursor.getLong(idColumn);
             String str;
-//            if(mySelected.contains(Long.valueOf(id))) {
             for(long currId : mySelected) {
                if(currId == id) {
                   str = MileageData.getSimpleDescription(cursor, dateColumn, mpgColumn, prefs, getActivity());
@@ -703,7 +694,12 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    }
 
    public boolean messageUpdated(long id) {
-      return true;
+      boolean result = false;
+      mViewedRecordId = -1;
+      Fragment fragment = getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
+      if(fragment != null && fragment instanceof EditRecordsMenuFragment)
+         result = ((EditRecordsMenuFragment)fragment).messageUpdated(id);
+      return result;
    }
 
    public void onBackStackChanged() {
@@ -716,17 +712,15 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          if(view != null)
             view.setVisibility(View.GONE);
       }
-   };
+   }
 
-//   public void onClick(View v) {
-//      switch(v.getId()) {
-//         case R.id.button_delete:
-//            mSingleSelection = false;
-//            showDialog(R.id.delete_entry);
-//            break;
-//         case R.id.button_deselect:
-//            deselectAll();
-//            break;
-//      }
-//   }
+   public void onProfileChange(String newProfile) {
+      mProfileAdapter.applyPreferenceChange(newProfile);
+      Fragment fragment = getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
+      //update fragment's URI, and reload List data
+      if(fragment != null && fragment instanceof EditRecordsMenuFragment) {
+         fragment.getArguments().putString("uri", getURI().toString());
+         ((EditRecordsMenuFragment)fragment).messageUpdated(0);
+      }
+   }
 }

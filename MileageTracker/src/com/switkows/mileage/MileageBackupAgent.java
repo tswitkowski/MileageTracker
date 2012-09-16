@@ -11,6 +11,7 @@ import android.app.backup.FileBackupHelper;
 import android.app.backup.SharedPreferencesBackupHelper;
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 public class MileageBackupAgent extends BackupAgentHelper {
 
@@ -56,6 +57,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
       public void performBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) {
          DataExportThread exporter = new DataExportThread(mContext, false);
          exporter.execute(new File(mContext.getFilesDir(), mDataFile)); //write out all data to export.xml
+         Log.v("TJS", "MileageTracker backup export complete");
          super.performBackup(oldState, data, newState);
          //FIXME - delete file after backup is complete (will we know when it is?)
       }

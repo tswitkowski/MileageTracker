@@ -70,6 +70,7 @@ public class EditRecord extends FragmentActivity {
 
    public static class EditRecordFragment extends Fragment implements ProfileSelectorCallbacks {
       private Uri                  mUri;
+      private long                 mId;
       private String               mProfileName;
       private Cursor               mCursor;
       private SharedPreferences    prefs;
@@ -121,8 +122,8 @@ public class EditRecord extends FragmentActivity {
 //                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
          // Do some setup based on the action being performed.
 
-         final boolean newRecord   = getArguments().getBoolean("new");
-         final long    recordId    = getArguments().getLong("id");
+         final boolean newRecord = getArguments().getBoolean("new");
+         mId                     = getArguments().getLong("id");
          if(!newRecord) {
             // Requested to edit: set that state, and the data being edited.
             // mState = STATE_EDIT;
@@ -133,7 +134,8 @@ public class EditRecord extends FragmentActivity {
             params.height = LayoutParams.WRAP_CONTENT;
             getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
 
-            mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, recordId);
+            mUri           = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, mId);
+            mProfileName   = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(this.getString(R.string.carSelection), "Car45");
             getLoaderManager().initLoader(LoaderCallbacks.ID_DATA_LOADER, null, mLoaderCallbacks);
          } else {
             isNewRecord = true;
@@ -177,7 +179,7 @@ public class EditRecord extends FragmentActivity {
          submit.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                updateDbRow();
-               handleCompletion(1);
+               handleCompletion(mId);
             }
          });
          getTextFieldStruct(MileageData.DATE).setOnClickListener(new View.OnClickListener() {
@@ -246,6 +248,7 @@ public class EditRecord extends FragmentActivity {
          if(mCallback != null) {
             result = mCallback.messageUpdated(id);
          }
+         getActivity().setResult((int)(id+1));
          if(!result)
             getActivity().finish();
       }

@@ -66,7 +66,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       // FIXME - maybe be a bit smarter about when we generate charts!
       getSupportLoaderManager().restartLoader(45, null, this);
       if(mProfileAdapter != null)
-         mProfileAdapter.loadActionBarNavItems();
+         mProfileAdapter.loadActionBarNavItems(this);
    }
 
    public void generateCharts(Cursor cursor) {
@@ -176,7 +176,6 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       }
 
       public View getView(int position, View convertView, ViewGroup parent) {
-         Log.d("TJS", "Trying to build view for item " + position + "...");
          StatisticsView stats;
          if(convertView == null) {
             stats = (StatisticsView)mInflater.inflate(R.layout.statistics_item, null);

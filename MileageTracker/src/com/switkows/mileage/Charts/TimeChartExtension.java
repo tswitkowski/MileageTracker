@@ -71,6 +71,9 @@ public abstract class TimeChartExtension {
       } else {
          mRenderer.setPanEnabled(false, false);
          mRenderer.setZoomEnabled(false, false);
+         //reduce the number of labels (this should only occur for the
+         //main app display, where charts are rendered pretty small)
+         mRenderer.setYLabels(7);
       }
       autoFitChart();
       mView = ChartFactory.getTimeChartView(mContext, mDataSet, mRenderer, "MMM yyyy");
@@ -165,6 +168,8 @@ public abstract class TimeChartExtension {
     *           the series point styles
     * @return the XY multiple series renderers
     */
+   private static final float LEGEND_FONT_SIZE_PT = 8.0f;
+
    protected XYMultipleSeriesRenderer buildRenderer(int[] colors, PointStyle[] styles) {
       XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
       int length = colors.length;
@@ -212,6 +217,11 @@ public abstract class TimeChartExtension {
       renderer.setAxesColor(axesColor);
       renderer.setLabelsColor(labelsColor);
       renderer.setShowGrid(false);
+      final float scale = mContext.getResources().getDisplayMetrics().density;
+      final float fontSize = (LEGEND_FONT_SIZE_PT * scale + 0.5f);
+      renderer.setLegendTextSize(fontSize);
+      renderer.setAxisTitleTextSize(fontSize);
+      renderer.setLabelsTextSize(fontSize);
    }
 
    protected void autoFitChart() {
