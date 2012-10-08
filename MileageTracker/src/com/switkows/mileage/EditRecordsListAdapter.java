@@ -90,7 +90,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       return convertView;
    }
 
-   @TargetApi(11)
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void setListActivatedHoneycomb(EditRecordListItem v) {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
          v.setActivated(mViewedId >= 0 && v.mIDValue == mViewedId);

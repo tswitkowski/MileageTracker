@@ -17,7 +17,7 @@ public class EditPreferences extends PreferenceActivity {
       configureActionBar();
    }
 
-   @TargetApi(11)
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void configureActionBar() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
          getActionBar().setDisplayHomeAsUpEnabled(true);

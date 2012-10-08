@@ -68,7 +68,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          i.setData(getURI());
       }
 
-      mProfileAdapter = ProfileSelector.setupActionBar(this, null);
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+         mProfileAdapter = ProfileSelector.setupActionBar(this, null);
 
       // restore ImportThread pointer, if we got here by way of an orientation change
       if(getLastCustomNonConfigurationInstance() != null) {
@@ -98,7 +99,6 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
          trans.replace(R.id.record_list_fragment, f, LIST_FRAGMENT);
          trans.commitAllowingStateLoss();
-         mViewedRecordId = -1; //reset this, so we don't display data from the wrong profile
          hideRecordView();
       }
 
@@ -112,7 +112,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       super.onResume();
    }
 
-   @TargetApi(11)
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void setHomeEnabledHoneycomb() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
          getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -226,8 +226,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          if(resultCode == RESULT_CANCELED)
             mViewedRecordId = -1;
          else {
-            mViewedRecordId = resultCode - 1;
             messageUpdated(mViewedRecordId);
+            mViewedRecordId = resultCode - 1;
          }
       }
    }
@@ -315,14 +315,18 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    //delete active fragment, and hide view
    protected void hideRecordView() {
       View view = findViewById(R.id.edit_record_fragment);
+      mViewedRecordId = -1;   //reset pointer, so we don't get confused later
       if(view != null) {
+         EditRecordsMenuFragment list = getListFragment();
+         if(list != null)
+            list.updateRecordView(mViewedRecordId);
          FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
          Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORD_FRAGMENT);
          if(fragment != null) {
             trans.remove(fragment);
             trans.commitAllowingStateLoss();
-            view.setVisibility(View.GONE);
          }
+         view.setVisibility(View.GONE);
       }
    }
 
@@ -378,7 +382,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
             getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       }
 
-      @TargetApi(11)
+      @TargetApi(Build.VERSION_CODES.HONEYCOMB)
       private boolean setChoiceModeListenerHoneycomb(ListView v) {
          if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             v.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -493,7 +497,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          return ret;
       }
 
-      @TargetApi(11)
+      @TargetApi(Build.VERSION_CODES.HONEYCOMB)
       protected class EditRecordModeListener implements MultiChoiceModeListener {
          public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = getActivity().getMenuInflater();
@@ -705,13 +709,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    public void onBackStackChanged() {
       FragmentManager manager = getSupportFragmentManager();
       int count = manager.getBackStackEntryCount();
-      if(count == 0) {
-         View view = findViewById(R.id.edit_record_fragment);
-         mViewedRecordId = -1;
-         getListFragment().updateRecordView(mViewedRecordId);
-         if(view != null)
-            view.setVisibility(View.GONE);
-      }
+      if(count == 0)
+         hideRecordView();
    }
 
    public void onProfileChange(String newProfile) {

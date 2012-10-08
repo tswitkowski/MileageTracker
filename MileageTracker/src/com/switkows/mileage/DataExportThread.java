@@ -124,7 +124,7 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
    /**
     * Updates the dialog configuration (i.e. can switch back and forth between indeterminate/determinate)
     */
-   @TargetApi(11)
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void updateProgressConfig() {
       if(mShowIndeterminate) {
          mDialog.setIndeterminate(true);

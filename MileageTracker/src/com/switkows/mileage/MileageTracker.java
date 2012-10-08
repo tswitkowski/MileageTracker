@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -56,7 +57,8 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       // grab pointers to all my graphical elements
       initalizePointers();
       getSupportLoaderManager().initLoader(45, null, this);
-      mProfileAdapter = ProfileSelector.setupActionBar(this, null);
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+         mProfileAdapter = ProfileSelector.setupActionBar(this, null);
       // Log.d("TJS", "Finished opening/creating database");
    }
 

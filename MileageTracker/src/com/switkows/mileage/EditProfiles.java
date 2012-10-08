@@ -130,7 +130,7 @@ public class EditProfiles extends FragmentActivity {
       updateList();
    }
 
-   @TargetApi(9)
+   @TargetApi(Build.VERSION_CODES.GINGERBREAD)
    protected void renameSelectedProfile(String newName) {
       @SuppressWarnings("unchecked")
       final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();

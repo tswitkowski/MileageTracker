@@ -67,7 +67,7 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
     * 
     * @author Trevor
     */
-   @TargetApi(9)
+   @TargetApi(Build.VERSION_CODES.GINGERBREAD)
    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
       String profile = getItemName(itemPosition);
       if(mCallback instanceof ProfileSelectorCallbacks)
@@ -82,7 +82,7 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
       return profile;
    }
 
-   @TargetApi(9)
+   @TargetApi(Build.VERSION_CODES.GINGERBREAD)
    public void applyPreferenceChange(String newProfile) {
       Editor prefs = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
       String option = mContext.getString(R.string.carSelection);
@@ -90,7 +90,7 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
       prefs.apply();
    }
 
-   @TargetApi(11)
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    public static ProfileSelector setupActionBar(FragmentActivity context, ProfileSelectorCallbacks callbacks) {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
          ActionBar bar = ((FragmentActivity)context).getActionBar();

@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -58,14 +59,16 @@ public class EditRecord extends FragmentActivity {
             id = Long.parseLong(getIntent().getData().getPathSegments().get(1));
          EditRecordFragment fragment = EditRecordFragment.newInstance(id, isNew);
          getSupportFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
+         setResult((int)id + 1);
 
          //FIXME - seems like a hack to get the dialog to stretch to the proper width:
 //         LayoutParams params = getWindow().getAttributes();
 //         params.width = LayoutParams.FILL_PARENT;
 //         getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+      } else {
+         setResult(RESULT_CANCELED); //FIXME - needed?
       }
       requestWindowFeature(Window.FEATURE_ACTION_BAR);
-      setResult(RESULT_CANCELED); //FIXME - needed?
    }
 
    public static class EditRecordFragment extends Fragment implements ProfileSelectorCallbacks {
@@ -122,20 +125,26 @@ public class EditRecord extends FragmentActivity {
 //                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
          // Do some setup based on the action being performed.
 
+         final float scale = getResources().getDisplayMetrics().density;
+         final int width = (int)(300 * scale + 0.5f);
          final boolean newRecord = getArguments().getBoolean("new");
-         mId                     = getArguments().getLong("id");
+         final boolean isLandscape = getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+         mId = getArguments().getLong("id");
          if(!newRecord) {
             // Requested to edit: set that state, and the data being edited.
             // mState = STATE_EDIT;
             result = inflater.inflate(R.layout.edit_record, null);
             //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-            LayoutParams params = getActivity().getWindow().getAttributes();
-//            params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwise action bar cannot be used!
-            params.height = LayoutParams.WRAP_CONTENT;
-            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
+            if(getActivity() instanceof EditRecord) {
+               LayoutParams params = getActivity().getWindow().getAttributes();
+//               params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwise action bar cannot be used!
+               params.width = (isLandscape ? width * 2 : width);
+               params.height = LayoutParams.WRAP_CONTENT;
+               getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
+            }
 
-            mUri           = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, mId);
-            mProfileName   = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(this.getString(R.string.carSelection), "Car45");
+            mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, mId);
+            mProfileName = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(this.getString(R.string.carSelection), "Car45");
             getLoaderManager().initLoader(LoaderCallbacks.ID_DATA_LOADER, null, mLoaderCallbacks);
          } else {
             isNewRecord = true;
@@ -144,10 +153,13 @@ public class EditRecord extends FragmentActivity {
             else
                result = inflater.inflate(R.layout.edit_record, null);
             //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-            LayoutParams params = getActivity().getWindow().getAttributes();
-//            params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwiser action bar cannot be used!
-            params.height = LayoutParams.WRAP_CONTENT;
-            getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
+            if(getActivity() instanceof EditRecord) {
+               LayoutParams params = getActivity().getWindow().getAttributes();
+//               params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwiser action bar cannot be used!
+               params.width = (isLandscape ? width * 2 : width);
+               params.height = LayoutParams.WRAP_CONTENT;
+               getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
+            }
             // Requested to insert: set that state, and create a new entry
             // in the container.
             // mState = STATE_INSERT;
@@ -216,7 +228,7 @@ public class EditRecord extends FragmentActivity {
             return;
          if(isNewRecord) {
             getActivity().setTitle(getText(R.string.new_record_title));
-            if(mProfileAdapter == null)
+            if(mProfileAdapter == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                mProfileAdapter = ProfileSelector.setupActionBar(getActivity(), this);
          } else {
             String indicator = "(" + getPrefs().getString(getString(R.string.carSelection), "Car45") + "):";
@@ -248,7 +260,7 @@ public class EditRecord extends FragmentActivity {
          if(mCallback != null) {
             result = mCallback.messageUpdated(id);
          }
-         getActivity().setResult((int)(id+1));
+         getActivity().setResult((int)(id + 1));
          if(!result)
             getActivity().finish();
       }
