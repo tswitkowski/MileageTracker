@@ -59,7 +59,7 @@ public class EditRecord extends FragmentActivity {
             id = Long.parseLong(getIntent().getData().getPathSegments().get(1));
          EditRecordFragment fragment = EditRecordFragment.newInstance(id, isNew);
          getSupportFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
-         setResult((int)id + 1);
+         setResult(RESULT_CANCELED);   //If we hit this case, we want to tell caller that this activity was canceled (thus the caller should not attempt to add this record's view back to the application)
 
          //FIXME - seems like a hack to get the dialog to stretch to the proper width:
 //         LayoutParams params = getWindow().getAttributes();

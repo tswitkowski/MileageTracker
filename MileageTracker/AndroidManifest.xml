@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="26"
+      android:versionCode="27"
       android:installLocation="auto"
-      android:versionName="2.5.1" package="com.switkows.mileage">
+      android:versionName="2.5.2" package="com.switkows.mileage">
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="16"></uses-sdk>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
