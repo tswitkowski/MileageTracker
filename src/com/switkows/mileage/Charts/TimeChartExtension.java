@@ -220,6 +220,7 @@ public abstract class TimeChartExtension {
       final float scale = mContext.getResources().getDisplayMetrics().density;
       final float fontSize = (LEGEND_FONT_SIZE_PT * scale + 0.5f);
       renderer.setLegendTextSize(fontSize);
+      renderer.setChartTitleTextSize(fontSize);
       renderer.setAxisTitleTextSize(fontSize);
       renderer.setLabelsTextSize(fontSize);
    }
