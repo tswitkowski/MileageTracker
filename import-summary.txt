@@ -1,0 +1,163 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* app\
+* app\src\
+* app\src\main\
+* app\src\main\AndroidManifest.xml
+* app\src\main\java\
+* app\src\main\java\src\
+* app\src\main\java\src\com\
+* app\src\main\java\src\com\switkows\
+* app\src\main\java\src\com\switkows\mileage\
+* app\src\main\java\src\com\switkows\mileage\ChartViewer.java
+* app\src\main\java\src\com\switkows\mileage\Charts\
+* app\src\main\java\src\com\switkows\mileage\Charts\MileageChart.java
+* app\src\main\java\src\com\switkows\mileage\Charts\MileageDiffChart.java
+* app\src\main\java\src\com\switkows\mileage\Charts\MileageVsStationChart.java
+* app\src\main\java\src\com\switkows\mileage\Charts\MilesChart.java
+* app\src\main\java\src\com\switkows\mileage\Charts\PriceChart.java
+* app\src\main\java\src\com\switkows\mileage\Charts\TimeChartExtension.java
+* app\src\main\java\src\com\switkows\mileage\DataExportThread.java
+* app\src\main\java\src\com\switkows\mileage\DataImportThread.java
+* app\src\main\java\src\com\switkows\mileage\EditPreferences.java
+* app\src\main\java\src\com\switkows\mileage\EditProfiles.java
+* app\src\main\java\src\com\switkows\mileage\EditRecord.java
+* app\src\main\java\src\com\switkows\mileage\EditRecordListItem.java
+* app\src\main\java\src\com\switkows\mileage\EditRecordsListAdapter.java
+* app\src\main\java\src\com\switkows\mileage\EditRecordsMenu.java
+* app\src\main\java\src\com\switkows\mileage\MileageBackupAgent.java
+* app\src\main\java\src\com\switkows\mileage\MileageChartManager.java
+* app\src\main\java\src\com\switkows\mileage\MileageData.java
+* app\src\main\java\src\com\switkows\mileage\MileageProvider.java
+* app\src\main\java\src\com\switkows\mileage\MileageTracker.java
+* app\src\main\java\src\com\switkows\mileage\ProfileSelector.java
+* app\src\main\java\src\com\switkows\mileage\ShortcutAddEntry.java
+* app\src\main\res\
+* app\src\main\res\drawable-hdpi\
+* app\src\main\res\drawable-hdpi\mileage_tracker_icon.png
+* app\src\main\res\drawable-ldpi\
+* app\src\main\res\drawable-ldpi\mileage_tracker_icon.png
+* app\src\main\res\drawable-mdpi\
+* app\src\main\res\drawable-mdpi\mileage_tracker_icon.png
+* app\src\main\res\drawable-nodpi\
+* app\src\main\res\drawable-nodpi\selected_record.png
+* app\src\main\res\drawable-xhdpi\
+* app\src\main\res\drawable-xhdpi\mileage_tracker_icon.png
+* app\src\main\res\drawable\
+* app\src\main\res\drawable\edit_record_list_background.xml
+* app\src\main\res\layout-land\
+* app\src\main\res\layout-land\edit_record_activity.xml
+* app\src\main\res\layout-land\main.xml
+* app\src\main\res\layout-sw600dp\
+* app\src\main\res\layout-sw600dp\edit_record_activity.xml
+* app\src\main\res\layout\
+* app\src\main\res\layout\edit_profiles.xml
+* app\src\main\res\layout\edit_record.xml
+* app\src\main\res\layout\edit_record_activity.xml
+* app\src\main\res\layout\edit_record_bottom.xml
+* app\src\main\res\layout\edit_record_landscape_floating.xml
+* app\src\main\res\layout\edit_record_top.xml
+* app\src\main\res\layout\export_dialog.xml
+* app\src\main\res\layout\import_dialog.xml
+* app\src\main\res\layout\main.xml
+* app\src\main\res\layout\main_charts.xml
+* app\src\main\res\layout\main_statistics.xml
+* app\src\main\res\layout\move_dialog.xml
+* app\src\main\res\layout\record_list_item.xml
+* app\src\main\res\layout\statistics_item.xml
+* app\src\main\res\menu\
+* app\src\main\res\menu\database_menu.xml
+* app\src\main\res\menu\edit_profiles_menu.xml
+* app\src\main\res\menu\edit_records_cab.xml
+* app\src\main\res\menu\main_menu.xml
+* app\src\main\res\values-v11\
+* app\src\main\res\values-v11\styles.xml
+* app\src\main\res\values\
+* app\src\main\res\values\arrays.xml
+* app\src\main\res\values\colors.xml
+* app\src\main\res\values\strings.xml
+* app\src\main\res\values\styles.xml
+* app\src\main\res\xml\
+* app\src\main\res\xml\preferences.xml
+* docs\
+* docs\add_entry.png
+* docs\home_screen.png
+* docs\mileage_tracker_icon.xcf
+* docs\mileage_tracker_icon512.png
+* docs\mileage_tracker_icon512.xcf
+* docs\selected_record.xcf
+* docs\view_entries.png
+* org\
+* org\achartengine\
+* org\achartengine\ChartFactory.class
+* org\achartengine\GraphicalActivity.class
+* org\achartengine\GraphicalView$1.class
+* org\achartengine\GraphicalView.class
+* org\achartengine\chart\
+* org\achartengine\chart\AbstractChart.class
+* org\achartengine\chart\BarChart$Type.class
+* org\achartengine\chart\BarChart.class
+* org\achartengine\chart\LineChart.class
+* org\achartengine\chart\PieChart.class
+* org\achartengine\chart\PointStyle.class
+* org\achartengine\chart\ScatterChart$1.class
+* org\achartengine\chart\ScatterChart.class
+* org\achartengine\chart\TimeChart.class
+* org\achartengine\chart\XYChart.class
+* org\achartengine\model\
+* org\achartengine\model\CategorySeries.class
+* org\achartengine\model\TimeSeries.class
+* org\achartengine\model\XYMultipleSeriesDataset.class
+* org\achartengine\model\XYSeries.class
+* org\achartengine\renderer\
+* org\achartengine\renderer\DefaultRenderer.class
+* org\achartengine\renderer\SimpleSeriesRenderer.class
+* org\achartengine\renderer\XYMultipleSeriesRenderer$Orientation.class
+* org\achartengine\renderer\XYMultipleSeriesRenderer.class
+* org\achartengine\renderer\XYSeriesRenderer.class
+* org\achartengine\util\
+* org\achartengine\util\MathHelper.class
+
+Replaced Jars with Dependencies:
+--------------------------------
+The importer recognized the following .jar files as third party
+libraries and replaced them with Gradle dependencies instead. This has
+the advantage that more explicit version information is known, and the
+libraries can be updated automatically. However, it is possible that
+the .jar file in your project was of an older version than the
+dependency we picked, which could render the project not compileable.
+You can disable the jar replacement in the import wizard and try again:
+
+android-support-v4.jar => com.android.support:support-v4:+
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* C:\Users\Trevor\Documents\Java\achartengine\achartengine\src\ => app\src\main\java\
+* AndroidManifest.xml => app\src\main\AndroidManifest.xml
+* res\ => app\src\main\java\
+* src\ => app\src\main\java\
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)
