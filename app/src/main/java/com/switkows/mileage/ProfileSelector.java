@@ -96,6 +96,7 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
          ActionBar bar = ((FragmentActivity)context).getActionBar();
          if(bar != null) {
             bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
             ProfileSelector selector = new ProfileSelector(context, 0, null, null, null);
             if(callbacks != null)
                selector.mCallback = callbacks;

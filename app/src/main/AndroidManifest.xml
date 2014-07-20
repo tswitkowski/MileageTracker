@@ -3,7 +3,7 @@
       android:versionCode="29"
       android:installLocation="auto"
       android:versionName="2.5.4" package="com.switkows.mileage">
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="16"></uses-sdk>
+    <uses-sdk android:minSdkVersion="L" android:targetSdkVersion="L"></uses-sdk>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
     <application    android:icon="@drawable/mileage_tracker_icon"
