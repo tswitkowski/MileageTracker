@@ -51,6 +51,7 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       Log.d("TJS", "Started onCreate...");
+      PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
       mContext = this;
       setContentView(R.layout.main);
       mStatsAdapter = new StatisticsAdapter(mContext);

@@ -42,6 +42,7 @@ public class EditRecord extends FragmentActivity {
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
       String action = getIntent().getAction();
       //FIXME - added an assumption that the ONLY way we will start this activity in landscape is via a 'new' record
       boolean isNew = MileageTracker.ACTION_INSERT.equals(action);
