@@ -3,4 +3,5 @@ build/
 .gradle/
 gradle/
 gradlew*
+*.apk
 local.properties
