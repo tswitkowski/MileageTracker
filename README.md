@@ -16,17 +16,17 @@ Please feel free to give me any feedback or suggestions for future enhancements.
 
 Current Limitations of Multi-Vehicle profiles
 ==============
-1. ~~Cannot change the name of the vehicles~~ added in revision b71fac
+1. ~~Cannot change the name of the vehicles~~ added in revision SHA: b71fac471496b2d29088ca0c9d8474ee6541274f
 2. ~~Cannot export all vehicle's data to single CSV file, in a single operation~~ fixed
 3. ~~Gas-station auto-completion is vehicle dependent (i.e. gas stations entered for 'Car1' will not show up as completion options for 'Car2' or 'Car3')~~ fixed
-4. ~~Cannot move a record from one vehicle to another. At this time, this will require manually creating a new entry for the destination vehicle, and entering the data.~~ added in revision b71fac
+4. ~~Cannot move a record from one vehicle to another. At this time, this will require manually creating a new entry for the destination vehicle, and entering the data.~~ added in revision SHA: b71fac471496b2d29088ca0c9d8474ee6541274f
 5. Clearing data will clear from all vehicles (not just the current vehicle)
 
 Coming Features
 ==============
 * Add new charts (one new chart in release v1.5)
 * Add preferences to select which charts to display (added in v1.5)
-* Allow user to rename Vehicle names (added in v2.0, revision b71fac)
+* Allow user to rename Vehicle names (added in v2.0, SHA: b71fac471496b2d29088ca0c9d8474ee6541274f)
 
 
 Thanks, Trevor
