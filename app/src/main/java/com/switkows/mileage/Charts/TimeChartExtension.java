@@ -212,7 +212,8 @@ public abstract class TimeChartExtension {
       renderer.setXTitle(xTitle);
       renderer.setYTitle(yTitle);
 //      renderer.setMarginsColor(Color.TRANSPARENT);
-//      renderer.setBackgroundColor(Color.GREEN);
+      renderer.setBackgroundColor(Color.BLACK);
+      renderer.setApplyBackgroundColor(true);
       renderer.setRange(new double[] {xMin, xMax, yMin, yMax});
       renderer.setAxesColor(axesColor);
       renderer.setLabelsColor(labelsColor);
