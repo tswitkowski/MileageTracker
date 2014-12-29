@@ -7,3 +7,4 @@ gradlew*
 local.properties
 .navigation/
 *.iml
+*.bak

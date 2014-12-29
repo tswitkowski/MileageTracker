@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 	<item
 	    android:id="@+id/add_item"
 	    android:title="Add Entry"
-	    android:showAsAction="ifRoom"
-	    android:icon="@android:drawable/ic_menu_add"></item>
+	    app:showAsAction="ifRoom"
+	    android:icon="@android:drawable/ic_menu_add" />
 	<item
 	    android:id="@+id/preferences"
 	    android:title="Preferences"
-	    android:showAsAction="ifRoom"
-	    android:icon="@android:drawable/ic_menu_preferences"></item>
+	    app:showAsAction="ifRoom"
+	    android:icon="@android:drawable/ic_menu_preferences" />
 	<item
 	    android:id="@+id/export_csv"
 	    android:title="Export"
-	    android:showAsAction="ifRoom"
-	    android:icon="@android:drawable/ic_menu_save"></item>
+	    app:showAsAction="ifRoom"
+	    android:icon="@android:drawable/ic_menu_save" />
 	<item
 	    android:id="@+id/import_csv"
 	    android:title="Import"
-	    android:showAsAction="ifRoom"
-	    android:icon="@android:drawable/ic_menu_upload"></item>
+	    app:showAsAction="ifRoom"
+	    android:icon="@android:drawable/ic_menu_upload" />
 	<item
 	    android:id="@+id/clear_database"
 	    android:title="Clear Data"
-	    android:showAsAction="never"
-	    android:icon="@android:drawable/ic_menu_close_clear_cancel"></item>
+	    app:showAsAction="never"
+	    android:icon="@android:drawable/ic_menu_close_clear_cancel" />
 </menu>

@@ -6,6 +6,8 @@
    android:layout_height="fill_parent"
    android:id="@+id/root">
    <include
+      layout="@layout/main_toolbar" />
+   <include
       layout="@layout/main_statistics"
       android:id="@+id/statistics" />
    <include

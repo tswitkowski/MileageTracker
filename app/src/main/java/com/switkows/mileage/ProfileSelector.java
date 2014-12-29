@@ -1,17 +1,17 @@
 package com.switkows.mileage;
 
 import android.annotation.TargetApi;
-import android.app.ActionBar;
-import android.app.ActionBar.OnNavigationListener;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBar.OnNavigationListener;
 
 public class ProfileSelector extends SimpleCursorAdapter implements OnNavigationListener {
-   private final FragmentActivity   mContext;
+   private final ActionBarActivity  mContext;
    private ProfileSelectorCallbacks mCallback;
 
    interface ProfileSelectorCallbacks {
@@ -23,7 +23,7 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
     * 
     * @author Trevor
     */
-   public ProfileSelector(FragmentActivity context, int layout, Cursor c, String[] from, int[] to) {
+   public ProfileSelector(ActionBarActivity context, int layout, Cursor c, String[] from, int[] to) {
       super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},
             NO_SELECTION);
 
@@ -91,12 +91,13 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
    }
 
    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-   public static ProfileSelector setupActionBar(FragmentActivity context, ProfileSelectorCallbacks callbacks) {
+   public static ProfileSelector setupActionBar(ActionBarActivity context, ProfileSelectorCallbacks callbacks) {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-         ActionBar bar = ((FragmentActivity)context).getActionBar();
+         ActionBar bar = context.getSupportActionBar();
          if(bar != null) {
             bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-            bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
+            bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_USE_LOGO);
+            bar.setLogo(R.drawable.mileage_tracker_icon);
             ProfileSelector selector = new ProfileSelector(context, 0, null, null, null);
             if(callbacks != null)
                selector.mCallback = callbacks;
@@ -111,15 +112,15 @@ public class ProfileSelector extends SimpleCursorAdapter implements OnNavigation
    /**
     * Update the Action Bar's navigation list to the correct
     * position (the currently selected Profile name)
-    * @param context - The FragmentActivity containing the Action Bar
+    * @param context - The ActionBarActivity containing the Action Bar
     */
    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-   public void updateActionBarSelectorPosition(FragmentActivity context) {
-      ActionBar bar = context.getActionBar();
+   public void updateActionBarSelectorPosition(ActionBarActivity context) {
+      ActionBar bar = context.getSupportActionBar();
       bar.setSelectedNavigationItem(getSelectedPosition());
    }
 
-   public void loadActionBarNavItems(FragmentActivity context) {
+   public void loadActionBarNavItems(ActionBarActivity context) {
       updateCursor();
       updateActionBarSelectorPosition(context);
    }

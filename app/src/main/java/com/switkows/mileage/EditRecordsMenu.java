@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
@@ -33,6 +32,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -40,6 +42,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
@@ -48,7 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.MultiChoiceModeListener;
 
-public class EditRecordsMenu extends FragmentActivity implements EditRecordFragment.UpdateCallback, OnBackStackChangedListener, ProfileSelectorCallbacks {
+public class EditRecordsMenu extends ActionBarActivity implements EditRecordFragment.UpdateCallback, OnBackStackChangedListener, ProfileSelectorCallbacks {
 
    private static final String LIST_FRAGMENT   = "recordList";
    private static final String RECORD_FRAGMENT = "recordViewer";
@@ -63,6 +66,8 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.edit_record_activity);
+      Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+      setSupportActionBar(toolbar);
       Intent i = getIntent();
       if(i.getData() == null) {
          i.setData(getURI());
@@ -78,7 +83,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
       }
       if(savedInstanceState != null) {
          mViewedRecordId = savedInstanceState.getLong("currentView");
-         mLastUri        = (Uri)savedInstanceState.getParcelable("lastUri");
+         mLastUri        = savedInstanceState.getParcelable("lastUri");
       } else
          mViewedRecordId = -1;
    }
@@ -115,7 +120,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void setHomeEnabledHoneycomb() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-         getActionBar().setDisplayHomeAsUpEnabled(true);
+         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
       }
    }
 
@@ -139,7 +144,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
 
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
-      super.onCreateOptionsMenu(menu);
+//      super.onCreateOptionsMenu(menu);
       MenuInflater inflater = getMenuInflater();
       inflater.inflate(R.menu.database_menu, menu);
       //pre-honeycomb devices do not show CAB, so lets just add it to the menu!
@@ -489,7 +494,7 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
                   if(ret.length() > 0)
                      ret = String.format("%s\n%s", ret, str);
                   else
-                     ret = str.toString();
+                     ret = str;
                   break;
                }
             }
@@ -507,6 +512,14 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          }
 
          public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            try {
+               ActionBarActivity activity = (ActionBarActivity) getActivity();
+               Toolbar tb = (Toolbar) activity.findViewById(R.id.main_toolbar);
+               tb.setVisibility(View.GONE);
+//               tb.animate().translationY(-tb.getBottom()).setInterpolator(new AccelerateInterpolator()).start();
+            } catch (ClassCastException e) {
+               Log.e("TJS", "Invalid activity class: " + e);
+            }
             return true;
          }
 
@@ -533,6 +546,16 @@ public class EditRecordsMenu extends FragmentActivity implements EditRecordFragm
          }
 
          public void onDestroyActionMode(ActionMode mode) {
+            try {
+               ActionBarActivity activity = (ActionBarActivity) getActivity();
+               Toolbar tb = (Toolbar) activity.findViewById(R.id.main_toolbar);
+               tb.setVisibility(View.VISIBLE);
+               //Give a transition from off screen to the normal spot
+               tb.setTranslationY(-tb.getBottom());
+               tb.animate().translationY(0).setInterpolator(new AccelerateInterpolator()).start();
+            } catch (ClassCastException e) {
+               Log.e("TJS", "Invalid activity class: " + e);
+            }
          }
 
          public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {

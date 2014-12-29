@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 	<item
 	    android:id="@+id/delete_entry"
 	    android:title="@string/deleteButton"
-	    android:showAsAction="always"
-	    android:icon="@android:drawable/ic_menu_delete"></item>
+	    app:showAsAction="always"
+	    android:icon="@android:drawable/ic_menu_delete" />
 	<item
 	    android:id="@+id/move_entry"
 	    android:title="Move Entry to other account"
-	    android:showAsAction="always"
-	    android:icon="@android:drawable/ic_menu_set_as"></item>
+	    app:showAsAction="always"
+	    android:icon="@android:drawable/ic_menu_set_as" />
 	<item
 	    android:id="@+id/select_all"
 	    android:title="Select All"
-	    android:showAsAction="ifRoom|withText"></item>
+	    app:showAsAction="ifRoom|withText" />
 </menu>

@@ -19,25 +19,25 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
-public class EditRecord extends FragmentActivity {
+public class EditRecord extends ActionBarActivity {
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +69,6 @@ public class EditRecord extends FragmentActivity {
       } else {
          setResult(RESULT_CANCELED); //FIXME - needed?
       }
-      requestWindowFeature(Window.FEATURE_ACTION_BAR);
    }
 
    public static class EditRecordFragment extends Fragment implements ProfileSelectorCallbacks {
@@ -119,7 +118,7 @@ public class EditRecord extends FragmentActivity {
          isNewRecord = false;
          if(container == null) //if we are not attached to a View
             return null;
-         View result = null;
+         View result;
 
          // Have the system blur any windows behind this one.
 //         getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
@@ -218,6 +217,16 @@ public class EditRecord extends FragmentActivity {
          // getTextFieldStruct(MileageData.ACTUAL_MILEAGE).setEnabled(false);
          // getTextFieldStruct(MileageData.MPG_DIFF).setEnabled(false);
          // getTextFieldStruct(MileageData.TOTAL_PRICE).setEnabled(false);
+         getTextFieldStruct(MileageData.STATION);//grab pointer
+
+         if(((ActionBarActivity)getActivity()).getSupportActionBar() == null) {
+            Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.main_toolbar);
+            ((ActionBarActivity) getActivity()).setSupportActionBar(toolbar);
+            //match the parent width (ugly!!)
+//            LayoutParams params = new LayoutParams(getActivity().getWindow().getAttributes().width, toolbar.getHeight());
+//            toolbar.setLayoutParams(params);
+            toolbar.setMinimumWidth(getActivity().getWindow().getAttributes().width);
+         }
 
       }
 
@@ -230,7 +239,7 @@ public class EditRecord extends FragmentActivity {
          if(isNewRecord) {
             getActivity().setTitle(getText(R.string.new_record_title));
             if(mProfileAdapter == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-               mProfileAdapter = ProfileSelector.setupActionBar(getActivity(), this);
+               mProfileAdapter = ProfileSelector.setupActionBar((ActionBarActivity) getActivity(), this);
          } else {
             String indicator = "(" + getPrefs().getString(getString(R.string.carSelection), "Car45") + "):";
             getActivity().setTitle(getText(R.string.edit_record_title) + indicator);

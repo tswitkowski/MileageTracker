@@ -1,12 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?> 
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
-   android:id="@+id/edit_record_layout"
-   android:orientation="horizontal"
+   android:id="@+id/edit_record_screen"
+   android:orientation="vertical"
    android:layout_width="match_parent"
    android:layout_height="match_parent"
-   android:baselineAligned="false"> 
+   android:baselineAligned="false">
 
+   <include
+      layout="@layout/main_toolbar" />
+   <LinearLayout
+      android:id="@+id/edit_record_layout"
+      android:orientation="horizontal"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:baselineAligned="false">
     <!--This wrapper is here to allow us to add the edit-record fragment in the
         appropriate place (will not be needed once we transition away from the
         dynamic delete/deslect buttons in favor of action bar items)-->
@@ -23,4 +31,5 @@
       android:layout_weight="3"
       android:layout_gravity="center_horizontal"
       android:visibility="gone"/>
+   </LinearLayout>
 </LinearLayout>

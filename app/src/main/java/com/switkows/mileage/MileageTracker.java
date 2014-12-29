@@ -11,10 +11,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,7 +36,7 @@ import android.widget.TextView;
 //1. mvoing most code from MileageTracker Activity to a Fragment
 //2. removing EditRecordsMenu Activity
 //3. correctly replacing new Activity calls with Fragment transactions
-public class MileageTracker extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor>, ProfileSelectorCallbacks {
+public class MileageTracker extends ActionBarActivity implements LoaderManager.LoaderCallbacks<Cursor>, ProfileSelectorCallbacks {
    public static final String       ACTION_INSERT = "com.switkows.mileage.INSERT";
    /** Called when the activity is first created. */
    private static LinearLayout[]    charts;
@@ -54,6 +55,8 @@ public class MileageTracker extends FragmentActivity implements LoaderManager.Lo
       PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
       mContext = this;
       setContentView(R.layout.main);
+      Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+      setSupportActionBar(toolbar);
       mStatsAdapter = new StatisticsAdapter(mContext);
       // grab pointers to all my graphical elements
       initalizePointers();
