@@ -51,7 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.MultiChoiceModeListener;
 
-public class EditRecordsMenu extends ActionBarActivity implements EditRecordFragment.UpdateCallback, OnBackStackChangedListener, ProfileSelectorCallbacks {
+public class EditRecordsMenu extends ActionBarActivity implements EditRecordFragment.UpdateCallback, DataImportThread.callbacks, OnBackStackChangedListener, ProfileSelectorCallbacks {
 
    private static final String LIST_FRAGMENT   = "recordList";
    private static final String RECORD_FRAGMENT = "recordViewer";
@@ -128,7 +128,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
    // due to an orientation change will not result in a lockup
    @Override
    public Object onRetainCustomNonConfigurationInstance() {
-      if(iThread != null) {
+      if(iThread != null && !iThread.isCompleted()) {
          iThread.pause();
          return iThread;
       }
@@ -361,6 +361,11 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
          Toast.makeText(this, "Error! SDCARD not accessible!", Toast.LENGTH_LONG).show();
          return null;
       }
+   }
+
+   //once import task has completed, reset pointer so we don't resurrect dialog box!
+   public void taskCompleted() {
+      iThread = null;
    }
 
    public static class EditRecordsMenuFragment extends ListFragment {

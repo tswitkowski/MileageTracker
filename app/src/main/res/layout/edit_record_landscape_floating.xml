@@ -5,7 +5,7 @@
    android:layout_width="wrap_content"
    android:layout_height="wrap_content"
    android:gravity="center_horizontal"
-   android:id="@+id/root">
+   android:id="@+id/root2">
    <include
       layout="@layout/main_toolbar" />
    <LinearLayout

@@ -24,9 +24,15 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    String                               mFile;             //short file name (used for toast/log messages only)
    private int                          mMax;              //holds the maximum value of the progress bar
    private boolean                      mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
+   private boolean                      mCompleted;
 
    private ProgressDialog               mDialog;
    private final EditRecordsListAdapter mAdapter;
+
+   //Callbacks so caller can clean up after thread completion
+   public interface callbacks {
+      public void taskCompleted();
+   }
 
    public DataImportThread(Context context, EditRecordsListAdapter adapter) {
       this(context, true, adapter);
@@ -41,6 +47,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
       mShow     = showDialog;
       mAdapter  = adapter;
       mMax      = 100;
+      mCompleted= false;
    }
 
    @Override
@@ -146,6 +153,14 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
       } else {
          Log.d("TJS", "Data Successfully imported..");
       }
+
+      mCompleted = true;
+      callbacks mCallbacks;
+      try {
+         mCallbacks = (callbacks)mContext;
+         mCallbacks.taskCompleted();
+      } catch (ClassCastException e) {}
+
    }
 
    public void clearDB() {
@@ -194,5 +209,9 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
       if(mDialog != null)
          mDialog.dismiss();
       mDialog = null;
+   }
+
+   public boolean isCompleted() {
+      return mCompleted;
    }
 }

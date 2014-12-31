@@ -11,14 +11,19 @@
        android:layout_height="wrap_content"
        android:layout_gravity="center_vertical|center_horizontal"
        android:gravity="center"
-       android:orientation="vertical"
-       android:padding="5dp" >
+       android:orientation="vertical" >
 
       <include
          layout="@layout/main_toolbar" />
       <include
+         android:layout_margin="8dp"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
          layout="@layout/edit_record_top"/>
       <include
+         android:layout_margin="8dp"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
          layout="@layout/edit_record_bottom" />
    </LinearLayout>
 </ScrollView>
