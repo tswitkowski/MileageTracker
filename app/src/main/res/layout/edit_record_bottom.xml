@@ -13,6 +13,7 @@
             android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:id="@+id/date_label"
+            android:labelFor="@+id/date_reading"
             android:layout_alignBaseline="@+id/date_reading"
             android:text="@string/date_label" />
          <!--
@@ -25,13 +26,15 @@
             android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:inputType="none|date"
-            android:layout_toRightOf="@id/date_label"
+            style="?android:attr/spinnerStyle"
+            android:layout_toEndOf="@id/date_label"
             android:id="@+id/date_reading" />
          <!-- Row -->
          <TextView
             android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:id="@+id/actual_mileage_label"
+            android:labelFor="@+id/actual_mileage_reading"
             android:layout_alignBaseline="@+id/actual_mileage_reading"
             android:text="@string/actual_mileage_label" />
          <EditText
@@ -40,13 +43,14 @@
             android:id="@+id/actual_mileage_reading"
             android:inputType="none|numberDecimal"
             android:layout_below="@id/date_reading"
-            android:layout_toRightOf="@id/actual_mileage_label"
+            android:layout_toEndOf="@id/actual_mileage_label"
             android:state_enabled="false" />
          <!-- Row -->
          <TextView
             android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:id="@+id/total_price_label"
+            android:labelFor="@+id/total_price_reading"
             android:layout_alignBaseline="@+id/total_price_reading"
             android:text="@string/total_price_label" />
          <EditText
@@ -55,13 +59,14 @@
             android:id="@+id/total_price_reading"
             android:inputType="none|numberDecimal"
             android:layout_below="@id/actual_mileage_reading"
-            android:layout_toRightOf="@id/total_price_label"
+            android:layout_toEndOf="@id/total_price_label"
             android:state_enabled="false" />
          <!-- Row -->
          <TextView
             android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:id="@+id/mpg_diff_label"
+            android:labelFor="@+id/mpg_diff_reading"
             android:layout_alignBaseline="@+id/mpg_diff_reading"
             android:text="@string/mpg_diff_label" />
          <EditText
@@ -70,7 +75,7 @@
             android:id="@+id/mpg_diff_reading"
             android:inputType="none|numberDecimal"
             android:layout_below="@id/total_price_reading"
-            android:layout_toRightOf="@id/mpg_diff_label"
+            android:layout_toEndOf="@id/mpg_diff_label"
             android:state_enabled="false" />
          <!-- Row -->
       </RelativeLayout>

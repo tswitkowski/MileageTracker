@@ -463,7 +463,6 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       }
       protected void deselectAll() {
          getListView().clearChoices();
-//         mAdapter.clearSelected();
          handleSelection(true, -1, false);
       }
 

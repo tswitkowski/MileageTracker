@@ -3,6 +3,7 @@ package com.switkows.mileage;
 import java.util.HashMap;
 
 import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
+import com.switkows.mileage.widgets.StatisticsView;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +17,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,8 +29,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 //FIXME - merge MileageTracker and EditRecordsMenu into single activity to take advantage of Action Bar enhancements. This will require:
 //1. mvoing most code from MileageTracker Activity to a Fragment
@@ -204,39 +202,6 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
          } else {
             Log.e("TJS", "Should not have gotten here! HashMap not initialized or accessed correctly!!");
          }
-      }
-   }
-
-   public static class StatisticsView extends RelativeLayout {
-
-      private TextView mLabel;
-      private TextView mValue;
-
-      public StatisticsView(Context context, AttributeSet set) {
-         super(context, set);
-      }
-
-      @Override
-      public void onFinishInflate() {
-         super.onFinishInflate();
-         mLabel = (TextView)findViewById(android.R.id.text1);
-         mValue = (TextView)findViewById(android.R.id.text2);
-      }
-
-      public void setLabel(String label) {
-         mLabel.setText(label);
-      }
-
-      public void setValue(float value, String units) {
-         setValue(String.format("%.1f %s", value, units));
-      }
-
-      public void setValuePercent(float value, String units) {
-         setValue(String.format("%.2f%s", value, units));
-      }
-
-      public void setValue(String str) {
-         mValue.setText(str);
       }
    }
 

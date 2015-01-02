@@ -48,7 +48,6 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    @Override
    public Cursor swapCursor(Cursor c) {
       if(c != null) {
-         //FIXME - only do if they haven't been set already...
          idColumn       = c.getColumnIndex("_id");
          dateColumn     = c.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
          mileageColumn  = c.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
@@ -107,16 +106,12 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
    }
 
    public void setSelected(long id, int position, boolean isSelected) {
-      Long lID = Long.valueOf(id);
+      Long lID = id;
       if(isSelected)
          mSelected.add(lID);
       else
          mSelected.remove(lID);
       mParent.handleSelection(mSelected.isEmpty(), position, isSelected);
-   }
-
-   public void clearSelected() {
-      mSelected.clear();
    }
 
    public void setViewedItem(long id) {

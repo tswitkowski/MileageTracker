@@ -9,19 +9,21 @@
          android:layout_height="wrap_content"
          android:text="@string/odo_label"
          android:layout_alignBaseline="@+id/odo_reading"
-         android:id="@+id/odo_label" />
+         android:id="@+id/odo_label"
+         android:labelFor="@+id/odo_reading" />
       <EditText
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:maxLines="1"
          android:inputType="numberDecimal"
-         android:layout_toRightOf="@id/odo_label"
+         android:layout_toEndOf="@id/odo_label"
          android:id="@+id/odo_reading" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/trip_label"
+         android:labelFor="@+id/trip_reading"
          android:layout_alignBaseline="@+id/trip_reading"
          android:text="@string/trip_label" />
       <EditText
@@ -30,13 +32,14 @@
          android:maxLines="1"
          android:inputType="numberDecimal"
          android:layout_below="@id/odo_reading"
-         android:layout_toRightOf="@id/trip_label"
+         android:layout_toEndOf="@id/trip_label"
          android:id="@+id/trip_reading" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/price_label"
+         android:labelFor="@+id/price_reading"
          android:layout_alignBaseline="@+id/price_reading"
          android:text="@string/price_label" />
       <EditText
@@ -44,13 +47,14 @@
          android:layout_height="wrap_content"
          android:inputType="numberDecimal"
          android:layout_below="@id/trip_reading"
-         android:layout_toRightOf="@id/price_label"
+         android:layout_toEndOf="@id/price_label"
          android:id="@+id/price_reading" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/gallons_label"
+         android:labelFor="@+id/gallons_reading"
          android:layout_alignBaseline="@+id/gallons_reading"
          android:text="@string/gallons_label" />
       <EditText
@@ -58,13 +62,14 @@
          android:layout_height="wrap_content"
          android:inputType="numberDecimal"
          android:layout_below="@id/price_reading"
-         android:layout_toRightOf="@id/gallons_label"
-         android:id="@+id/gallons_reading" />
+         android:layout_toEndOf="@id/gallons_label"
+         android:id="@+id/gallons_reading"/>
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/comp_mileage_label"
+         android:labelFor="@+id/comp_mileage_reading"
          android:layout_alignBaseline="@+id/comp_mileage_reading"
          android:text="@string/comp_mileage_label" />
       <EditText
@@ -72,20 +77,21 @@
          android:layout_height="wrap_content"
          android:inputType="numberDecimal"
          android:layout_below="@id/gallons_reading"
-         android:layout_toRightOf="@id/comp_mileage_label"
+         android:layout_toEndOf="@id/comp_mileage_label"
          android:id="@+id/comp_mileage_reading" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/gas_station_label"
+         android:labelFor="@+id/gas_station_reading"
          android:layout_alignBaseline="@+id/gas_station_reading"
          android:text="@string/gas_station_label" />
       <AutoCompleteTextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:layout_below="@id/comp_mileage_reading"
-         android:layout_toRightOf="@id/gas_station_label"
+         android:layout_toEndOf="@id/gas_station_label"
          android:id="@+id/gas_station_reading"
          android:completionThreshold="1" />
    </RelativeLayout>

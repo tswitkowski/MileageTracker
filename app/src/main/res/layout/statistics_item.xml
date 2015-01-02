@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<view
+<com.switkows.mileage.widgets.StatisticsView
    xmlns:android="http://schemas.android.com/apk/res/android"
-   class="com.switkows.mileage.MileageTracker$StatisticsView"
    android:orientation="horizontal"
    android:clickable="false"
    android:focusable="false"
@@ -18,7 +17,7 @@
    />
    <TextView
       android:id="@android:id/text2"
-      android:layout_toRightOf="@android:id/text1"
+      android:layout_toEndOf="@android:id/text1"
       android:layout_width="125dp"
       android:layout_height="wrap_content"
       android:textColor="#ff000000"
@@ -26,4 +25,4 @@
       android:clickable="false"
       android:focusable="false"
    />
-</view>
+</com.switkows.mileage.widgets.StatisticsView>
