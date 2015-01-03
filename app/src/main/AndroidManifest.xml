@@ -1,88 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="30"
-      android:installLocation="auto"
-      android:versionName="2.5.5" package="com.switkows.mileage">
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    package="com.switkows.mileage"
+    android:installLocation="auto"
+    android:versionCode="30"
+    android:versionName="2.5.5" >
 
-    <application    android:icon="@drawable/mileage_tracker_icon"
-                    android:label="@string/app_name"
-                    android:backupAgent="MileageBackupAgent"
-                    android:allowBackup="true">
-      <activity android:name=".MileageTracker"
-         android:theme="@style/Theme.Main"
-         android:label="@string/app_name">
-         <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-         </intent-filter>
-      </activity>
-      <activity android:name=".EditRecordsMenu"
-                android:theme="@style/Theme.Main" />
-      <provider android:name="MileageProvider"
-         android:authorities="com.switkows.mileage.MileageProvider" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-      <!--  This section is setting up the 'editor' page -->
-      <activity android:name="EditRecord"
-         android:label="Edit Record"
-         android:theme="@style/Theme.Dialog">
-            <!-- This filter says that we can view or edit the data of
-                 a single note -->
-         <intent-filter android:label="FIXME2">
-            <action android:name="android.intent.action.VIEW" />
-            <action android:name="android.intent.action.EDIT" />
-   <!--                <action android:name="com.switkows.mileage.EDIT_RECORD" />-->
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.item/vnd.google.mileage" />
-         </intent-filter>
-         <intent-filter android:label="Add Record">
-            <action android:name="com.switkows.mileage.INSERT" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="vnd.android.cursor.dir/vnd.google.mileage" />
-         </intent-filter>
+    <application
+        android:allowBackup="true"
+        android:backupAgent=".MileageBackupAgent"
+        android:icon="@drawable/mileage_tracker_icon"
+        android:label="@string/app_name" >
+        <activity
+            android:name=".MileageTracker"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Main" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-      </activity>
-      <activity android:name=".EditPreferences"
-         android:theme="@style/Theme.Transparent"
-         android:label="Mileage Tracker Preferences" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".EditRecordsMenu"
+            android:theme="@style/Theme.Main" />
 
-      <activity android:name=".ChartViewer"
-         android:theme="@android:style/Theme.NoTitleBar"
-         android:label="FIXME" />
+        <provider
+            android:name=".MileageProvider"
+            android:authorities="com.switkows.mileage.MileageProvider" />
 
-      <activity android:name=".EditProfiles"
-         android:label="Edit User Profiles"
-         android:exported="false">
-         <intent-filter android:label="Edit Profiles">
-            <action android:name="com.switkows.mileage.EditProfiles" />
-            <category android:name="android.intent.category.DEFAULT" />
-         </intent-filter>
-      </activity>
+        <!-- This section is setting up the 'editor' page -->
+        <activity
+            android:name=".EditRecord"
+            android:label="Edit Record"
+            android:theme="@style/Theme.Dialog" >
 
-      <activity android:name=".ShortcutAddEntry"
-         android:label="Add Mileage Entry">
-         <intent-filter>
-             <action android:name=".Add" />
-             <category android:name="android.intent.category.DEFAULT" />
-         </intent-filter>
-      </activity>
-      <!-- This is used to set up the activity to configure the shortcut
-      (i.e. icon + text) when the user asks to create shortcut on the homescreen -->
-      <activity-alias android:name=".CreateShortcutAddEntry"
-         android:targetActivity=".ShortcutAddEntry"
-         android:label="Add Mileage Entry">
-         <!--  This intent-filter allows your shortcuts to be created in the launcher. -->
-         <intent-filter>
-             <action android:name="android.intent.action.CREATE_SHORTCUT" />
-             <category android:name="android.intent.category.DEFAULT" />
-         </intent-filter>
-      </activity-alias>
-      <meta-data
-         android:name="com.google.android.backup.api_key"
-         android:value="AEdPqrEAAAAIH5KJefqvXjDE_e_KpdBq352tr_sFGMu0ZWr1Yg" />
-   </application>
+            <!--
+                 This filter says that we can view or edit the data of
+                 a single note
+            -->
+            <intent-filter android:label="FIXME2" >
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <!-- <action android:name="com.switkows.mileage.EDIT_RECORD" /> -->
+                <category android:name="android.intent.category.DEFAULT" />
 
+                <data android:mimeType="vnd.android.cursor.item/vnd.google.mileage" />
+            </intent-filter>
+            <intent-filter android:label="Add Record" >
+                <action android:name="com.switkows.mileage.INSERT" />
 
+                <category android:name="android.intent.category.DEFAULT" />
 
+                <data android:mimeType="vnd.android.cursor.dir/vnd.google.mileage" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".EditPreferences"
+            android:label="Mileage Tracker Preferences"
+            android:theme="@style/Theme.Transparent" />
+        <activity
+            android:name=".ChartViewer"
+            android:label="FIXME"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".EditProfiles"
+            android:exported="false"
+            android:label="Edit User Profiles" >
+            <intent-filter android:label="Edit Profiles" >
+                <action android:name="com.switkows.mileage.EditProfiles" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ShortcutAddEntry"
+            android:label="Add Mileage Entry" >
+            <intent-filter>
+                <action android:name=".Add" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <!--
+      This is used to set up the activity to configure the shortcut
+      (i.e. icon + text) when the user asks to create shortcut on the homescreen
+        -->
+        <activity-alias
+            android:name=".CreateShortcutAddEntry"
+            android:label="Add Mileage Entry"
+            android:targetActivity=".ShortcutAddEntry" >
+
+            <!-- This intent-filter allows your shortcuts to be created in the launcher. -->
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <meta-data
+            android:name="com.google.android.backup.api_key"
+            android:value="AEdPqrEAAAAIH5KJefqvXjDE_e_KpdBq352tr_sFGMu0ZWr1Yg" />
+    </application>
 
 </manifest>

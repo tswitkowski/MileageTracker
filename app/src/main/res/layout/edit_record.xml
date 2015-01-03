@@ -1,29 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
-   android:id="@+id/root"
    android:layout_width="wrap_content"
-   android:layout_height="wrap_content"
-   android:layout_gravity="center">
+   android:orientation="vertical"
+   android:layout_height="wrap_content">
 
-   <LinearLayout
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:layout_gravity="center_vertical|center_horizontal"
-       android:gravity="center"
-       android:orientation="vertical" >
+   <include
+      layout="@layout/main_toolbar" />
 
-      <include
-         layout="@layout/main_toolbar" />
-      <include
-         android:layout_margin="8dp"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         layout="@layout/edit_record_top"/>
-      <include
-         android:layout_margin="8dp"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         layout="@layout/edit_record_bottom" />
-   </LinearLayout>
-</ScrollView>
+   <include
+      layout="@layout/edit_record_fragment" />
+
+</LinearLayout>
