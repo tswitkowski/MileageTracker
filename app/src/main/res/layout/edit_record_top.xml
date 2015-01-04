@@ -1,98 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge
-   xmlns:android="http://schemas.android.com/apk/res/android">
-   <RelativeLayout
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content">
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+   <GridLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:divider="?android:attr/dividerHorizontal"
+      android:showDividers="middle"
+      android:alignmentMode="alignBounds"
+      android:columnCount="2">
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:text="@string/odo_label"
-         android:layout_alignBaseline="@+id/odo_reading"
          android:id="@+id/odo_label"
-         android:labelFor="@+id/odo_reading" />
+         android:labelFor="@+id/odo_reading"
+         android:layout_row="0"
+         android:layout_column="0" />
       <EditText
-         android:layout_width="125dp"
+         android:layout_width="0dp"
          android:layout_height="wrap_content"
+         android:layout_gravity="fill_horizontal"
          android:maxLines="1"
          android:inputType="numberDecimal"
-         android:layout_toEndOf="@id/odo_label"
-         android:id="@+id/odo_reading" />
+         android:id="@+id/odo_reading"
+         android:layout_row="0"
+         android:layout_column="1" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/trip_label"
          android:labelFor="@+id/trip_reading"
-         android:layout_alignBaseline="@+id/trip_reading"
-         android:text="@string/trip_label" />
+         android:text="@string/trip_label"
+         android:layout_row="1"
+         android:layout_column="0" />
       <EditText
-         android:layout_width="125dp"
+         android:layout_width="0dp"
          android:layout_height="wrap_content"
+         android:layout_gravity="fill_horizontal"
          android:maxLines="1"
          android:inputType="numberDecimal"
-         android:layout_below="@id/odo_reading"
-         android:layout_toEndOf="@id/trip_label"
-         android:id="@+id/trip_reading" />
+         android:id="@+id/trip_reading"
+         android:layout_row="1"
+         android:layout_column="1" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/price_label"
          android:labelFor="@+id/price_reading"
-         android:layout_alignBaseline="@+id/price_reading"
-         android:text="@string/price_label" />
+         android:text="@string/price_label"
+         android:layout_row="2"
+         android:layout_column="0" />
       <EditText
-         android:layout_width="125dp"
+         android:layout_width="0dp"
          android:layout_height="wrap_content"
+         android:layout_gravity="fill_horizontal"
          android:inputType="numberDecimal"
-         android:layout_below="@id/trip_reading"
-         android:layout_toEndOf="@id/price_label"
-         android:id="@+id/price_reading" />
+         android:id="@+id/price_reading"
+         android:layout_row="2"
+         android:layout_column="1" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/gallons_label"
          android:labelFor="@+id/gallons_reading"
-         android:layout_alignBaseline="@+id/gallons_reading"
-         android:text="@string/gallons_label" />
+         android:text="@string/gallons_label"
+         android:layout_row="3"
+         android:layout_column="0" />
       <EditText
-         android:layout_width="125dp"
+         android:layout_width="0dp"
          android:layout_height="wrap_content"
+         android:layout_gravity="fill_horizontal"
          android:inputType="numberDecimal"
-         android:layout_below="@id/price_reading"
-         android:layout_toEndOf="@id/gallons_label"
-         android:id="@+id/gallons_reading"/>
+         android:id="@+id/gallons_reading"
+         android:layout_row="3"
+         android:layout_column="1"/>
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/comp_mileage_label"
          android:labelFor="@+id/comp_mileage_reading"
-         android:layout_alignBaseline="@+id/comp_mileage_reading"
-         android:text="@string/comp_mileage_label" />
+         android:text="@string/comp_mileage_label"
+         android:layout_row="4"
+         android:layout_column="0" />
       <EditText
-         android:layout_width="125dp"
+         android:layout_width="0dp"
          android:layout_height="wrap_content"
+         android:layout_gravity="fill_horizontal"
          android:inputType="numberDecimal"
-         android:layout_below="@id/gallons_reading"
-         android:layout_toEndOf="@id/comp_mileage_label"
-         android:id="@+id/comp_mileage_reading" />
+         android:id="@+id/comp_mileage_reading"
+         android:layout_row="4"
+         android:layout_column="1" />
 <!-- Row -->
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/gas_station_label"
          android:labelFor="@+id/gas_station_reading"
-         android:layout_alignBaseline="@+id/gas_station_reading"
-         android:text="@string/gas_station_label" />
+         android:text="@string/gas_station_label"
+         android:layout_row="5"
+         android:layout_column="0" />
       <AutoCompleteTextView
-         android:layout_width="125dp"
+         android:layout_width="0dp"
          android:layout_height="wrap_content"
-         android:layout_below="@id/comp_mileage_reading"
-         android:layout_toEndOf="@id/gas_station_label"
+         android:layout_gravity="fill_horizontal"
          android:id="@+id/gas_station_reading"
-         android:completionThreshold="1" />
-   </RelativeLayout>
+         android:completionThreshold="1"
+         android:inputType="text"
+         android:layout_row="5"
+         android:layout_column="1" />
+   </GridLayout>
 </merge>

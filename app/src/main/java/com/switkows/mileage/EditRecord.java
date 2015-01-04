@@ -126,24 +126,13 @@ public class EditRecord extends ActionBarActivity {
 //                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
          // Do some setup based on the action being performed.
 
-         final float scale = getResources().getDisplayMetrics().density;
-         final int width = (int)(300 * scale + 0.5f);
          final boolean newRecord = getArguments().getBoolean("new");
-         final boolean isLandscape = getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
          mId = getArguments().getLong("id");
          mDualPane = !(getActivity() instanceof EditRecord);
          if(!newRecord) {
             // Requested to edit: set that state, and the data being edited.
             // mState = STATE_EDIT;
             result = inflater.inflate(mDualPane ? R.layout.edit_record_fragment : R.layout.edit_record, null);
-            //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-            if(!mDualPane) {
-               LayoutParams params = getActivity().getWindow().getAttributes();
-//               params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwise action bar cannot be used!
-               params.width = (isLandscape ? width * 2 : width);
-               params.height = LayoutParams.WRAP_CONTENT;
-               getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
-            }
 
             mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, mId);
             mProfileName = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(this.getString(R.string.carSelection), "Car45");
@@ -154,14 +143,6 @@ public class EditRecord extends ActionBarActivity {
                result = inflater.inflate(R.layout.edit_record_landscape_floating, null);
             else
                result = inflater.inflate(mDualPane ? R.layout.edit_record_fragment : R.layout.edit_record, null);
-            //FIXME - seems like a hack to get the dialog to stretch to the proper width:
-            if(!mDualPane) {
-               LayoutParams params = getActivity().getWindow().getAttributes();
-//               params.width = LayoutParams.WRAP_CONTENT;  //cannot set this, otherwiser action bar cannot be used!
-               params.width = (isLandscape ? width * 2 : width);
-               params.height = LayoutParams.WRAP_CONTENT;
-               getActivity().getWindow().setAttributes((android.view.WindowManager.LayoutParams)params);
-            }
             // Requested to insert: set that state, and create a new entry
             // in the container.
             // mState = STATE_INSERT;
@@ -532,7 +513,7 @@ public class EditRecord extends ActionBarActivity {
          public View newView(Context context, Cursor cursor, ViewGroup parent) {
             if(cursor != null) {
                TextView view = (TextView)super.newView(context, cursor, parent);
-               view.setTextSize(10);
+               view.setTextSize(12);
                view.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
                view.setHeight(10); // FIXME - doesn't appear to have any affect
                return view;
