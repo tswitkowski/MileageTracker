@@ -1,6 +1,7 @@
 package com.switkows.mileage;
 
 import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -20,7 +21,9 @@ public class EditPreferences extends PreferenceActivity {
    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void configureActionBar() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-         getActionBar().setDisplayHomeAsUpEnabled(true);
+         ActionBar ab = getActionBar();
+         if(ab != null)
+            ab.setDisplayHomeAsUpEnabled(true);
       }
    }
 

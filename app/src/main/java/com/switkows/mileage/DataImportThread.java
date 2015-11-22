@@ -2,7 +2,6 @@ package com.switkows.mileage;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 class DataImportThread extends AsyncTask<File, Integer, Boolean> {
-   private Context                      mContext;
-   private boolean                      mShow;             //set to true to show the dialog box
+   private final Context                mContext;
+   private final boolean                mShow;             //set to true to show the dialog box
    private String                       mFile;             //short file name (used for toast/log messages only)
    private int                          mMax;              //holds the maximum value of the progress bar
    private boolean                      mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
@@ -60,8 +59,8 @@ class DataImportThread extends AsyncTask<File, Integer, Boolean> {
          mShowIndeterminate = false;
          Integer lineCount = 0;
          String currentCar = PreferenceManager.getDefaultSharedPreferences(mContext).getString(mContext.getString(R.string.carSelection), "Car45");
-         ArrayList<ContentValues> newEntries = new ArrayList<ContentValues>();
-         HashSet<ContentValues> profiles = new HashSet<ContentValues>();
+         ArrayList<ContentValues> newEntries = new ArrayList<>();
+         HashSet<ContentValues> profiles = new HashSet<>();
          while(reader.ready()) {
             reader.readLine();
             mMax++;
@@ -104,8 +103,6 @@ class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             mContext.getContentResolver().bulkInsert(MileageProvider.CAR_PROFILE_URI, additions);
          }
          reader.close();
-      } catch (FileNotFoundException e) {
-         Log.e("TJS", e.toString());
       } catch (IOException e) {
          Log.e("TJS", e.toString());
       }
@@ -144,7 +141,7 @@ class DataImportThread extends AsyncTask<File, Integer, Boolean> {
          if(mAdapter != null)
             //noinspection deprecation
             mAdapter.getCursor().requery();
-         if(mShow && mDialog != null)
+         if(mDialog != null)
             mDialog.dismiss();
       } else {
          Log.d("TJS", "Data Successfully imported..");

@@ -61,7 +61,7 @@ public class MileageTracker extends AppCompatActivity implements LoaderManager.L
    private ShowLargeChart[]         chartListeners;
    private MileageChartManager      chartManager;
    private static StatisticsAdapter mStatsAdapter;
-   protected ProfileSelector        mProfileAdapter;
+   private ProfileSelector          mProfileAdapter;
 
    // Firebase stuff
    private FirebaseAuth mAuth;
@@ -255,14 +255,14 @@ public class MileageTracker extends AppCompatActivity implements LoaderManager.L
 
    private class StatisticsAdapter extends BaseAdapter {
 
-      private final String[]                  mLabels;
-      private final LayoutInflater            mInflater;
-      private HashMap<String, FloatWithUnits> mList;
+      private final String[]                        mLabels;
+      private final LayoutInflater                  mInflater;
+      private final HashMap<String, FloatWithUnits> mList;
 
       StatisticsAdapter() {
          super();
          mLabels = getResources().getStringArray(R.array.StatisticsLabels);
-         mList = new HashMap<String, FloatWithUnits>();
+         mList = new HashMap<>();
          for(String label : mLabels) {
             mList.put(label, new FloatWithUnits(-1, "??"));
          }
@@ -340,10 +340,10 @@ public class MileageTracker extends AppCompatActivity implements LoaderManager.L
       }
    }
 
-   protected class ShowLargeChart implements OnClickListener {
-      private Context mContext;
-      private Intent  launcher;
-      private int     mID;
+   class ShowLargeChart implements OnClickListener {
+      private final Context mContext;
+      private final Intent  launcher;
+      private int           mID;
 
       ShowLargeChart(Context c, int id) {
          mContext = c;

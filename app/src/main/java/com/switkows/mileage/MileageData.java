@@ -69,7 +69,7 @@ public class MileageData {
 
    /**
     * used for 'importing' a csv file (though the commas will be split above this level)
-    * 
+    *
     * @param strings data to import
     */
    public MileageData(String[] strings) {

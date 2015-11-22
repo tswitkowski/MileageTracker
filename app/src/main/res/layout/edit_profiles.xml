@@ -10,11 +10,12 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:clickable="true"
-      android:drawableLeft="@android:drawable/ic_menu_add"
+      android:drawableStart="@android:drawable/ic_menu_add"
       android:drawablePadding="5dip"
       android:textAppearance="?android:attr/textAppearanceLarge"
       android:text="@string/add_profile_text"
       android:paddingLeft="5dip"
+      android:paddingRight="5dip"
    />
    <ListView
       android:id="@android:id/list"

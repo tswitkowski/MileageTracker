@@ -18,7 +18,7 @@ import android.view.ViewGroup;
 class EditRecordsListAdapter extends SimpleCursorAdapter {
 
    /** Remember our context so we can use it when constructing views. */
-   private Context                       mContext;
+   private final Context                 mContext;
    private final LayoutInflater          mInflater;
    private int                           idColumn;
    private int                           mileageColumn;
@@ -97,7 +97,7 @@ class EditRecordsListAdapter extends SimpleCursorAdapter {
 
    private SharedPreferences prefs;
 
-   private HashSet<Long>     mSelected = new HashSet<Long>();
+   private final HashSet<Long> mSelected = new HashSet<>();
 
    SharedPreferences getPrefs() {
       if(prefs == null)

@@ -1,13 +1,24 @@
 apply plugin: 'com.android.application'
 
+ext {
+    sdkVersion   = 26
+    depVersion   = "${sdkVersion}.0.0-beta2"
+    bToolVersion = "${sdkVersion}.0.0"
+}
 android {
-    compileSdkVersion 'android-26'
-    buildToolsVersion "26.0.0"
-
+    signingConfigs {
+    }
+    compileSdkVersion "android-${sdkVersion}"
+    //noinspection GroovyAssignabilityCheck
+    buildToolsVersion bToolVersion
+//    dataBinding {
+//        enabled = true
+//    }
     defaultConfig {
         applicationId "com.switkows.mileage"
         minSdkVersion 16
-        targetSdkVersion 26
+        //noinspection GroovyAssignabilityCheck
+        targetSdkVersion sdkVersion
         versionCode 32
         versionName "2.5.7"
 
@@ -28,7 +39,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:26.0.0-beta2'
+    compile "com.android.support:appcompat-v7:${depVersion}"
     compile 'com.google.firebase:firebase-auth:11.0.1'
     compile 'com.google.firebase:firebase-database:11.0.1'
     // Google Sign In SDK (only required for Google Sign In)

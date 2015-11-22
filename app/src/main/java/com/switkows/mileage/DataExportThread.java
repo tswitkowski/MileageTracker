@@ -14,8 +14,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 class DataExportThread extends AsyncTask<File, Integer, Boolean> {
-   private Context        mContext;
-   private boolean        mShow;              //set to true to show the dialog box
+   private final Context  mContext;
+   private final boolean  mShow;              //set to true to show the dialog box
    private String         mFilename;
    private int            mMax;               //holds the maximum value of the progress bar
    private boolean        mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
@@ -99,7 +99,7 @@ class DataExportThread extends AsyncTask<File, Integer, Boolean> {
 
          Log.d("TJS", importMessage);
          Toast.makeText(mContext, importMessage, Toast.LENGTH_LONG).show();
-         if(mShow && mDialog != null)
+         if(mDialog != null)
             mDialog.dismiss();
       } else {
          Log.d("TJS", "Data Successfully exported..");

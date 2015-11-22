@@ -120,7 +120,7 @@ class ProfileSelector extends SimpleCursorAdapter implements OnNavigationListene
       }
    }
 
-   void loadActionBarNavItems(AppCompatActivity context) {
+   public void loadActionBarNavItems(AppCompatActivity context) {
       updateCursor();
       updateActionBarSelectorPosition(context);
    }

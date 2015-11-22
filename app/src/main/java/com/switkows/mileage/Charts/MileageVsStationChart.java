@@ -52,11 +52,11 @@ public class MileageVsStationChart extends TimeChartExtension {
    }
 
    private void analyzeData() {
-      mValues = new ArrayList<double[]>();
-      mXValues = new ArrayList<double[]>();
-      List<String> titles = new ArrayList<String>();
-      List<Integer> colors = new ArrayList<Integer>();
-      List<PointStyle> styles = new ArrayList<PointStyle>();
+      mValues = new ArrayList<>();
+      mXValues = new ArrayList<>();
+      List<String> titles = new ArrayList<>();
+      List<Integer> colors = new ArrayList<>();
+      List<PointStyle> styles = new ArrayList<>();
       int i = 0;
       //search for unique station names
       for(MileageData item : mData) {
@@ -86,8 +86,8 @@ public class MileageVsStationChart extends TimeChartExtension {
 
       //build 2-d array of data
       for(String title : mTitles) {
-         List<Float> valueList = new ArrayList<Float>();
-         List<Double> timeList = new ArrayList<Double>();
+         List<Float> valueList = new ArrayList<>();
+         List<Double> timeList = new ArrayList<>();
          //a little tricky here: you must grab the date & mileage from
          //the entry AFTER the entry that matches the station name!
          for(i = 1; i < mData.length; i++) {

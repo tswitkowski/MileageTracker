@@ -2,6 +2,7 @@ package com.switkows.mileage;
 
 import android.app.backup.BackupManager;
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,21 +25,21 @@ public class MileageProvider extends ContentProvider {
    private static final int       DB_VERSION      = 5;
    public static final String     PROFILE_NAME    = "carName";
 
-   public static final String     AUTHORITY       = "com.switkows.mileage.MileageProvider";
+   private static final String    AUTHORITY       = "com.switkows.mileage.MileageProvider";
    public static final Uri        CAR_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/car");
    public static final Uri        ALL_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/all");
    public static final Uri        CAR_PROFILE_URI = Uri.parse("content://" + AUTHORITY + "/profile");
 
-   public static final String     CONTENT_TYPE    = "vnd.android.cursor.dir/vnd.google.mileage";
-   public static final String     CONTENT_ITEM    = "vnd.android.cursor.item/vnd.google.mileage";
+   private static final String     CONTENT_TYPE   = "vnd.android.cursor.dir/vnd.google.mileage";
+   private static final String     CONTENT_ITEM   = "vnd.android.cursor.item/vnd.google.mileage";
 
-   public static final int        ALL_CAR         = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3, SINGLE_PROFILE_SELECT = 4;
+   private static final int        ALL_CAR         = 0, ONE = 1, SPECIFIC_CAR = 2, PROFILE_SELECT = 3, SINGLE_PROFILE_SELECT = 4;
 
    private SharedPreferences      prefs;
    private BackupManager          mBackup;
    private boolean                mSuppressBackupUpdate;
 
-   public static final UriMatcher sriMatcher;
+   private static final UriMatcher sriMatcher;
    static {
       sriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
       sriMatcher.addURI(AUTHORITY, "all", ALL_CAR);
@@ -63,6 +64,8 @@ public class MileageProvider extends ContentProvider {
 
    public static CharSequence[] getProfiles(Context context) {
       Cursor cursor = context.getContentResolver().query(CAR_PROFILE_URI, null, null, null, null);
+      if(cursor == null)
+         return new String[] {};
       String[] cars = new String[cursor.getCount()];
       for(int i = 0; i < cursor.getCount(); i++) {
          cursor.moveToPosition(i);
@@ -115,9 +118,13 @@ public class MileageProvider extends ContentProvider {
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
-      getContext().getContentResolver().notifyChange(uri, null);
-      //FIXME - try to get rid of this. it's probably not needed..
-      getContext().getContentResolver().notifyChange(ALL_CONTENT_URI, null);
+      ContentResolver resolver = getContext() != null ? getContext().getContentResolver() : null;
+
+      if(resolver != null) {
+         resolver.notifyChange(uri, null);
+         //FIXME - try to get rid of this. it's probably not needed..
+         resolver.notifyChange(ALL_CONTENT_URI, null);
+      }
       if(count > 0 && !mSuppressBackupUpdate)
          mBackup.dataChanged();
       return count;
@@ -164,9 +171,12 @@ public class MileageProvider extends ContentProvider {
       long rowId = db.insert(table, null, values);
       if(rowId >= 0) {
          Uri noteUri = ContentUris.withAppendedId(dataSetUri, rowId);
-         getContext().getContentResolver().notifyChange(noteUri, null);
-         //FIXME - try to get rid of this. it's probably not needed..
-         getContext().getContentResolver().notifyChange(dataSetUri, null);
+         ContentResolver resolver = getContext() != null ? getContext().getContentResolver() : null;
+         if(resolver != null) {
+            resolver.notifyChange(noteUri, null);
+            //FIXME - try to get rid of this. it's probably not needed..
+            resolver.notifyChange(dataSetUri, null);
+         }
          if(!mSuppressBackupUpdate)
             mBackup.dataChanged();
          return noteUri;
@@ -232,7 +242,7 @@ public class MileageProvider extends ContentProvider {
 
       SQLiteDatabase db = mDatabase.getReadableDatabase();
       Cursor c = qb.query(db, projection, selection, selectionArgs, groupBy, null, sortOrder);
-      c.setNotificationUri(getContext().getContentResolver(), uri);
+      c.setNotificationUri(getContext() != null ? getContext().getContentResolver() : null, uri);
       return c;
    }
 
@@ -266,9 +276,12 @@ public class MileageProvider extends ContentProvider {
          default:
             throw new IllegalArgumentException("Unknown URI : " + uri);
       }
-      getContext().getContentResolver().notifyChange(uri, null);
-      //FIXME - try to get rid of this. it's probably not needed..
-      getContext().getContentResolver().notifyChange(isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI, null);
+      final ContentResolver resolver = getContext() != null ? getContext().getContentResolver() : null;
+      if(resolver != null) {
+         resolver.notifyChange(uri, null);
+         //FIXME - try to get rid of this. it's probably not needed..
+         resolver.notifyChange(isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI, null);
+      }
       if(count > 0 && !mSuppressBackupUpdate)
          mBackup.dataChanged();
       return count;

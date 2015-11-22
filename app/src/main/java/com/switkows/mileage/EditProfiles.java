@@ -33,9 +33,9 @@ public class EditProfiles extends FragmentActivity {
    private int              mListViewId;
 
    private class Profile {
-      private long    mId;
-      private String  mName;
-      private boolean mHasItems;
+      private final long    mId;
+      private final String  mName;
+      private boolean       mHasItems;
 
       Profile(long id, String name) {
          mId        = id;
@@ -83,7 +83,7 @@ public class EditProfiles extends FragmentActivity {
 
    @Override
    protected void onResume() {
-      ArrayAdapter<Profile> newAdapter = new ArrayAdapter<Profile>(this, mListViewId);
+      ArrayAdapter<Profile> newAdapter = new ArrayAdapter<>(this, mListViewId);
 
       mList = (ListView)findViewById(android.R.id.list);
       mList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -93,10 +93,12 @@ public class EditProfiles extends FragmentActivity {
       super.onResume();
    }
 
-   public void updateList() {
+   private void updateList() {
       Cursor cursor = getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
       @SuppressWarnings("unchecked")
       ArrayAdapter<Profile> adapter = (ArrayAdapter<Profile>)mList.getAdapter();
+      if(cursor == null)
+         return;
       Profile[] content = new Profile[cursor.getCount()];
       int column    = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
       int idColumn  = cursor.getColumnIndex("_id");
@@ -107,6 +109,8 @@ public class EditProfiles extends FragmentActivity {
          content[i] = new Profile(cursor.getLong(idColumn), cursor.getString(column));
          u = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, content[i].getName());
          Cursor c = getContentResolver().query(u, new String[] {"_id"}, null, null, null);
+         if(c==null)
+            continue;
          if(c.getCount() > 0)
             content[i].setHasItems(true);
          c.close();
@@ -117,7 +121,7 @@ public class EditProfiles extends FragmentActivity {
          adapter.add(item);
    }
 
-   protected void deleteSelectedProfiles() {
+   private void deleteSelectedProfiles() {
       SparseBooleanArray sel = mList.getCheckedItemPositions();
       long id;
       @SuppressWarnings("unchecked")
@@ -130,7 +134,7 @@ public class EditProfiles extends FragmentActivity {
    }
 
    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
-   protected void renameSelectedProfile(String newName) {
+   private void renameSelectedProfile(String newName) {
       @SuppressWarnings("unchecked")
       final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
       //save off the old value, so we can update records appropriately
@@ -174,7 +178,8 @@ public class EditProfiles extends FragmentActivity {
             SparseBooleanArray sel = mList.getCheckedItemPositions();
             @SuppressWarnings("unchecked")
             final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
-            String name = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getName();
+            int selected = sel.indexOfValue(true);
+            String name = selected >= 0 ? arrayAdapter.getItem(sel.keyAt(selected)).getName() : null;
 
             fragment = EditProfileDialogFragment.newInstance(name);
             break;
@@ -271,9 +276,9 @@ public class EditProfiles extends FragmentActivity {
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
          String name = getArguments().getString("selected");
-         if(name.length() == 0) {
-            Toast.makeText(activity, "Please select a Profile", Toast.LENGTH_SHORT).show();
-            return null;
+         if(name == null || name.length() == 0) {
+            return new AlertDialog.Builder(activity).setTitle("Error")
+                                                    .setMessage("Select a Profile first").create();
          }
          EditText editor = new EditText(activity);
          editor.setId(R.id.edit_text_box);

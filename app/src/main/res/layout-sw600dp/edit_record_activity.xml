@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
    android:id="@+id/edit_record_screen"
    android:orientation="vertical"
    android:layout_width="match_parent"
@@ -17,7 +18,7 @@
       android:baselineAligned="false">
     <!--This wrapper is here to allow us to add the edit-record fragment in the
         appropriate place (will not be needed once we transition away from the
-        dynamic delete/deslect buttons in favor of action bar items)-->
+        dynamic delete/deselect buttons in favor of action bar items)-->
    <FrameLayout
       android:tag="recordList"
       android:id="@+id/record_list_fragment"
@@ -30,6 +31,7 @@
       android:layout_height="match_parent"
       android:layout_weight="3"
       android:layout_gravity="center_horizontal"
-      android:visibility="gone"/>
+      android:visibility="gone"
+      tools:ignore="InconsistentLayout"/>
    </LinearLayout>
 </LinearLayout>

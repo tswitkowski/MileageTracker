@@ -31,7 +31,7 @@ public class MilesChart extends TimeChartExtension {
    @Override
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] miles = new double[data.length];
-      List<double[]> values = new ArrayList<double[]>();
+      List<double[]> values = new ArrayList<>();
       for (String ignored : mTitles) {
          for (int row = 0; row < data.length; row++) {
             miles[row] = data[row].getOdometerReading(mContext, null);

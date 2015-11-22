@@ -16,11 +16,11 @@ import android.util.Log;
 public class MileageBackupAgent extends BackupAgentHelper {
 
    //using com.switkows.mileage_preferences because this is the 'default' naming convention for the preferences file
-   static final String mPrefs    = "com.switkows.mileage_preferences"; //name of preferences XML file
-   static final String mPrefKey  = "mileage_prefs";                   //just a label to give the backup data
+   private static final String mPrefs    = "com.switkows.mileage_preferences"; //name of preferences XML file
+   private static final String mPrefKey  = "mileage_prefs";                   //just a label to give the backup data
 
-   static final String mDataFile = "export.csv";
-   static final String mDataKey  = "mileage_data";
+   private static final String mDataFile = "export.csv";
+   private static final String mDataKey  = "mileage_data";
 
    @Override
    public void onCreate() {
@@ -36,9 +36,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
       try {
          super.onRestore(data, appVersionCode, newState);
          new DataImportThread(getApplicationContext(), false, null).execute(new File(getFilesDir(), mDataFile));
-      } catch (IOException e) {
-         e.printStackTrace();
-      } catch (IllegalStateException e) {
+      } catch (IOException | IllegalStateException e) {
          e.printStackTrace();
       }
       //FIXME - delete file after import
@@ -46,7 +44,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
 
    private class MyFileBackupHelper extends FileBackupHelper implements BackupHelper {
 
-      Context mContext;
+      final Context mContext;
 
       MyFileBackupHelper(Context context, String... files) {
          super(context, files);

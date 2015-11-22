@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 import com.switkows.mileage.EditRecord.EditRecordFragment;
 import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -18,12 +19,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -32,8 +35,10 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -58,12 +63,16 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    private static final String LIST_FRAGMENT   = "recordList";
    private static final String RECORD_FRAGMENT = "recordViewer";
 
-   // 'global' fields for handling Import of data within a separate thread
-   protected DataImportThread  iThread;
-   protected long              mViewedRecordId;
-   private Uri                 mLastUri;
-   protected ProfileSelector   mProfileAdapter;
+   private static final int SD_READ_REQ  = 45;
+   private static final int SD_WRITE_REQ = 46;
 
+   // 'global' fields for handling Import of data within a separate thread
+   private DataImportThread  iThread;
+   private long              mViewedRecordId;
+   private Uri               mLastUri;
+   private ProfileSelector   mProfileAdapter;
+
+   @SuppressLint("PrivateResource")
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -73,19 +82,19 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       setSupportActionBar(toolbar);
       getSupportActionBar().setDisplayHomeAsUpEnabled(true);
       Intent i = getIntent();
-      if(i.getData() == null) {
+      if (i.getData() == null) {
          i.setData(getURI());
       }
 
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
          mProfileAdapter = ProfileSelector.setupActionBar(this, null);
 
       // restore ImportThread pointer, if we got here by way of an orientation change
-      if(getLastCustomNonConfigurationInstance() != null) {
-         iThread = (DataImportThread)getLastCustomNonConfigurationInstance();
+      if (getLastCustomNonConfigurationInstance() != null) {
+         iThread = (DataImportThread) getLastCustomNonConfigurationInstance();
          iThread.restart();
       }
-      if(savedInstanceState != null) {
+      if (savedInstanceState != null) {
          mViewedRecordId = savedInstanceState.getLong("currentView");
          mLastUri        = savedInstanceState.getParcelable("lastUri");
       } else
@@ -100,7 +109,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       // support a user changing 'profiles' from the preferences screen
       //FIXME - is this okay? should i always reset the data?!
       Uri uri = getURI();
-      if(mLastUri == null || uri.compareTo(mLastUri) != 0) {
+      if (mLastUri == null || uri.compareTo(mLastUri) != 0) {
          getIntent().setData(uri);
 
          //This fragment will persist indefinitely.
@@ -112,10 +121,10 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       }
 
       setHomeEnabledHoneycomb();
-      if(mProfileAdapter != null)
+      if (mProfileAdapter != null)
          mProfileAdapter.loadActionBarNavItems(this);
       //FIXME - should store the Fragment pointer, so we don't lose state on orientation-switches!!
-      if(mViewedRecordId >= 0)
+      if (mViewedRecordId >= 0)
          updateRecordView(mViewedRecordId);
       mLastUri = uri;
       super.onResume();
@@ -125,8 +134,10 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    @SuppressWarnings("ConstantConditions")
    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void setHomeEnabledHoneycomb() {
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+         final ActionBar ab = getSupportActionBar();
+         if(ab != null)
+            ab.setDisplayHomeAsUpEnabled(true);
       }
    }
 
@@ -134,7 +145,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    // due to an orientation change will not result in a lockup
    @Override
    public Object onRetainCustomNonConfigurationInstance() {
-      if(iThread != null && !iThread.isCompleted()) {
+      if (iThread != null && !iThread.isCompleted()) {
          iThread.pause();
          return iThread;
       }
@@ -154,7 +165,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       MenuInflater inflater = getMenuInflater();
       inflater.inflate(R.menu.database_menu, menu);
       //pre-honeycomb devices do not show CAB, so lets just add it to the menu!
-      if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
          inflater.inflate(R.menu.edit_records_cab, menu);
       }
       return true;
@@ -163,7 +174,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
       DialogFragment fragment;
-      switch(item.getItemId()) {
+      switch (item.getItemId()) {
          case R.id.add_item:
             Uri uri = getIntent().getData();
             startActivity(new Intent(MileageTracker.ACTION_INSERT, uri));
@@ -201,30 +212,62 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
 
    private void checkSDState(int menuId) {
       String state = Environment.getExternalStorageState();
-      if(state.equals(Environment.MEDIA_MOUNTED)) {
+      if (state.equals(Environment.MEDIA_MOUNTED)) {
          DialogFragment fragment = null;
-         switch(menuId) {
+         switch (menuId) {
             case R.id.import_csv:
-               fragment = ImportDialogFragment.newInstance();
+               int permissionCheck = ContextCompat.checkSelfPermission(this,
+                       Manifest.permission.READ_EXTERNAL_STORAGE);
+               if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                  // Should we show an explanation?
+                  if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                          Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                     //show 'why we need this' dialog
+                     Log.d("TJS", "Show import reason");
+                  }
+                  ActivityCompat.requestPermissions(this,
+                          new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                          SD_READ_REQ);
+               } else
+                  fragment = ImportDialogFragment.newInstance();
                break;
             case R.id.export_csv:
-               fragment = ExportDialogFragment.newInstance();
+               int readPermission = ContextCompat.checkSelfPermission(this,
+                       Manifest.permission.READ_EXTERNAL_STORAGE);
+               int writePermission = ContextCompat.checkSelfPermission(this,
+                       Manifest.permission.WRITE_EXTERNAL_STORAGE);
+               if (readPermission != PackageManager.PERMISSION_GRANTED ||
+                  writePermission != PackageManager.PERMISSION_GRANTED) {
+                  // Should we show an explanation?
+                  if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                          Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                      ActivityCompat.shouldShowRequestPermissionRationale(this,
+                          Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                     //show 'why we need this' dialog
+                     Log.d("TJS", "Show why we need write permission dialog");
+                  }
+                  ActivityCompat.requestPermissions(this,
+                          new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                                       Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                          SD_WRITE_REQ);
+               } else
+                  fragment = ExportDialogFragment.newInstance();
                break;
          }
-         if(fragment != null)
+         if (fragment != null)
             fragment.show(getSupportFragmentManager(), "dialog");
       } else {
          Toast.makeText(this, "Error! SDCARD not accessible!", Toast.LENGTH_LONG).show();
       }
    }
 
-   protected void performImport(String filename) {
+   private void performImport(String filename) {
       File file = new File(Environment.getExternalStorageDirectory(), filename);
       iThread = new DataImportThread(this, getListAdapter());
       iThread.execute(file);
    }
 
-   protected void performExport(String filename) {
+   private void performExport(String filename) {
       File file = new File(Environment.getExternalStorageDirectory(), filename);
       DataExportThread exporter = new DataExportThread(this);
       exporter.execute(file);
@@ -233,80 +276,112 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    @Override
    protected void onActivityResult(int requestCode, int resultCode, Intent arg2) {
       super.onActivityResult(requestCode, resultCode, arg2);
-      if(requestCode == 0) {
-         if(resultCode == RESULT_CANCELED)
+      if (requestCode == 0) {
+         if (resultCode == RESULT_CANCELED)
             mViewedRecordId = -1;
          else {
-            messageUpdated(mViewedRecordId);
+            messageUpdated();
             mViewedRecordId = resultCode - 1;
          }
       }
    }
 
-   protected EditRecordsMenuFragment getListFragment() {
+   @Override
+   public void onRequestPermissionsResult(int requestCode,
+                                          @NonNull String permissions[],
+                                          @NonNull int[] grantResults) {
+      switch (requestCode) {
+         case SD_READ_REQ: {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+               // permission was granted, yay! Do the
+               // contacts-related task you need to do.
+               checkSDState(R.id.import_csv);
+            }
+         }
+         case SD_WRITE_REQ: {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+               // permission was granted, yay! Do the
+               // contacts-related task you need to do.
+               checkSDState(R.id.export_csv);
+            }
+         }
+
+         // other 'case' lines to check for other
+         // permissions this app might request
+      }
+   }
+
+   private EditRecordsMenuFragment getListFragment() {
       Fragment fragment = getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
-      if(fragment != null)
-         return (EditRecordsMenuFragment)fragment;
+      if (fragment != null)
+         return (EditRecordsMenuFragment) fragment;
       return null;
    }
 
-   protected String getSelectedMessage() {
+   private String getSelectedMessage() {
       EditRecordsMenuFragment fragment = getListFragment();
-      if(fragment != null)
+      if (fragment != null)
          return fragment.getSelectedMessage();
       return "";
    }
 
-   protected void moveSelected(String profile) {
+   private void moveSelected(String profile) {
       EditRecordsMenuFragment fragment = getListFragment();
-      if(fragment != null)
-         if(fragment.moveSelected(mViewedRecordId, profile))
+      if (fragment != null)
+         if (fragment.moveSelected(mViewedRecordId, profile))
             hideRecordView();
    }
 
-   protected void deleteSelected() {
+   private void deleteSelected() {
       EditRecordsMenuFragment fragment = getListFragment();
-      if(fragment != null)
-         if(fragment.deleteSelected(mViewedRecordId))
+      if (fragment != null)
+         if (fragment.deleteSelected(mViewedRecordId))
             hideRecordView();
    }
 
-   protected void deselectAll() {
+   private void deselectAll() {
       EditRecordsMenuFragment fragment = getListFragment();
-      if(fragment != null)
+      if (fragment != null)
          fragment.deselectAll();
    }
 
-   protected void selectAll() {
+   private void selectAll() {
       EditRecordsMenuFragment fragment = getListFragment();
-      if(fragment != null)
+      if (fragment != null)
          fragment.selectAll();
    }
 
-   protected EditRecordsListAdapter getListAdapter() {
+   private EditRecordsListAdapter getListAdapter() {
       EditRecordsMenuFragment fragment = getListFragment();
-      if(fragment != null)
-         return (EditRecordsListAdapter)fragment.getListAdapter();
+      if (fragment != null)
+         return (EditRecordsListAdapter) fragment.getListAdapter();
       return null;
    }
 
-   protected void updateRecordView(long id) {
+   private void updateRecordView(long id) {
       View view = findViewById(R.id.edit_record_fragment);
       //this is here so we update the 'activated' state of the ListView
       //which allows background state to be updated upon orientation change
       //(between dualPane and singlePane)
-      if(view != null)
-         getListFragment().updateRecordView(id);
+      if (view != null) {
+         EditRecordsMenuFragment frag = getListFragment();
+         if(frag != null)
+            frag.updateRecordView(id);
+      }
       //do not restart the EditRecord fragment unless we need to (this
       //ensures that state is kept when this activity goes in teh background)
-      if(mViewedRecordId == id && (view != null && view.getVisibility() == View.VISIBLE))
+      if (mViewedRecordId == id && (view != null && view.getVisibility() == View.VISIBLE))
          return;
       mViewedRecordId = id;
-      if(view != null) {
+      if (view != null) {
          FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
          EditRecordFragment fragment = EditRecordFragment.newInstance(id, false);
          //add the fragment to the stack, so 'back' navigation properly hides it (hopefully)
-         if(view.getVisibility() != View.VISIBLE)
+         if (view.getVisibility() != View.VISIBLE)
             trans.addToBackStack(RECORD_FRAGMENT);
          view.setVisibility(View.VISIBLE);
          trans.replace(R.id.edit_record_fragment, fragment, RECORD_FRAGMENT);
@@ -324,16 +399,16 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    }
 
    //delete active fragment, and hide view
-   protected void hideRecordView() {
+   private void hideRecordView() {
       View view = findViewById(R.id.edit_record_fragment);
       mViewedRecordId = -1;   //reset pointer, so we don't get confused later
-      if(view != null) {
+      if (view != null) {
          EditRecordsMenuFragment list = getListFragment();
-         if(list != null)
+         if (list != null)
             list.updateRecordView(mViewedRecordId);
          FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
          Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORD_FRAGMENT);
-         if(fragment != null) {
+         if (fragment != null) {
             trans.remove(fragment);
             trans.commitAllowingStateLoss();
          }
@@ -342,7 +417,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    }
 
    //This is not a true database clear...just clears THIS profile's data!!!
-   public void clearDB() {
+   private void clearDB() {
       getContentResolver().delete(getURI(), null, null);
    }
 
@@ -352,9 +427,9 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       return Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
    }
 
-   protected String[] getCSVFiles() {
+   private String[] getCSVFiles() {
       String state = Environment.getExternalStorageState();
-      if(state.equals(Environment.MEDIA_MOUNTED)) {
+      if (state.equals(Environment.MEDIA_MOUNTED)) {
          File sdcard = Environment.getExternalStorageDirectory();
          return sdcard.list(new FilenameFilter() {
             public boolean accept(File dir, String filename) {
@@ -389,17 +464,17 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       public void onActivityCreated(Bundle savedInstanceState) {
          super.onActivityCreated(savedInstanceState);
          getLoaderManager().initLoader(0, getArguments(), mLoaderCallback);
-         mAdapter = new EditRecordsListAdapter(getActivity(), this, null, new String[] { MileageData.ToDBNames[MileageData.DATE] },
-               new int[] { android.R.id.text1 });
+         mAdapter = new EditRecordsListAdapter(getActivity(), this, null, new String[]{MileageData.ToDBNames[MileageData.DATE]},
+               new int[]{android.R.id.text1});
          setListAdapter(mAdapter);
          setEmptyText("No records present");
-         if(setChoiceModeListenerHoneycomb(getListView()))
+         if (setChoiceModeListenerHoneycomb(getListView()))
             getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
       }
 
       @TargetApi(Build.VERSION_CODES.HONEYCOMB)
       private boolean setChoiceModeListenerHoneycomb(ListView v) {
-         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             v.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             v.setMultiChoiceModeListener(new EditRecordModeListener());
             return false;
@@ -409,12 +484,12 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
 
       @Override
       public void onListItemClick(ListView l, View v, int position, long id) {
-         ((EditRecordsMenu)getActivity()).updateRecordView(id);
+         ((EditRecordsMenu) getActivity()).updateRecordView(id);
          super.onListItemClick(l, v, position, id);
       }
 
       public void handleSelection(boolean hide, int position, boolean isSelected) {
-         if(hide && position == -1)
+         if (hide && position == -1)
             getListView().clearChoices();
          getListView().setItemChecked(position, isSelected);
       }
@@ -430,10 +505,10 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
          long id;
-         for(int index = 0; index < checked.size(); index++) {
+         for (int index = 0; index < checked.size(); index++) {
             id = getListAdapter().getItemId(checked.keyAt(index));
             getActivity().getContentResolver().delete(ContentUris.withAppendedId(baseUri, id), null, null);
-            if(id == currentlyViewedId)
+            if (id == currentlyViewedId)
                foundIt = true;
          }
          //FIXME - this is needed, apparently, since i'm not using the same URI as the adapter uses?!
@@ -450,10 +525,10 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          ContentValues values = new ContentValues(1);
          values.put(MileageData.ToDBNames[MileageData.CAR], destProfile);
          long id;
-         for(int index = 0; index < checked.size(); index++) {
+         for (int index = 0; index < checked.size(); index++) {
             id = getListAdapter().getItemId(checked.keyAt(index));
             getActivity().getContentResolver().update(ContentUris.withAppendedId(baseUri, id), values, null, null);
-            if(id == currentlyViewedId)
+            if (id == currentlyViewedId)
                foundIt = true;
          }
          //FIXME - this is needed, apparently, since i'm not using the same URI as the adapter uses?!
@@ -466,14 +541,15 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          getLoaderManager().restartLoader(0, getArguments(), mLoaderCallback);
          return true;
       }
-      protected void deselectAll() {
+
+      private void deselectAll() {
          getListView().clearChoices();
          handleSelection(true, -1, false);
       }
 
-      protected void selectAll() {
+      private void selectAll() {
          int count = getListView().getCount();
-         for(int i = 0; i < count; i++)
+         for (int i = 0; i < count; i++)
             getListView().setItemChecked(i, true);
          getListView().requestLayout(); //FIXME - needed?
       }
@@ -482,25 +558,25 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       //It then walks through the Cursor, adding to the return message a string
       //containing a message for each selected row in the Adapter.
       //FIXME - use getList()'s item's getText() instead of cursor?
-      protected String getSelectedMessage() {
+      private String getSelectedMessage() {
          String ret = "";
          long[] mySelected = getListView().getCheckedItemIds();
 
          Cursor cursor = mAdapter.getCursor();
-         if(cursor == null)
+         if (cursor == null)
             return ret;
          int idColumn   = cursor.getColumnIndex("_id");
          int dateColumn = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
          int mpgColumn  = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
          SharedPreferences prefs = mAdapter.getPrefs();
-         for(int i = 0; i < cursor.getCount(); i++) {
+         for (int i = 0; i < cursor.getCount(); i++) {
             cursor.moveToPosition(i);
             long id = cursor.getLong(idColumn);
             String str;
-            for(long currId : mySelected) {
-               if(currId == id) {
+            for (long currId : mySelected) {
+               if (currId == id) {
                   str = MileageData.getSimpleDescription(cursor, dateColumn, mpgColumn, prefs, getActivity());
-                  if(ret.length() > 0)
+                  if (ret.length() > 0)
                      ret = String.format("%s\n%s", ret, str);
                   else
                      ret = str;
@@ -512,7 +588,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       }
 
       @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-      protected class EditRecordModeListener implements MultiChoiceModeListener {
+      private class EditRecordModeListener implements MultiChoiceModeListener {
          public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = getActivity().getMenuInflater();
             inflater.inflate(R.menu.edit_records_cab, menu);
@@ -535,7 +611,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             Activity activity = getActivity();
             DialogFragment fragment;
-            switch(item.getItemId()) {
+            switch (item.getItemId()) {
                case R.id.delete_entry:
                   fragment = DeleteConfirmFragment.newInstance(getSelectedMessage());
                   fragment.show(getActivity().getSupportFragmentManager(), "dialog");
@@ -601,7 +677,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
-         final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         final EditRecordsMenu activity = (EditRecordsMenu) getActivity();
          String message = getArguments().getString("selected");
          OnClickListener acceptListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -632,19 +708,19 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          @SuppressLint("InflateParams")
          final View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.move_dialog, null);
          String message = getArguments().getString("selected");
-         TextView text = (TextView)view.findViewById(android.R.id.text1);
+         TextView text = (TextView) view.findViewById(android.R.id.text1);
          text.setText(message);
-         ArrayAdapter<CharSequence> newAdapter = new ArrayAdapter<CharSequence>(activity, android.R.layout.simple_spinner_dropdown_item);
+         ArrayAdapter<CharSequence> newAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item);
          //replace code with addAll once we drop support for pre-honeycomb devices!
          CharSequence[] cars = MileageProvider.getProfiles(activity);
-         for(CharSequence car : cars)
+         for (CharSequence car : cars)
             newAdapter.add(car);
-         Spinner s = (Spinner)view.findViewById(R.id.move_to_spinner);
+         Spinner s = (Spinner) view.findViewById(R.id.move_to_spinner);
          s.setAdapter(newAdapter);
          OnClickListener acceptListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-               Spinner s = (Spinner)view.findViewById(R.id.move_to_spinner);
-               activity.moveSelected((String)s.getSelectedItem());
+               Spinner s = (Spinner) view.findViewById(R.id.move_to_spinner);
+               activity.moveSelected((String) s.getSelectedItem());
                activity.deselectAll();
             }
          };
@@ -663,9 +739,9 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
-         final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         final EditRecordsMenu activity = (EditRecordsMenu) getActivity();
          String[] files = activity.getCSVFiles();
-         if(files != null) {
+         if (files != null) {
 
             @SuppressLint("InflateParams")
             View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.import_dialog, null);
@@ -673,14 +749,14 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             filename.setAdapter(adapter);
-            for(String file : files)
+            for (String file : files)
                adapter.add(file);
 
-            DialogInterface.OnClickListener importListener = new DialogInterface.OnClickListener() {
+            OnClickListener importListener = new OnClickListener() {
                // Upon the button being clicked, a new thread will be started, which imports the data into the database,
                // and presents a progress dialog box to the user
                public void onClick(DialogInterface dialog, int which) {
-                  String name = (String)filename.getSelectedItem();
+                  String name = (String) filename.getSelectedItem();
                   dismiss();
                   activity.performImport(name);
                }
@@ -690,6 +766,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
                                                     .setNegativeButton("Cancel", activity.new CancelClickListener())
                                                     .create();
          } else { //FIXME - this will never fire! check files.length, and display an error message!
+            //noinspection ConstantConditions
             return null;
          }
       }
@@ -709,10 +786,12 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.export_dialog, null);
          filename = (AutoCompleteTextView)view.findViewById(R.id.file_list);
          String[] files = activity.getCSVFiles();
-         ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_dropdown_item_1line, files);
+         if(files == null)
+            files = new String[] {};
+         ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_dropdown_item_1line, files);
          filename.setAdapter(adapter);
 
-         DialogInterface.OnClickListener exportListener = new DialogInterface.OnClickListener() {
+         OnClickListener exportListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                String name = filename.getText().toString();
                dismiss();
@@ -728,13 +807,13 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    }
 
    //simple wrapper to make instantiating 'cancel' buttons a bit easier
-   private class CancelClickListener implements DialogInterface.OnClickListener {
+   private class CancelClickListener implements OnClickListener {
       public void onClick(DialogInterface dialog, int which) {
          dialog.dismiss();
       }
    }
 
-   public boolean messageUpdated(long id) {
+   public boolean messageUpdated() {
       boolean result = false;
       mViewedRecordId = -1;
       Fragment fragment = getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
@@ -746,7 +825,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    public void onBackStackChanged() {
       FragmentManager manager = getSupportFragmentManager();
       int count = manager.getBackStackEntryCount();
-      if(count == 0)
+      if (count == 0)
          hideRecordView();
    }
 
@@ -754,7 +833,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       mProfileAdapter.applyPreferenceChange(newProfile);
       Fragment fragment = getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
       //update fragment's URI, and reload List data
-      if(fragment != null && fragment instanceof EditRecordsMenuFragment) {
+      if (fragment != null && fragment instanceof EditRecordsMenuFragment) {
          fragment.getArguments().putString("uri", getURI().toString());
          ((EditRecordsMenuFragment)fragment).messageUpdated();
       }

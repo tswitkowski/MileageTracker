@@ -19,7 +19,7 @@ import android.graphics.Color;
 
 public abstract class TimeChartExtension {
    private XYMultipleSeriesDataset    mDataSet;
-   protected XYMultipleSeriesRenderer mRenderer;
+   private XYMultipleSeriesRenderer   mRenderer;
 
    private GraphicalView   mView;
    protected final Context mContext;
@@ -93,8 +93,8 @@ public abstract class TimeChartExtension {
     */
    protected abstract List<double[]> buildValuesList(MileageData[] data);
 
-   protected List<double[]> buildXList(MileageData[] data) {
-      List<double[]> x = new ArrayList<double[]>();
+   List<double[]> buildXList(MileageData[] data) {
+      List<double[]> x = new ArrayList<>();
       for (String ignored : mTitles) {
          double[] x_row = new double[data.length];
          for (int row = 0; row < data.length; row++) {
