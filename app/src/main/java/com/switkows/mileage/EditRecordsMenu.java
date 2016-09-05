@@ -67,6 +67,10 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       super.onCreate(savedInstanceState);
       setContentView(R.layout.edit_record_activity);
       Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+      toolbar.setNavigationIcon(
+         R.drawable.abc_ic_ab_back_mtrl_am_alpha
+      );
+      toolbar.setLogo(R.drawable.mileage_tracker_icon);
       setSupportActionBar(toolbar);
       Intent i = getIntent();
       if(i.getData() == null) {
