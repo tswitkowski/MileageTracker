@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge
-   xmlns:android="http://schemas.android.com/apk/res/android">
-   <ListView
-      android:id="@+id/statistics_list"
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools">
+
+
+   <LinearLayout
+      android:id="@+id/top_layout"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
+      android:orientation="vertical"
       android:layout_weight="1"
-      android:divider="@null"
-      android:background="#ffcccccc"
-      android:cacheColorHint="#cccccc"
-   />
+      >
+      <ListView
+         android:id="@+id/statistics_list"
+         android:layout_width="fill_parent"
+         android:layout_height="0dp"
+         android:layout_weight="1"
+         android:divider="@null"
+         android:background="#ffcccccc"
+         android:cacheColorHint="#cccccc"
+         />
+      <com.google.android.gms.common.SignInButton
+         android:id="@+id/sign_in_button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_gravity="center"
+         android:visibility="visible"
+         tools:visibility="visible"
+         />
+      <Button
+         android:id="@+id/sign_out_button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_gravity="center"
+         android:visibility="gone"
+         android:text="@string/sign_out"
+         tools:visibiltiy="visible"
+         />
+   </LinearLayout>
 </merge>

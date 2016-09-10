@@ -39,4 +39,5 @@
     <string name="averageEcoLabel">Average economy: </string>
     <string name="unknownValue">\??</string>
     <string name="moveToPrompt">To Profile:</string>
+    <string name="sign_out">Sign out</string>
 </resources>
