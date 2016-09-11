@@ -13,7 +13,7 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
-public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
+class DataExportThread extends AsyncTask<File, Integer, Boolean> {
    private Context        mContext;
    private boolean        mShow;              //set to true to show the dialog box
    private String         mFilename;
@@ -22,14 +22,14 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
 
    private ProgressDialog mDialog;
 
-   public DataExportThread(Context context, boolean showMessage) {
+   DataExportThread(Context context, boolean showMessage) {
       super();
       mContext  = context;
       mMax      = 100;
       mShow     = showMessage;
    }
 
-   public DataExportThread(Context context) {
+   DataExportThread(Context context) {
       this(context, true);
    }
 
@@ -42,7 +42,7 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
       mFilename = csv_file.getName();
       // Log.d("TJS","File exists: " + csv_file.exists());
       // Log.d("TJS","is file: " + csv_file.isFile());
-      // Log.d("TJS","is writeable: " + csv_file.canWrite());
+      // Log.d("TJS","is writable: " + csv_file.canWrite());
       try {
          // FileOutputStream stream = new FileOutputStream(csv_file);
          // PrintWriter writer = new PrintWriter(stream);
@@ -50,17 +50,18 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
          writer.println(MileageData.exportCSVTitle());
 
          Cursor cursor = mContext.getContentResolver().query(MileageProvider.ALL_CONTENT_URI, null, null, null, null);
-         int numEntries = cursor.getCount();
-         mMax = numEntries;
+         assert cursor != null;
+         mMax = cursor.getCount();
          Integer lineCount = 0;
 
          while(cursor.moveToNext()) {
-            MileageData data = new MileageData(mContext.getApplicationContext(), cursor);
+            MileageData data = new MileageData(cursor);
             writer.println(data.exportCSV());
             lineCount++;
             publishProgress(lineCount);
          }
          writer.close();
+         cursor.close();
 
          return true;
       } catch (FileNotFoundException e) {
@@ -73,8 +74,8 @@ public class DataExportThread extends AsyncTask<File, Integer, Boolean> {
    protected void onProgressUpdate(Integer... values) {
       super.onProgressUpdate(values);
       if(mShow) {
-         mDialog.setProgress(values[0].intValue());
-         if(values[0].intValue() >= mMax - 1)
+         mDialog.setProgress(values[0]);
+         if(values[0] >= mMax - 1)
             mShowIndeterminate = true;
          updateProgressConfig();
       }

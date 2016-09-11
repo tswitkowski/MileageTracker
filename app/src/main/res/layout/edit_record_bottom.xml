@@ -8,13 +8,31 @@
       android:showDividers="middle"
       android:alignmentMode="alignBounds"
       android:columnCount="2">
+      <!-- Row -->
+      <TextView
+         android:layout_width="125dp"
+         android:layout_height="wrap_content"
+         android:id="@+id/gas_station_label"
+         android:labelFor="@+id/gas_station_reading"
+         android:text="@string/gas_station_label"
+         android:layout_row="0"
+         android:layout_column="0" />
+      <AutoCompleteTextView
+         android:layout_width="0dp"
+         android:layout_height="wrap_content"
+         android:layout_gravity="fill_horizontal"
+         android:id="@+id/gas_station_reading"
+         android:completionThreshold="1"
+         android:inputType="text"
+         android:layout_row="0"
+         android:layout_column="1" />
       <TextView
          android:layout_width="125dp"
          android:layout_height="wrap_content"
          android:id="@+id/date_label"
          android:labelFor="@+id/date_reading"
          android:text="@string/date_label"
-         android:layout_row="0"
+         android:layout_row="1"
          android:layout_column="0"/>
       <!--
          this is the place where the date is entered. Once the text
@@ -28,7 +46,7 @@
          android:layout_gravity="fill_horizontal"
          style="?android:attr/spinnerStyle"
          android:id="@+id/date_reading"
-         android:layout_row="0"
+         android:layout_row="1"
          android:layout_column="1"/>
       <!-- Row -->
       <TextView
@@ -37,7 +55,7 @@
          android:id="@+id/actual_mileage_label"
          android:labelFor="@+id/actual_mileage_reading"
          android:text="@string/actual_mileage_label"
-         android:layout_row="1"
+         android:layout_row="2"
          android:layout_column="0"/>
       <TextView
          style="?android:attr/editTextStyle"
@@ -46,7 +64,7 @@
          android:layout_gravity="fill_horizontal"
          android:id="@+id/actual_mileage_reading"
          android:maxLines="1"
-         android:layout_row="1"
+         android:layout_row="2"
          android:layout_column="1"/>
       <!-- Row -->
       <TextView
@@ -55,7 +73,7 @@
          android:id="@+id/total_price_label"
          android:labelFor="@+id/total_price_reading"
          android:text="@string/total_price_label"
-         android:layout_row="2"
+         android:layout_row="3"
          android:layout_column="0"/>
       <TextView
          style="?android:attr/editTextStyle"
@@ -64,7 +82,7 @@
          android:layout_gravity="fill_horizontal"
          android:id="@+id/total_price_reading"
          android:maxLines="1"
-         android:layout_row="2"
+         android:layout_row="3"
          android:layout_column="1"/>
 
       <!-- Row -->
@@ -74,7 +92,7 @@
          android:id="@+id/mpg_diff_label"
          android:labelFor="@+id/mpg_diff_reading"
          android:text="@string/mpg_diff_label"
-         android:layout_row="3"
+         android:layout_row="4"
          android:layout_column="0"/>
       <TextView
          style="?android:attr/editTextStyle"
@@ -83,7 +101,7 @@
          android:layout_gravity="fill_horizontal"
          android:id="@+id/mpg_diff_reading"
          android:maxLines="1"
-         android:layout_row="3"
+         android:layout_row="4"
          android:layout_column="1"/>
 
       <!-- Row -->
@@ -93,7 +111,7 @@
          android:layout_width="match_parent"
          android:layout_height="wrap_content"
          android:layout_columnSpan="2"
-         android:layout_row="4"
+         android:layout_row="5"
          android:layout_column="0">
          <Button
             android:id="@+id/submit"

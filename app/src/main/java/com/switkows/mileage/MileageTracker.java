@@ -1,7 +1,33 @@
 package com.switkows.mileage;
 
-import java.util.HashMap;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -19,40 +45,14 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
 import com.switkows.mileage.widgets.StatisticsView;
 
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import com.google.android.gms.auth.api.Auth;
-
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
+import java.util.HashMap;
+import java.util.Locale;
 
 //FIXME - merge MileageTracker and EditRecordsMenu into single activity to take advantage of Action Bar enhancements. This will require:
-//1. mvoing most code from MileageTracker Activity to a Fragment
+//1. moving most code from MileageTracker Activity to a Fragment
 //2. removing EditRecordsMenu Activity
 //3. correctly replacing new Activity calls with Fragment transactions
-public class MileageTracker extends ActionBarActivity implements LoaderManager.LoaderCallbacks<Cursor>, ProfileSelectorCallbacks {
+public class MileageTracker extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, ProfileSelectorCallbacks {
    public static final String       ACTION_INSERT = "com.switkows.mileage.INSERT";
 
    private static final int         RESULT_SIGN_IN = 4544;
@@ -60,7 +60,6 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
    private static LinearLayout[]    charts;
    private ShowLargeChart[]         chartListeners;
    private MileageChartManager      chartManager;
-   private static ListView          mStatsView;
    private static StatisticsAdapter mStatsAdapter;
    protected ProfileSelector        mProfileAdapter;
 
@@ -83,9 +82,9 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
       setContentView(R.layout.main);
       Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
       setSupportActionBar(toolbar);
-      mStatsAdapter = new StatisticsAdapter(mContext);
+      mStatsAdapter = new StatisticsAdapter();
       // grab pointers to all my graphical elements
-      initalizePointers();
+      initializePointers();
       getSupportLoaderManager().initLoader(45, null, this);
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
          mProfileAdapter = ProfileSelector.setupActionBar(this, null);
@@ -175,8 +174,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
       chartManager = new MileageChartManager(mContext, cursor);
       for(LinearLayout chart : charts)
          chart.removeAllViews();
-      LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-      chartManager.addCharts(charts, chartListeners, params);
+      chartManager.addCharts(charts, chartListeners);
    }
 
    public void printStatistics() {
@@ -190,7 +188,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
       mStatsAdapter.notifyDataSetInvalidated();
    }
 
-   public void initalizePointers() {
+   public void initializePointers() {
       // root = (LinearLayout)findViewById(R.id.root);
       charts = new LinearLayout[3];
       charts[0] = (LinearLayout)findViewById(R.id.chart1);
@@ -200,20 +198,18 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
       chartListeners[0] = new ShowLargeChart(mContext, 0);
       chartListeners[1] = new ShowLargeChart(mContext, 0);
       chartListeners[2] = new ShowLargeChart(mContext, 0);
-      mStatsView = (ListView)findViewById(R.id.statistics_list);
+      ListView mStatsView = (ListView) findViewById(R.id.statistics_list);
       mStatsView.setAdapter(mStatsAdapter);
    }
 
    public Uri getCurrentProfileURI() {
       String car = getCurrentProfile();
-      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
-      return uri;
+      return Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
    }
 
    public String getCurrentProfile() {
       String option = this.getString(R.string.carSelection);
-      String car = PreferenceManager.getDefaultSharedPreferences(mContext).getString(option, "Car45");
-      return car;
+      return PreferenceManager.getDefaultSharedPreferences(mContext).getString(option, "Car45");
    }
 
    @Override
@@ -263,7 +259,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
       private final LayoutInflater            mInflater;
       private HashMap<String, FloatWithUnits> mList;
 
-      public StatisticsAdapter(Context c) {
+      StatisticsAdapter() {
          super();
          mLabels = getResources().getStringArray(R.array.StatisticsLabels);
          mList = new HashMap<String, FloatWithUnits>();
@@ -295,6 +291,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
          return position;
       }
 
+      @SuppressLint("InflateParams")
       public View getView(int position, View convertView, ViewGroup parent) {
          StatisticsView stats;
          if(convertView == null) {
@@ -307,7 +304,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
          return stats;
       }
 
-      public void setValue(int pos, float value, String units) {
+      void setValue(int pos, float value, String units) {
          if(!(pos >= 0 && pos < mLabels.length))
             return;
          String label = mLabels[pos];
@@ -325,7 +322,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
       private float  mValue;
       private String mUnits;
 
-      public FloatWithUnits(float val, String un) {
+      FloatWithUnits(float val, String un) {
          setValue(val);
          setUnits(un);
       }
@@ -334,12 +331,12 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
          mValue = val;
       }
 
-      public void setUnits(String un) {
+      void setUnits(String un) {
          mUnits = un;
       }
 
-      public String getFormattedString() {
-         return String.format("%.1f %s", mValue, mUnits);
+      String getFormattedString() {
+         return String.format(Locale.getDefault(), "%.1f %s", mValue, mUnits);
       }
    }
 
@@ -354,7 +351,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
          launcher = new Intent(mContext, ChartViewer.class);
       }
 
-      public void setID(int id) {
+      void setID(int id) {
          mID = id;
       }
 
@@ -371,8 +368,7 @@ public class MileageTracker extends ActionBarActivity implements LoaderManager.L
     * (only handles querying mileage data for a specific profile)
     */
    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-      CursorLoader loader = new CursorLoader(this, getCurrentProfileURI(), null, null, null, null);
-      return loader;
+      return new CursorLoader(this, getCurrentProfileURI(), null, null, null, null);
    }
 
    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {

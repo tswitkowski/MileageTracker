@@ -11,7 +11,7 @@ import android.graphics.Color;
 
 public class PriceChart extends TimeChartExtension {
    // strings which will return series index
-   public static final int           PRICE       = 0;
+   private static final int          PRICE       = 0;
 
    private static final String[]     mTitles     = {"Price Per Gallon vs. Time", "Price Per Liter vs. Time"};
    private static final String[]     mLineTitles = {"Price"};
@@ -31,8 +31,8 @@ public class PriceChart extends TimeChartExtension {
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] price = new double[data.length];
       List<double[]> values = new ArrayList<double[]>();
-      for(int i = 0; i < mTitles.length; i++) {
-         for(int row = 0; row < data.length; row++) {
+      for (String ignored : mTitles) {
+         for (int row = 0; row < data.length; row++) {
             price[row] = data[row].getPrice();
          }
       }

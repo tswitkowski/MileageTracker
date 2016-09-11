@@ -57,14 +57,14 @@ public class ShortcutAddEntry extends Activity {
       intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
       intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, "Stop 4 gas");
 
-      intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, overlay(R.drawable.mileage_tracker_icon, android.R.drawable.ic_menu_add));
+      intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, overlay());
 
       // Now, return the result to the launcher
 
       setResult(RESULT_OK, intent);
    }
 
-   private Bitmap overlay(int main, int overlay) {
+   private Bitmap overlay() {
       Bitmap origIcon = BitmapFactory.decodeResource(getResources(), R.drawable.mileage_tracker_icon);
       //create a copy, so we can overlay the + sign
       Bitmap newIcon = origIcon.copy(origIcon.getConfig(), true);

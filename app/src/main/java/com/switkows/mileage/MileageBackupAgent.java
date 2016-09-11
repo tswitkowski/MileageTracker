@@ -48,7 +48,7 @@ public class MileageBackupAgent extends BackupAgentHelper {
 
       Context mContext;
 
-      public MyFileBackupHelper(Context context, String... files) {
+      MyFileBackupHelper(Context context, String... files) {
          super(context, files);
          mContext = context;
       }

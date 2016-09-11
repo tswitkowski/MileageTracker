@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.SparseBooleanArray;
@@ -28,8 +29,6 @@ import android.widget.Toast;
 //FIXME - add confirmation when deleting a profile which contains data
 //FIXME - upon confirmation (above), delete data associated with profile
 public class EditProfiles extends FragmentActivity {
-   private final static int EDIT_TEXT_BOX = 45;
-
    private ListView         mList;
    private int              mListViewId;
 
@@ -38,13 +37,13 @@ public class EditProfiles extends FragmentActivity {
       private String  mName;
       private boolean mHasItems;
 
-      public Profile(long id, String name) {
+      Profile(long id, String name) {
          mId        = id;
          mName      = name;
          mHasItems  = false;
       }
 
-      public void setHasItems(boolean hasItems) {
+      void setHasItems(boolean hasItems) {
          mHasItems = hasItems;
       }
 
@@ -203,23 +202,23 @@ public class EditProfiles extends FragmentActivity {
 
    public static class CreateProfileDialogFragment extends DialogFragment {
       public static CreateProfileDialogFragment newInstance() {
-         CreateProfileDialogFragment frag = new CreateProfileDialogFragment();
-         return frag;
+         return new CreateProfileDialogFragment();
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
          OnClickListener acceptListener = new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-               EditText box = (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
+               EditText box = (EditText)((AlertDialog)dialog).findViewById(R.id.edit_text_box);
                String profileName = box.getText().toString();
                MileageProvider.addProfile(activity, profileName);
                activity.updateList();
             }
          };
          EditText editor = new EditText(activity);
-         editor.setId(EDIT_TEXT_BOX);
+         editor.setId(R.id.edit_text_box);
          return new AlertDialog.Builder(activity).setTitle("Enter new Profile name:").setView(editor)
                                                  .setPositiveButton("Add", acceptListener)
                                                  .setNegativeButton("Cancel", new OnClickListener() {
@@ -239,6 +238,7 @@ public class EditProfiles extends FragmentActivity {
          return frag;
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
@@ -266,6 +266,7 @@ public class EditProfiles extends FragmentActivity {
          return frag;
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditProfiles activity = (EditProfiles)getActivity();
@@ -275,13 +276,13 @@ public class EditProfiles extends FragmentActivity {
             return null;
          }
          EditText editor = new EditText(activity);
-         editor.setId(EDIT_TEXT_BOX);
+         editor.setId(R.id.edit_text_box);
          editor.setText(name);
          return new AlertDialog.Builder(activity).setTitle("Enter modified Profile name:").setView(editor)
                                                  .setPositiveButton("Confirm", new OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int which) {
                                                        EditText box =
-                                                                      (EditText)((AlertDialog)dialog).findViewById(EDIT_TEXT_BOX);
+                                                                      (EditText)((AlertDialog)dialog).findViewById(R.id.edit_text_box);
                                                        String profileName = box.getText().toString();
                                                        activity.renameSelectedProfile(profileName);
                                                     }

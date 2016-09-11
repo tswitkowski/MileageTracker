@@ -51,7 +51,7 @@ public class MileageVsStationChart extends TimeChartExtension {
       return super.getChart();
    }
 
-   public void analyzeData() {
+   private void analyzeData() {
       mValues = new ArrayList<double[]>();
       mXValues = new ArrayList<double[]>();
       List<String> titles = new ArrayList<String>();
@@ -93,20 +93,20 @@ public class MileageVsStationChart extends TimeChartExtension {
          for(i = 1; i < mData.length; i++) {
             if(title.equals(mData[i - 1].getStation())) {
                valueList.add(mData[i].getActualMileage(mContext, null));
-               timeList.add(Double.valueOf(mData[i].getDate()));
+               timeList.add((double) mData[i].getDate());
             }
          }
 
          //convert from List to array
-         double theseVals[] = new double[valueList.size()];
+         double theseValues[] = new double[valueList.size()];
          double theseTimes[] = new double[valueList.size()];
          for(i = 0; i < valueList.size(); i++) {
-            theseVals[i] = valueList.get(i).floatValue() - mNormalize;
-            theseTimes[i] = timeList.get(i).doubleValue();
+            theseValues[i] = valueList.get(i) - mNormalize;
+            theseTimes[i] = timeList.get(i);
          }
 
          //add array to main data list
-         mValues.add(theseVals);
+         mValues.add(theseValues);
          mXValues.add(theseTimes);
       }
    }

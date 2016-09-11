@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 import com.switkows.mileage.EditRecord.EditRecordFragment;
 import com.switkows.mileage.ProfileSelector.ProfileSelectorCallbacks;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,6 +24,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
@@ -32,7 +34,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -51,7 +53,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.MultiChoiceModeListener;
 
-public class EditRecordsMenu extends ActionBarActivity implements EditRecordFragment.UpdateCallback, DataImportThread.callbacks, OnBackStackChangedListener, ProfileSelectorCallbacks {
+public class EditRecordsMenu extends AppCompatActivity implements EditRecordFragment.UpdateCallback, DataImportThread.callbacks, OnBackStackChangedListener, ProfileSelectorCallbacks {
 
    private static final String LIST_FRAGMENT   = "recordList";
    private static final String RECORD_FRAGMENT = "recordViewer";
@@ -67,11 +69,9 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       super.onCreate(savedInstanceState);
       setContentView(R.layout.edit_record_activity);
       Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
-      toolbar.setNavigationIcon(
-         R.drawable.abc_ic_ab_back_mtrl_am_alpha
-      );
       toolbar.setLogo(R.drawable.mileage_tracker_icon);
       setSupportActionBar(toolbar);
+      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
       Intent i = getIntent();
       if(i.getData() == null) {
          i.setData(getURI());
@@ -121,6 +121,8 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       super.onResume();
    }
 
+   // SuppressWarnings for call to setDisplayHomeAsUpEnabled, which might return a NPE
+   @SuppressWarnings("ConstantConditions")
    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
    private void setHomeEnabledHoneycomb() {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -180,7 +182,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
          case R.id.clear_database:
             clearDB();
             return true;
-         case R.id.export_csv: // don't show dialog if the SDcard is not installed.
+         case R.id.export_csv: // don't show dialog if the SDCard is not installed.
          case R.id.import_csv: // It'll issue a Toast-based message, though
             checkSDState(item.getItemId());
             return true;
@@ -347,20 +349,18 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
    private Uri getURI() {
       String option = getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(option, "Car45");
-      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
-      return uri;
+      return Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
    }
 
    protected String[] getCSVFiles() {
       String state = Environment.getExternalStorageState();
       if(state.equals(Environment.MEDIA_MOUNTED)) {
          File sdcard = Environment.getExternalStorageDirectory();
-         String[] files = sdcard.list(new FilenameFilter() {
+         return sdcard.list(new FilenameFilter() {
             public boolean accept(File dir, String filename) {
                return filename.endsWith(".csv");
             }
          });
-         return files;
       } else { // we should NEVER enter here, as it is checked before import/export dialogs are shown!
          Toast.makeText(this, "Error! SDCARD not accessible!", Toast.LENGTH_LONG).show();
          return null;
@@ -376,6 +376,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       private EditRecordsListAdapter          mAdapter;
       private final RecordListLoaderCallbacks mLoaderCallback = new RecordListLoaderCallbacks();
 
+      @SuppressWarnings("UnusedParameters")
       public static EditRecordsMenuFragment newInstance(Context c, Uri uri) {
          EditRecordsMenuFragment result = new EditRecordsMenuFragment();
          Bundle args = new Bundle();
@@ -425,7 +426,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       }
 
       protected boolean deleteSelected(long currentlyViewedId) {
-         boolean foundIt = false; //set to true if the crrentlyViewedId was moved/deleted
+         boolean foundIt = false; //set to true if the currentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
          long id;
@@ -443,7 +444,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
 
       //FIXME - merge deleteSelected & moveSelected, since all code except the provider call is different
       protected boolean moveSelected(long currentlyViewedId, String destProfile) {
-         boolean foundIt = false; //set to true if the crrentlyViewedId was moved/deleted
+         boolean foundIt = false; //set to true if the currentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.ALL_CONTENT_URI;
          ContentValues values = new ContentValues(1);
@@ -461,7 +462,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
          return foundIt;
       }
 
-      protected boolean messageUpdated(long id) {
+      protected boolean messageUpdated() {
          getLoaderManager().restartLoader(0, getArguments(), mLoaderCallback);
          return true;
       }
@@ -521,7 +522,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
 
          public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             try {
-               ActionBarActivity activity = (ActionBarActivity) getActivity();
+               AppCompatActivity activity = (AppCompatActivity) getActivity();
                Toolbar tb = (Toolbar) activity.findViewById(R.id.main_toolbar);
                tb.setVisibility(View.GONE);
 //               tb.animate().translationY(-tb.getBottom()).setInterpolator(new AccelerateInterpolator()).start();
@@ -555,7 +556,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
 
          public void onDestroyActionMode(ActionMode mode) {
             try {
-               ActionBarActivity activity = (ActionBarActivity) getActivity();
+               AppCompatActivity activity = (AppCompatActivity) getActivity();
                Toolbar tb = (Toolbar) activity.findViewById(R.id.main_toolbar);
                tb.setVisibility(View.VISIBLE);
                //Give a transition from off screen to the normal spot
@@ -597,6 +598,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
          return frag;
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
@@ -623,9 +625,11 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
          return frag;
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         @SuppressLint("InflateParams")
          final View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.move_dialog, null);
          String message = getArguments().getString("selected");
          TextView text = (TextView)view.findViewById(android.R.id.text1);
@@ -653,16 +657,17 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
 
    public static class ImportDialogFragment extends DialogFragment {
       public static ImportDialogFragment newInstance() {
-         ImportDialogFragment frag = new ImportDialogFragment();
-         return frag;
+         return new ImportDialogFragment();
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
          String[] files = activity.getCSVFiles();
          if(files != null) {
 
+            @SuppressLint("InflateParams")
             View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.import_dialog, null);
             final Spinner filename = (Spinner)view.findViewById(R.id.file_list);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item);
@@ -692,14 +697,15 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
 
    public static class ExportDialogFragment extends DialogFragment {
       public static ExportDialogFragment newInstance() {
-         ExportDialogFragment frag = new ExportDialogFragment();
-         return frag;
+         return new ExportDialogFragment();
       }
 
+      @NonNull
       @Override
       public Dialog onCreateDialog(Bundle savedInstanceState) {
          final AutoCompleteTextView filename;
          final EditRecordsMenu activity = (EditRecordsMenu)getActivity();
+         @SuppressLint("InflateParams")
          View view = ((LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.export_dialog, null);
          filename = (AutoCompleteTextView)view.findViewById(R.id.file_list);
          String[] files = activity.getCSVFiles();
@@ -733,7 +739,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       mViewedRecordId = -1;
       Fragment fragment = getSupportFragmentManager().findFragmentByTag(LIST_FRAGMENT);
       if(fragment != null && fragment instanceof EditRecordsMenuFragment)
-         result = ((EditRecordsMenuFragment)fragment).messageUpdated(id);
+         result = ((EditRecordsMenuFragment)fragment).messageUpdated();
       return result;
    }
 
@@ -750,7 +756,7 @@ public class EditRecordsMenu extends ActionBarActivity implements EditRecordFrag
       //update fragment's URI, and reload List data
       if(fragment != null && fragment instanceof EditRecordsMenuFragment) {
          fragment.getArguments().putString("uri", getURI().toString());
-         ((EditRecordsMenuFragment)fragment).messageUpdated(0);
+         ((EditRecordsMenuFragment)fragment).messageUpdated();
       }
    }
 }

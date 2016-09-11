@@ -12,10 +12,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class MileageData {
-   private long                         date;
-   private String                       carName;
-   private String                       gas_station;
-   private float[]                      values;
+   private long      date;
+   private String    carName;
+   private String    gas_station;
+   private float[]   values;
 
    /**
     * This field is used to format the CSV output of the date field as a simple MM/DD/YYYY formatted string A separate
@@ -23,45 +23,56 @@ public class MileageData {
     * thread-safe
     */
    // This one is used to parse a string into an integer/date object
-   public static final SimpleDateFormat dateDecoder   = new SimpleDateFormat("MM/dd/yyyy");
+   private static final SimpleDateFormat dateDecoder   = new SimpleDateFormat("MM/dd/yyyy");
    // This one is used to generate a string from an integer
-   public static final SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-   public static final int              DATE          = 0, STATION = 1, ODOMETER = 2, TRIP = 3, GALLONS = 4, PRICE = 5, COMPUTER_MILEAGE = 6,
-         ACTUAL_MILEAGE = 7, TOTAL_PRICE = 8, MPG_DIFF = 9, CAR = 10;
+   private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+   static final int  DATE              = 0, STATION         = 1,
+                     ODOMETER          = 2, TRIP            = 3,
+                     GALLONS           = 4, PRICE           = 5,
+                     COMPUTER_MILEAGE  = 6, ACTUAL_MILEAGE  = 7,
+                     TOTAL_PRICE       = 8, MPG_DIFF        = 9,
+                     CAR               = 10;
 
-   public static final int DbColToArrIdx(int idx) {
+   private static int DbColToArrIdx(int idx) {
       if(idx > STATION)
          return idx - STATION - 1;
       return -1;
    }
 
-   public static final int ArrIdxToDbCol(int idx) {
-      return idx + STATION + 1;
-   }
+   private static final int DATA_LEN  = 8;
 
-   public static final int      DATA_LEN  = 8;
-
-   public final static String[] ToDBNames = {"date", "station", "odometer", "trip", "gallons", "price", "compMileage", "actMileage", "totalPrice",
-         "mileageDiff", "carName"         };
+   final static String[] ToDBNames = { "date",        "station",
+                                       "odometer",    "trip",
+                                       "gallons",     "price",
+                                       "compMileage", "actMileage",
+                                       "totalPrice",  "mileageDiff",
+                                       "carName"};
 
    // main entry point. takes the 'inputs', computes the 3 computed values
-   public MileageData(Context c, String car, String dt, String station, float odo, float trip, float gallons, float price, float comp_mpg) {
-      this(c, car, 0, station, odo, trip, gallons, price, comp_mpg, trip / gallons, gallons * price, 0);
+   public MileageData(String car,
+                      String dt,       String station,
+                      float odo,       float trip,
+                      float gallons,   float price,
+                      float comp_mpg) {
+      this(car, 0, station, odo, trip, gallons, price, comp_mpg, trip / gallons, gallons * price, 0);
       date = parseDate(dt);
       values[DbColToArrIdx(MPG_DIFF)] = Math.abs((comp_mpg - values[5])) / values[5];
    }
 
-   public MileageData(Context c, String dt, String station, float odo, float trip, float gallons, float price, float comp_mpg, float act_mpg,
-         float total_price, float mpg_diff) {
-      this(c, "", parseDate(dt), station, odo, trip, gallons, price, comp_mpg, act_mpg, total_price, mpg_diff);
+   public MileageData(String dt,          String station,
+                      float odo,          float trip,
+                      float gallons,      float price,
+                      float comp_mpg,     float act_mpg,
+                      float total_price,  float mpg_diff) {
+      this("", parseDate(dt), station, odo, trip, gallons, price, comp_mpg, act_mpg, total_price, mpg_diff);
    }
 
    /**
     * used for 'importing' a csv file (though the commas will be split above this level)
     * 
-    * @param strings
+    * @param strings data to import
     */
-   public MileageData(Context c, String[] strings) {
+   public MileageData(String[] strings) {
       date = parseDate(strings[DATE]);
       gas_station = strings[STATION];
       carName = strings[CAR];
@@ -75,15 +86,19 @@ public class MileageData {
 
    // used as a simple-interface (fewer arguments), rather than specifying a
    // long list of float values
-   public MileageData(Context c, String car, String dt, String station, float[] vals) {
-      this(c, car, dt, station, vals[0], vals[1], vals[2], vals[3], vals[4]);
+   public MileageData(String car, String dt, String station, float[] values) {
+      this(car, dt, station, values[0], values[1], values[2], values[3], values[4]);
    }
 
    /**
     * used by MileageData(float[]) and MileageData(float,float,float,float,float)
     */
-   public MileageData(Context c, String car, long dt, String station, float odo, float trip, float gallons, float price, float comp_mpg, float act_mpg,
-         float total_price, float mpg_diff) {
+   public MileageData(String car,
+                      long dt,            String station,
+                      float odo,          float trip,
+                      float gallons,      float price,
+                      float comp_mpg,     float act_mpg,
+                      float total_price,  float mpg_diff) {
       date = dt;
       gas_station = station;
       carName = car;
@@ -98,8 +113,8 @@ public class MileageData {
       setFloatValue(MPG_DIFF, mpg_diff);
    }
 
-   public MileageData(Context c, Cursor cursor) {
-      this(c, cursor.getString(cursor.getColumnIndex(ToDBNames[CAR])),
+   public MileageData(Cursor cursor) {
+      this(cursor.getString(cursor.getColumnIndex(ToDBNames[CAR])),
             cursor.getLong(cursor.getColumnIndex(ToDBNames[DATE])),
             cursor.getString(cursor.getColumnIndex(ToDBNames[STATION])),
             cursor.getFloat(cursor.getColumnIndex(ToDBNames[ODOMETER])),
@@ -123,7 +138,7 @@ public class MileageData {
       return cValues;
    }
 
-   public static long parseDate(String dt) {
+   static long parseDate(String dt) {
       long loc_dt = 0;
       try {
          Date loc_date = dateDecoder.parse(dt);
@@ -147,7 +162,7 @@ public class MileageData {
       return values;
    }
 
-   public float getFloatValue(int idx) {
+   float getFloatValue(int idx) {
       if(idx <= STATION)
          return values[idx];
       return values[DbColToArrIdx(idx)];
@@ -163,36 +178,24 @@ public class MileageData {
       return gas_station;
    }
 
-   public String getCarName() {
+   String getCarName() {
       return carName;
    }
 
-   public float getOdometerReading() {
+   private float getOdometerReading() {
       return getFloatValue(ODOMETER);
-   }
-
-   public float getTrip() {
-      return getFloatValue(TRIP);
-   }
-
-   public float getGallons() {
-      return getFloatValue(GALLONS);
    }
 
    public float getPrice() {
       return getFloatValue(PRICE);
    }
 
-   public float getComputerMileage() {
+   private float getComputerMileage() {
       return getFloatValue(COMPUTER_MILEAGE);
    }
 
-   public float getActualMileage() {
+   private float getActualMileage() {
       return getFloatValue(ACTUAL_MILEAGE);
-   }
-
-   public float getTotalPrice() {
-      return getFloatValue(TOTAL_PRICE);
    }
 
    public float getMileageDiff() {
@@ -212,34 +215,34 @@ public class MileageData {
       return getDistance(getOdometerReading(), prefs, context);
    }
 
-   public static String exportCSVTitle() {
+   static String exportCSVTitle() {
       String str = "";
       for(String name : ToDBNames)
          str += name.concat(",");
       return str;
    }
 
-   public static SimpleDateFormat getDateFormatter() {
+   private static SimpleDateFormat getDateFormatter() {
       return dateFormatter;
    }
 
-   public static String getFormattedDate(long milli) {
+   static String getFormattedDate(long milli) {
       return getDateFormatter().format(milli);
    }
 
-   public static String getFormattedDate(int month, int day, int year) {
+   static String getFormattedDate(int month, int day, int year) {
       GregorianCalendar cal = new GregorianCalendar(year, month, day);
       return getDateFormatter().format(cal.getTime());
    }
 
-   public static String getSimpleDescription(Cursor c, int dateColumn, int mpgColumn, SharedPreferences prefs, Context context) {
+   static String getSimpleDescription(Cursor c, int dateColumn, int mpgColumn, SharedPreferences prefs, Context context) {
       String date = MileageData.getDateFormatter().format(c.getLong(dateColumn));
       float mpg = MileageData.getEconomy(c.getFloat(mpgColumn), prefs, context);
       return String.format("%s (%2.1f %s)", date, mpg, MileageData.getEconomyUnits(prefs, context));
 
    }
 
-   public String exportCSV() {
+   String exportCSV() {
       String str = getFormattedDate(date) + "," + gas_station + ",";
       for(float val : values)
          str += Float.toString(val).concat(",");
@@ -249,18 +252,18 @@ public class MileageData {
    }
 
    // Unit conversion helpers:
-   public static final int      US                   = 0, METRIC = 1;
-   public static final String[] ECONOMY_UNIT_LABELS  = {"mpg", "km/L"};
-   public static final String[] DISTANCE_UNIT_LABELS = {"mi", "km"};
-   public static final float    LITER_PER_GALLON     = (float)3.78541178;
-   public static final float    KM_PER_MILE          = (float)1.609344;
+   private static final int      US                   = 0, METRIC = 1;
+   private static final String[] ECONOMY_UNIT_LABELS  = {"mpg", "km/L"};
+   private static final String[] DISTANCE_UNIT_LABELS = {"mi", "km"};
+   private static final float    LITER_PER_GALLON     = (float)3.78541178;
+   private static final float    KM_PER_MILE          = (float)1.609344;
 
-   public static final boolean isMilesGallons(SharedPreferences prefs, Context context) {
+   static boolean isMilesGallons(SharedPreferences prefs, Context context) {
       String units = prefs.getString(context.getString(R.string.unitSelection), "mpg");
       return units.equals("mpg");
    }
 
-   public static final String getDistanceUnits(SharedPreferences prefs, Context context) {
+   static String getDistanceUnits(SharedPreferences prefs, Context context) {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
@@ -268,7 +271,7 @@ public class MileageData {
       return DISTANCE_UNIT_LABELS[METRIC];
    }
 
-   public static final String getEconomyUnits(SharedPreferences prefs, Context context) {
+   static String getEconomyUnits(SharedPreferences prefs, Context context) {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
@@ -276,7 +279,7 @@ public class MileageData {
       return ECONOMY_UNIT_LABELS[METRIC];
    }
 
-   public static final float getDistance(float miles, SharedPreferences prefs, Context context) {
+   static float getDistance(float miles, SharedPreferences prefs, Context context) {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
@@ -284,7 +287,7 @@ public class MileageData {
       return (miles * KM_PER_MILE);
    }
 
-   public static final float getVolume(float gallons, SharedPreferences prefs, Context context) {
+   static float getVolume(float gallons, SharedPreferences prefs, Context context) {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))
@@ -292,7 +295,7 @@ public class MileageData {
       return (gallons * LITER_PER_GALLON);
    }
 
-   public static final float getEconomy(float mpg, SharedPreferences prefs, Context context) {
+   static float getEconomy(float mpg, SharedPreferences prefs, Context context) {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(context);
       if(isMilesGallons(prefs, context))

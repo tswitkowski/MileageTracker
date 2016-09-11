@@ -21,26 +21,24 @@ public abstract class TimeChartExtension {
    private XYMultipleSeriesDataset    mDataSet;
    protected XYMultipleSeriesRenderer mRenderer;
 
-   private GraphicalView              mView;
-   protected final Context            mContext;
-   private final String               mTitle;
-   private final String               mYLabel;
-   private boolean                    mIsPanZoomable;
+   private GraphicalView   mView;
+   protected final Context mContext;
+   private final String    mTitle;
+   private final String    mYLabel;
+   private boolean         mIsPanZoomable;
 
-   protected String[]                 mTitles;
-   protected int[]                    mColors;
-   protected PointStyle[]             mStyles;
-   protected MileageData[]            mData;
-   protected float                    mNormalize = 0;
+   String[]                mTitles;
+   int[]                   mColors;
+   PointStyle[]            mStyles;
+   MileageData[]           mData;
+   float                   mNormalize = 0;
 
    /**
     * creates the renderer and GraphicalView
     * 
-    * @param titles
-    * @param colors
-    * @param styles
     */
-   public TimeChartExtension(Context c, String title, String ylabel, String[] titles, int[] colors, PointStyle[] styles, MileageData[] data) {
+   TimeChartExtension(Context c, String title, String ylabel, String[] titles,
+                      int[] colors, PointStyle[] styles, MileageData[] data) {
       mContext = c;
       mTitle = title;
       mYLabel = ylabel;
@@ -50,7 +48,7 @@ public abstract class TimeChartExtension {
       mData = data;
    }
 
-   public void buildChart() {
+   private void buildChart() {
       mRenderer = buildRenderer(mColors, mStyles);
       List<double[]> x = buildXList(mData);
       List<double[]> values = buildValuesList(mData);
@@ -85,39 +83,21 @@ public abstract class TimeChartExtension {
       return mView;
    }
 
-   public void setTitles(String[] titles) {
-      mTitles = titles;
-   }
-
-   public void setColors(int[] colors) {
-      mColors = colors;
-   }
-
-   public void setStyles(PointStyle[] s) {
-      mStyles = s;
-   }
-
    public void setPanZoomable(boolean setting) {
       mIsPanZoomable = setting;
-   }
-
-   public void setNormalizedValue(float value) {
-      mNormalize = value;
    }
 
    /**
     * These methods Must be implemented by derived classes!
     * 
-    * @param data
-    * @return
     */
    protected abstract List<double[]> buildValuesList(MileageData[] data);
 
    protected List<double[]> buildXList(MileageData[] data) {
       List<double[]> x = new ArrayList<double[]>();
-      for(int i = 0; i < mTitles.length; i++) {
+      for (String ignored : mTitles) {
          double[] x_row = new double[data.length];
-         for(int row = 0; row < data.length; row++) {
+         for (int row = 0; row < data.length; row++) {
             x_row[row] = data[row].getDate();
          }
          x.add(x_row);
@@ -127,15 +107,7 @@ public abstract class TimeChartExtension {
 
    protected abstract void appendDataToSeries(long date, float[] values);
 
-   public void clearData() {
-      XYSeries[] allSeries = mDataSet.getSeries();
-      for(XYSeries series : allSeries)
-         mDataSet.removeSeries(series);
-      for(String title : mTitles)
-         mDataSet.addSeries(new XYSeries(title));
-   }
-
-   protected void appendDataToSeries(long date, int ser, float value) {
+   void appendDataToSeries(long date, int ser, float value) {
       XYSeries series = mDataSet.getSeriesAt(ser);
       series.add(date, value);
    }
@@ -159,18 +131,18 @@ public abstract class TimeChartExtension {
          autoFitChart();
    }
 
+   private static final float LEGEND_FONT_SIZE_PT = 8.0f;
+
    /**
     * Builds an XY multiple series renderer.
-    * 
+    *
     * @param colors
     *           the series rendering colors
     * @param styles
     *           the series point styles
     * @return the XY multiple series renderers
     */
-   private static final float LEGEND_FONT_SIZE_PT = 8.0f;
-
-   protected XYMultipleSeriesRenderer buildRenderer(int[] colors, PointStyle[] styles) {
+   private XYMultipleSeriesRenderer buildRenderer(int[] colors, PointStyle[] styles) {
       XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
       int length = colors.length;
       for(int i = 0; i < length; i++) {
@@ -206,8 +178,10 @@ public abstract class TimeChartExtension {
     * @param labelsColor
     *           the labels color
     */
-   protected void setChartSettings(XYMultipleSeriesRenderer renderer, String title, String xTitle, String yTitle, double xMin, double xMax, double yMin,
-         double yMax, int axesColor, int labelsColor) {
+   private void setChartSettings(XYMultipleSeriesRenderer renderer,
+                                 String title, String xTitle, String yTitle,
+                                 double xMin, double xMax, double yMin, double yMax,
+                                 int axesColor, int labelsColor) {
       renderer.setChartTitle(title);
       renderer.setXTitle(xTitle);
       renderer.setYTitle(yTitle);
@@ -226,7 +200,7 @@ public abstract class TimeChartExtension {
       renderer.setLabelsTextSize(fontSize);
    }
 
-   protected void autoFitChart() {
+   private void autoFitChart() {
       if(mDataSet == null)
          return;
       if(mDataSet.getSeriesCount() == 0)
@@ -268,7 +242,7 @@ public abstract class TimeChartExtension {
     *           the values for the Y axis
     * @return the XY multiple dataset
     */
-   protected XYMultipleSeriesDataset buildDataset(String[] titles, List<double[]> xValues, List<double[]> yValues) {
+   private XYMultipleSeriesDataset buildDataset(String[] titles, List<double[]> xValues, List<double[]> yValues) {
       XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
       int length = titles.length;
       for(int i = 0; i < length; i++) {

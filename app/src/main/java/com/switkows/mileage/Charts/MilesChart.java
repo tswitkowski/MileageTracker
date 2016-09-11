@@ -11,7 +11,7 @@ import android.graphics.Color;
 
 public class MilesChart extends TimeChartExtension {
    // strings which will return series index
-   public static final int           TOTAL_MILES = 0;
+   private static final int          TOTAL_MILES = 0;
 
    private static final String[]     mTitles     = {"Miles over time", "Km over Time"};
    private static final String[]     mUnits      = {"MPG", "Km/L"};
@@ -32,8 +32,8 @@ public class MilesChart extends TimeChartExtension {
    protected List<double[]> buildValuesList(MileageData[] data) {
       double[] miles = new double[data.length];
       List<double[]> values = new ArrayList<double[]>();
-      for(int i = 0; i < mTitles.length; i++) {
-         for(int row = 0; row < data.length; row++) {
+      for (String ignored : mTitles) {
+         for (int row = 0; row < data.length; row++) {
             miles[row] = data[row].getOdometerReading(mContext, null);
          }
       }

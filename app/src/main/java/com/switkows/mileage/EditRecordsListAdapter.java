@@ -15,7 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class EditRecordsListAdapter extends SimpleCursorAdapter {
+class EditRecordsListAdapter extends SimpleCursorAdapter {
 
    /** Remember our context so we can use it when constructing views. */
    private Context                       mContext;
@@ -30,7 +30,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
     * @param context
     *           - Render context
     */
-   public EditRecordsListAdapter(Context context, EditRecordsMenuFragment parent, Cursor c, String[] from, int[] to) {
+   EditRecordsListAdapter(Context context, EditRecordsMenuFragment parent, Cursor c, String[] from, int[] to) {
       super(context, R.layout.record_list_item, c, from, to, NO_SELECTION);
       mContext = context;
       mParent  = parent;
@@ -61,7 +61,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
     * 
     * @param convertView
     *           The old view to overwrite
-    * @returns a CheckBoxifiedTextView that holds wraps around an CheckBoxifiedText
+    * @return a EditRecordListItem corresponding with the cursor position
     */
 
    @Override
@@ -81,7 +81,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
 //      mpg = MileageData.getEconomy(mpg, getPrefs(), mContext);
 //      view.setText(String.format("%s (%2.1f %s)", date, mpg, MileageData.getEconomyUnits(getPrefs(), mContext)));
       view.setText(MileageData.getSimpleDescription(cursor, dateColumn, mileageColumn, getPrefs(), mContext));
-      view.setChecked(mSelected.contains(Long.valueOf(view.mIDValue)));
+      view.setChecked(mSelected.contains(view.mIDValue));
       //FIXME - can't the ListView do this automatically?
       //set the 'activated' state, which will cause the UI to add special styling in dualPane mode
       setListActivatedHoneycomb(view);
@@ -99,13 +99,13 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
 
    private HashSet<Long>     mSelected = new HashSet<Long>();
 
-   public SharedPreferences getPrefs() {
+   SharedPreferences getPrefs() {
       if(prefs == null)
          prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
       return prefs;
    }
 
-   public void setSelected(long id, int position, boolean isSelected) {
+   void setSelected(long id, int position, boolean isSelected) {
       Long lID = id;
       if(isSelected)
          mSelected.add(lID);
@@ -114,7 +114,7 @@ public class EditRecordsListAdapter extends SimpleCursorAdapter {
       mParent.handleSelection(mSelected.isEmpty(), position, isSelected);
    }
 
-   public void setViewedItem(long id) {
+   void setViewedItem(long id) {
       mViewedId = id;
    }
 }

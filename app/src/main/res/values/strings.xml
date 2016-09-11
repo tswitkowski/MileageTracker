@@ -40,4 +40,5 @@
     <string name="unknownValue">\??</string>
     <string name="moveToPrompt">To Profile:</string>
     <string name="sign_out">Sign out</string>
+    <string name="add_entry_label">Add Entry</string>
 </resources>

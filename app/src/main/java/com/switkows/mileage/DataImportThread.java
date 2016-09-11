@@ -18,10 +18,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
-   Context                              mContext;
+class DataImportThread extends AsyncTask<File, Integer, Boolean> {
+   private Context                      mContext;
    private boolean                      mShow;             //set to true to show the dialog box
-   String                               mFile;             //short file name (used for toast/log messages only)
+   private String                       mFile;             //short file name (used for toast/log messages only)
    private int                          mMax;              //holds the maximum value of the progress bar
    private boolean                      mShowIndeterminate; //set to TRUE to show progress bar as indeterminate
    private boolean                      mCompleted;
@@ -30,19 +30,15 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    private final EditRecordsListAdapter mAdapter;
 
    //Callbacks so caller can clean up after thread completion
-   public interface callbacks {
-      public void taskCompleted();
+   interface callbacks {
+      void taskCompleted();
    }
 
-   public DataImportThread(Context context, EditRecordsListAdapter adapter) {
+   DataImportThread(Context context, EditRecordsListAdapter adapter) {
       this(context, true, adapter);
    }
 
-   public DataImportThread(boolean showDialog) {
-      this(null, showDialog, null);
-   }
-
-   public DataImportThread(Context context, boolean showDialog, EditRecordsListAdapter adapter) {
+   DataImportThread(Context context, boolean showDialog, EditRecordsListAdapter adapter) {
       mContext  = context;
       mShow     = showDialog;
       mAdapter  = adapter;
@@ -82,18 +78,17 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             // are we an old format, without the 'cars' column?! if so, add it!
             if(fields.length == 10) {
                String[] newFields = new String[11];
-               for(int i = 0; i < fields.length; i++)
-                  newFields[i] = fields[i];
+               System.arraycopy(fields, 0, newFields, 0, fields.length);
                newFields[10] = currentCar;
                fields = newFields;
                Log.v("TJS", "Importing entry from CSV file into current car: " + newFields[10]);
             } else if(fields.length == 11) {
-               // Log.v("TJS","Importing entry from CSV file into car: "+fields[10]);
+               Log.v("TJS","Importing entry from CSV file into car: "+fields[10]);
             } else {
                Log.d("TJS", "Skipping import line: only " + fields.length + "elements in CSV line!!");
             }
             // Log.d("TJS","Read line '"+line+"', date = '"+fields[0]+"'...");
-            MileageData record = new MileageData(mContext, fields);
+            MileageData record = new MileageData(fields);
             newEntries.add(record.getContent());
             profiles.add(MileageProvider.createProfileContent(record.getCarName()));
             lineCount++;
@@ -121,8 +116,8 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    protected void onProgressUpdate(Integer... values) {
       super.onProgressUpdate(values);
       if(mShow) {
-         mDialog.setProgress(values[0].intValue());
-         if(values[0].intValue() >= mMax - 1)
+         mDialog.setProgress(values[0]);
+         if(values[0] >= mMax - 1)
             mShowIndeterminate = true;
          updateProgressConfig();
       }
@@ -147,6 +142,7 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
          Log.d("TJS", importMessage);
          Toast.makeText(mContext, importMessage, Toast.LENGTH_LONG).show();
          if(mAdapter != null)
+            //noinspection deprecation
             mAdapter.getCursor().requery();
          if(mShow && mDialog != null)
             mDialog.dismiss();
@@ -159,11 +155,11 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
       try {
          mCallbacks = (callbacks)mContext;
          mCallbacks.taskCompleted();
-      } catch (ClassCastException e) {}
+      } catch (ClassCastException ignored) {}
 
    }
 
-   public void clearDB() {
+   private void clearDB() {
       mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
       mContext.getContentResolver().delete(MileageProvider.CAR_PROFILE_URI, null, null);
    }
@@ -198,20 +194,20 @@ public class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    /**
     * Call once your activity is back in the foreground, and the thread can be 'resumed'
     */
-   public void restart() {
+   void restart() {
       createDialog();
    }
 
    /**
     * Call when you need to 'suspend' the thread, due to activity going to background, orientation change, etc
     */
-   public void pause() {
+   void pause() {
       if(mDialog != null)
          mDialog.dismiss();
       mDialog = null;
    }
 
-   public boolean isCompleted() {
+   boolean isCompleted() {
       return mCompleted;
    }
 }

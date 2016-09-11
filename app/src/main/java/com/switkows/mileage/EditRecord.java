@@ -24,7 +24,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -37,7 +37,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
-public class EditRecord extends ActionBarActivity {
+public class EditRecord extends AppCompatActivity {
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +48,10 @@ public class EditRecord extends ActionBarActivity {
       boolean isNew = MileageTracker.ACTION_INSERT.equals(action);
       if(!isNew && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
          //if we're in landscape, we'll use a two-pane interface, so dismiss this activity!
-         int id = -2;
-         if(!isNew)
-            id = Integer.parseInt(getIntent().getData().getPathSegments().get(1));
+         int id;
+         id = Integer.parseInt(getIntent().getData().getPathSegments().get(1));
          setResult(id + 1);
          finish();
-         return;
       } else if(savedInstanceState == null) {
          long id = -1;
          if(!isNew)
@@ -111,7 +109,7 @@ public class EditRecord extends ActionBarActivity {
       //on which activity invoked this fragment
       public interface UpdateCallback {
          //return true to indicate the event was handled
-         public boolean messageUpdated(long id);
+         boolean messageUpdated(long id);
       }
 
       @Override
@@ -154,11 +152,11 @@ public class EditRecord extends ActionBarActivity {
       }
 
       @Override
-      public void onAttach(Activity activity) {
-         super.onAttach(activity);
+      public void onAttach(Context context) {
+         super.onAttach(context);
          try {
-            mCallback = (UpdateCallback)activity;
-         } catch (ClassCastException e) {}
+            mCallback = (UpdateCallback)context;
+         } catch (ClassCastException ignored) {}
       }
 
       @Override
@@ -170,7 +168,7 @@ public class EditRecord extends ActionBarActivity {
          if(submit == null)
             return;
          if(isNewRecord)
-            submit.setText("Add Entry");
+            submit.setText(R.string.add_entry_label);
          submit.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                updateDbRow();
@@ -203,14 +201,14 @@ public class EditRecord extends ActionBarActivity {
          getTextFieldStruct(MileageData.STATION);//grab pointer
 
          Activity activity = getActivity();
-         if(!mDualPane && ((ActionBarActivity)activity).getSupportActionBar() == null) {
+         if(!mDualPane && ((AppCompatActivity)activity).getSupportActionBar() == null) {
             Toolbar toolbar = (Toolbar) activity.findViewById(R.id.main_toolbar);
             if (toolbar != null) {
-               ((ActionBarActivity) activity).setSupportActionBar(toolbar);
+               ((AppCompatActivity) activity).setSupportActionBar(toolbar);
                //match the parent width    (ugly!!)
 //            LayoutParams params = new LayoutParams(getActivity().getWindow().getAttributes().width, toolbar.getHeight());
 //            toolbar.setLayoutParams(params);
-               toolbar.setMinimumWidth(activity.getWindow().getAttributes().width);
+//               toolbar.setMinimumWidth(activity.getWindow().getAttributes().width);
             }
          }
 
@@ -220,17 +218,20 @@ public class EditRecord extends ActionBarActivity {
       public void onResume() {
          super.onResume();
 
+//         Button submit = (Button)getActivity().findViewById(R.id.submit);
+//         //this is in case we don't have a view. for some reason, i'm seeing this called even if onCreateView returns null
+//         viewAttached = submit != null;
          if(!viewAttached)
             return;
          if(isNewRecord) {
             getActivity().setTitle(getText(R.string.new_record_title));
             if(mProfileAdapter == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-               mProfileAdapter = ProfileSelector.setupActionBar((ActionBarActivity) getActivity(), this);
+               mProfileAdapter = ProfileSelector.setupActionBar((AppCompatActivity) getActivity(), this);
          } else {
             String indicator = "(" + getPrefs().getString(getString(R.string.carSelection), "Car45") + "):";
             getActivity().setTitle(getText(R.string.edit_record_title) + indicator);
          }
-         //Note : assumes mCursor is not NULL if we are editing a record (so this call doesn't distrub the data..
+         //Note : assumes mCursor is not NULL if we are editing a record (so this call doesn't disturb the data..
          if(isNewRecord) {
             Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR), month = c.get(Calendar.MONTH), day = c.get(Calendar.DAY_OF_MONTH);
@@ -349,12 +350,8 @@ public class EditRecord extends ActionBarActivity {
             trip = trip / MileageData.getDistance(1, getPrefs(), getActivity());
             gal = gal / MileageData.getVolume(1, getPrefs(), getActivity());
          }
-         return new MileageData(getActivity(), mProfileName, getTextFieldStruct(MileageData.DATE).getText().toString(),
+         return new MileageData(mProfileName, getTextFieldStruct(MileageData.DATE).getText().toString(),
                                 getTextFieldStruct(MileageData.STATION).getText().toString(), odo, trip, gal, price, diff);
-      }
-
-      protected String dateToString(long date) {
-         return MileageData.getDateFormatter().format(date);
       }
 
       protected String colToString(int column) {
@@ -403,11 +400,11 @@ public class EditRecord extends ActionBarActivity {
       private static final String STATION_NAME = MileageData.ToDBNames[MileageData.STATION];
 
       private class LoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
-         protected static final int ID_STATION_LOADER = 0;
-         protected static final int ID_DATA_LOADER    = 1;
+         static final int ID_STATION_LOADER = 0;
+         static final int ID_DATA_LOADER    = 1;
 //         protected final String     STATION_NAME      = MileageData.ToDBNames[MileageData.STATION];
-         protected final String[]   STATION_PROJ      = {"_id", STATION_NAME};
-         protected final String     STATION_SORT      = STATION_NAME + " DESC";
+         final String[]   STATION_PROJ      = {"_id", STATION_NAME};
+         final String     STATION_SORT      = STATION_NAME + " DESC";
 
          public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             if(id == ID_STATION_LOADER) {
@@ -416,8 +413,7 @@ public class EditRecord extends ActionBarActivity {
                String filter = hint == null ? null : STATION_NAME + " like '%" + hint + "%'";
                return new CursorLoader(getActivity(), uri, STATION_PROJ, filter, null, STATION_SORT);
             } else if(id == ID_DATA_LOADER) {
-               CursorLoader loader = new CursorLoader(getActivity(), mUri, null, null, null, null);
-               return loader;
+               return new CursorLoader(getActivity(), mUri, null, null, null, null);
             } else {
                return null;
             }
@@ -499,7 +495,7 @@ public class EditRecord extends ActionBarActivity {
       private class myListAdapter extends SimpleCursorAdapter {
 //         private final String   ColumnName = MileageData.ToDBNames[MileageData.STATION];
 
-         public myListAdapter(Context context, Cursor c) {
+         myListAdapter(Context context, Cursor c) {
             super(context, android.R.layout.simple_dropdown_item_1line, c, new String[] {STATION_NAME}, new int[] {android.R.id.text1}, NO_SELECTION);
          }
 

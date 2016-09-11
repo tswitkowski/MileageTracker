@@ -14,6 +14,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 public class MileageProvider extends ContentProvider {
@@ -88,7 +89,7 @@ public class MileageProvider extends ContentProvider {
    }
 
    @Override
-   public int delete(Uri uri, String where, String[] whereArgs) {
+   public int delete(@NonNull Uri uri, String where, String[] whereArgs) {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
       int count;
       String id;
@@ -123,7 +124,7 @@ public class MileageProvider extends ContentProvider {
    }
 
    @Override
-   public String getType(Uri uri) {
+   public String getType(@NonNull Uri uri) {
       switch(sriMatcher.match(uri)) {
          case ALL_CAR:
          case SPECIFIC_CAR:
@@ -137,7 +138,7 @@ public class MileageProvider extends ContentProvider {
    }
 
    @Override
-   public int bulkInsert(Uri uri, ContentValues[] values) {
+   public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
       mSuppressBackupUpdate = true;
       int result = super.bulkInsert(uri, values);
       mSuppressBackupUpdate = false;
@@ -145,13 +146,13 @@ public class MileageProvider extends ContentProvider {
    }
 
    @Override
-   public Uri insert(Uri uri, ContentValues initialValues) {
+   public Uri insert(@NonNull Uri uri, ContentValues initialValues) {
       boolean isProfile = sriMatcher.match(uri) == PROFILE_SELECT;
       if(sriMatcher.match(uri) != ALL_CAR && sriMatcher.match(uri) != SPECIFIC_CAR && !isProfile) {
          throw new IllegalArgumentException("Unknown URI : '" + uri + "'");
       }
       String table   = isProfile ? PROFILE_TABLE   : DB_TABLE;
-      Uri dataseturi = isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI;
+      Uri dataSetUri = isProfile ? CAR_PROFILE_URI : ALL_CONTENT_URI;
 
       ContentValues values;
       if(initialValues != null)
@@ -162,10 +163,10 @@ public class MileageProvider extends ContentProvider {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
       long rowId = db.insert(table, null, values);
       if(rowId >= 0) {
-         Uri noteUri = ContentUris.withAppendedId(dataseturi, rowId);
+         Uri noteUri = ContentUris.withAppendedId(dataSetUri, rowId);
          getContext().getContentResolver().notifyChange(noteUri, null);
          //FIXME - try to get rid of this. it's probably not needed..
-         getContext().getContentResolver().notifyChange(dataseturi, null);
+         getContext().getContentResolver().notifyChange(dataSetUri, null);
          if(!mSuppressBackupUpdate)
             mBackup.dataChanged();
          return noteUri;
@@ -174,7 +175,7 @@ public class MileageProvider extends ContentProvider {
    }
 
    @Override
-   public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+   public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
       SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
       String groupBy = null;
 
@@ -184,17 +185,17 @@ public class MileageProvider extends ContentProvider {
             // limit to only this car's data
             qb.appendWhere("carName = '" + uri.getPathSegments().get(1) + "'");
             // This will add all of the Columns in 'projection', except for
-            // the _id column. This allows for 'uniquifying' the return data
+            // the _id column. This allows to 'uniquify' the return data
             // (currently, only used for giving suggestions in the gas-station
             // input dialog)
             if(projection != null) // FIXME - do we query with projections when
                // we do NOT want to be unique?
-               for(int i = 0; i < projection.length; i++)
-                  if(!projection[i].equals("_id")) {
-                     if(groupBy == null)
-                        groupBy = "" + projection[i];
+               for (String aProjection : projection)
+                  if (!aProjection.equals("_id")) {
+                     if (groupBy == null)
+                        groupBy = "" + aProjection;
                      else
-                        groupBy += projection[i];
+                        groupBy += aProjection;
                   }
             break;
          case ALL_CAR:
@@ -236,7 +237,7 @@ public class MileageProvider extends ContentProvider {
    }
 
    @Override
-   public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+   public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
       SQLiteDatabase db = mDatabase.getWritableDatabase();
       boolean isProfile = sriMatcher.match(uri) == PROFILE_SELECT;
       int count;
@@ -276,7 +277,7 @@ public class MileageProvider extends ContentProvider {
    private class MileageDataSet extends SQLiteOpenHelper {
       private final Context mContext;
 
-      public MileageDataSet(Context context) {
+      MileageDataSet(Context context) {
          super(context, DB_FILENAME, null, DB_VERSION);
          mContext = context;
       }
