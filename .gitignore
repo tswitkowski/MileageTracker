@@ -8,3 +8,5 @@ local.properties
 .navigation/
 *.iml
 *.bak
+# for achartengine
+app/src/main/java/org
