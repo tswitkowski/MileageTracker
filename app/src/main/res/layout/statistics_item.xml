@@ -18,6 +18,7 @@
    <TextView
       android:id="@android:id/text2"
       android:layout_toEndOf="@android:id/text1"
+      android:layout_toRightOf="@android:id/text1"
       android:layout_width="125dp"
       android:layout_height="wrap_content"
       android:textColor="#ff000000"

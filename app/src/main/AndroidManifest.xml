@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.switkows.mileage"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.switkows.mileage"
     android:installLocation="auto">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -38,7 +39,8 @@
                  This filter says that we can view or edit the data of
                  a single note
             -->
-            <intent-filter android:label="FIXME2" >
+            <intent-filter android:label="FIXME2"
+                           tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
                 <!-- <action android:name="com.switkows.mileage.EDIT_RECORD" /> -->
