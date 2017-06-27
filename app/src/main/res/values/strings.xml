@@ -41,4 +41,7 @@
     <string name="moveToPrompt">To Profile:</string>
     <string name="sign_out">Sign out</string>
     <string name="add_entry_label">Add Entry</string>
+    <string name="shortcut_short_label">Fill up</string>
+    <string name="shortcut_long_label">Stop for gas</string>
+    <string name="shortcut_disabled_message">Shortcut no longer valid</string>
 </resources>

@@ -17,9 +17,10 @@
             android:theme="@style/Theme.Main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts"
+                       android:resource="@xml/shortcuts" />
         </activity>
         <activity
             android:name=".EditRecordsMenu"
@@ -75,32 +76,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ShortcutAddEntry"
-            android:label="Add Mileage Entry" >
-            <intent-filter>
-                <action android:name=".Add" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <!--
-      This is used to set up the activity to configure the shortcut
-      (i.e. icon + text) when the user asks to create shortcut on the homescreen
-        -->
-        <activity-alias
-            android:name=".CreateShortcutAddEntry"
-            android:label="Add Mileage Entry"
-            android:targetActivity=".ShortcutAddEntry" >
-
-            <!-- This intent-filter allows your shortcuts to be created in the launcher. -->
-            <intent-filter>
-                <action android:name="android.intent.action.CREATE_SHORTCUT" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-
         <meta-data
             android:name="com.google.android.backup.api_key"
             android:value="AEdPqrEAAAAIH5KJefqvXjDE_e_KpdBq352tr_sFGMu0ZWr1Yg" />

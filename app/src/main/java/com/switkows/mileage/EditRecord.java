@@ -13,6 +13,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
@@ -59,6 +60,12 @@ public class EditRecord extends AppCompatActivity {
          EditRecordFragment fragment = EditRecordFragment.newInstance(id, isNew);
          getSupportFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
          setResult(RESULT_CANCELED);   //If we hit this case, we want to tell caller that this activity was canceled (thus the caller should not attempt to add this record's view back to the application)
+
+         // Update metrics
+         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+            shortcutManager.reportShortcutUsed("stop_for_gas");
+         }
 
          //FIXME - seems like a hack to get the dialog to stretch to the proper width:
 //         LayoutParams params = getWindow().getAttributes();
