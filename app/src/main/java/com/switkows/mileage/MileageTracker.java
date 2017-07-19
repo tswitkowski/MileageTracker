@@ -357,8 +357,8 @@ public class MileageTracker extends AppCompatActivity implements LoaderManager.L
 
       public void onClick(View v) {
          boolean isUS = MileageData.isMilesGallons(PreferenceManager.getDefaultSharedPreferences(mContext), mContext);
-         launcher.putExtra(ChartViewer.UNITS_KEY, isUS);
-         launcher.putExtra(ChartViewer.CHART_KEY, mID);
+         launcher.putExtra(ChartViewer.Companion.getUNITS_KEY(), isUS);
+         launcher.putExtra(ChartViewer.Companion.getCHART_KEY(), mID);
          startActivity(launcher);
       }
    }
