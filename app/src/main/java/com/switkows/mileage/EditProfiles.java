@@ -94,20 +94,20 @@ public class EditProfiles extends FragmentActivity {
    }
 
    private void updateList() {
-      Cursor cursor = getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
+      Cursor cursor = getContentResolver().query(MileageProvider.Companion.getCAR_PROFILE_URI(), null, null, null, null);
       @SuppressWarnings("unchecked")
       ArrayAdapter<Profile> adapter = (ArrayAdapter<Profile>)mList.getAdapter();
       if(cursor == null)
          return;
       Profile[] content = new Profile[cursor.getCount()];
-      int column    = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
+      int column    = cursor.getColumnIndex(MileageProvider.Companion.getPROFILE_NAME());
       int idColumn  = cursor.getColumnIndex("_id");
       Uri u;
 //      Toast.makeText(this, "Trying to create new ArrayAdapter", Toast.LENGTH_LONG).show();
       for(int i = 0; i < content.length; i++) {
          cursor.moveToPosition(i);
          content[i] = new Profile(cursor.getLong(idColumn), cursor.getString(column));
-         u = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, content[i].getName());
+         u = Uri.withAppendedPath(MileageProvider.Companion.getCAR_CONTENT_URI(), content[i].getName());
          Cursor c = getContentResolver().query(u, new String[] {"_id"}, null, null, null);
          if(c==null)
             continue;
@@ -128,7 +128,7 @@ public class EditProfiles extends FragmentActivity {
       final ArrayAdapter<Profile> arrayAdapter = (ArrayAdapter<Profile>)mList.getAdapter();
       for(int index = 0; index < sel.size(); index++) {
          id = arrayAdapter.getItem(sel.keyAt(sel.indexOfValue(true))).getId();
-         getContentResolver().delete(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI, id), null, null);
+         getContentResolver().delete(ContentUris.withAppendedId(MileageProvider.Companion.getCAR_PROFILE_URI(), id), null, null);
       }
       updateList();
    }
@@ -144,11 +144,11 @@ public class EditProfiles extends FragmentActivity {
       String oldName   = profile.getName();
       //get the new value
       ContentValues values = new ContentValues();
-      values.put(MileageProvider.PROFILE_NAME, newName);
+      values.put(MileageProvider.Companion.getPROFILE_NAME(), newName);
       //update profile configs
-      getContentResolver().update(ContentUris.withAppendedId(MileageProvider.CAR_PROFILE_URI, oldId), values, null, null);
+      getContentResolver().update(ContentUris.withAppendedId(MileageProvider.Companion.getCAR_PROFILE_URI(), oldId), values, null, null);
       //move all data to new profile name!
-      getContentResolver().update(MileageProvider.ALL_CONTENT_URI, values, MileageData.ToDBNames[MileageData.CAR] + "=?", new String[] {oldName});
+      getContentResolver().update(MileageProvider.Companion.getALL_CONTENT_URI(), values, MileageData.ToDBNames[MileageData.CAR] + "=?", new String[] {oldName});
       Toast.makeText(getApplicationContext(), "Successfully re-named " + oldName + " to " + newName, Toast.LENGTH_LONG).show();
       String option = getString(R.string.carSelection);
       String currentCar = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(option, "Car45");
@@ -218,7 +218,7 @@ public class EditProfiles extends FragmentActivity {
             public void onClick(DialogInterface dialog, int which) {
                EditText box = (EditText)((AlertDialog)dialog).findViewById(R.id.edit_text_box);
                String profileName = box.getText().toString();
-               MileageProvider.addProfile(activity, profileName);
+               MileageProvider.Companion.addProfile(activity, profileName);
                activity.updateList();
             }
          };

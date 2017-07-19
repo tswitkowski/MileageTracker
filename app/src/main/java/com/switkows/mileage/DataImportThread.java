@@ -89,18 +89,18 @@ class DataImportThread extends AsyncTask<File, Integer, Boolean> {
             // Log.d("TJS","Read line '"+line+"', date = '"+fields[0]+"'...");
             MileageData record = new MileageData(fields);
             newEntries.add(record.getContent());
-            profiles.add(MileageProvider.createProfileContent(record.getCarName()));
+            profiles.add(MileageProvider.Companion.createProfileContent(record.getCarName()));
             lineCount++;
             publishProgress(lineCount);
          }
          if(newEntries.size() > 0) {
             ContentValues[] additions = new ContentValues[newEntries.size()];
             additions = newEntries.toArray(additions);
-            mContext.getContentResolver().bulkInsert(MileageProvider.ALL_CONTENT_URI, additions);
+            mContext.getContentResolver().bulkInsert(MileageProvider.Companion.getALL_CONTENT_URI(), additions);
             //push profile names
             additions = new ContentValues[profiles.size()];
             additions = profiles.toArray(additions);
-            mContext.getContentResolver().bulkInsert(MileageProvider.CAR_PROFILE_URI, additions);
+            mContext.getContentResolver().bulkInsert(MileageProvider.Companion.getCAR_PROFILE_URI(), additions);
          }
          reader.close();
       } catch (IOException e) {
@@ -157,8 +157,8 @@ class DataImportThread extends AsyncTask<File, Integer, Boolean> {
    }
 
    private void clearDB() {
-      mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
-      mContext.getContentResolver().delete(MileageProvider.CAR_PROFILE_URI, null, null);
+      mContext.getContentResolver().delete(MileageProvider.Companion.getALL_CONTENT_URI(), null, null);
+      mContext.getContentResolver().delete(MileageProvider.Companion.getCAR_PROFILE_URI(), null, null);
    }
 
    private void createDialog() {

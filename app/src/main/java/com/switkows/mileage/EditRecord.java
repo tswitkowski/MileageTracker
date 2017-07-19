@@ -138,7 +138,7 @@ public class EditRecord extends AppCompatActivity {
             // mState = STATE_EDIT;
             result = inflater.inflate(mDualPane ? R.layout.edit_record_fragment : R.layout.edit_record, null);
 
-            mUri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, mId);
+            mUri = ContentUris.withAppendedId(MileageProvider.Companion.getALL_CONTENT_URI(), mId);
             getLoaderManager().initLoader(LoaderCallbacks.ID_DATA_LOADER, null, mLoaderCallbacks);
          } else {
             isNewRecord = true;
@@ -337,7 +337,7 @@ public class EditRecord extends AppCompatActivity {
          MileageData data = createDataStructure();
          ContentValues values = data != null ? data.getContent() : null;
          if(isNewRecord) {
-            mUri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, mProfileName);
+            mUri = Uri.withAppendedPath(MileageProvider.Companion.getCAR_CONTENT_URI(), mProfileName);
             getActivity().getContentResolver().insert(mUri, values);
          } else
             getActivity().getContentResolver().update(mUri, values, "_id = " + mCursor.getInt(mCursor.getColumnIndex("_id")), null);
@@ -454,7 +454,7 @@ public class EditRecord extends AppCompatActivity {
 
          public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             if(id == ID_STATION_LOADER) {
-               Uri uri = MileageProvider.ALL_CONTENT_URI;
+               Uri uri = MileageProvider.Companion.getALL_CONTENT_URI();
                String hint = args.getString("hint");
                String filter = hint == null ? null : STATION_NAME + " like '%" + hint + "%'";
                return new CursorLoader(getActivity(), uri, STATION_PROJ, filter, null, STATION_SORT);

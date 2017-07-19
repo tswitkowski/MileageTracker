@@ -24,7 +24,7 @@ class ProfileSelector extends SimpleCursorAdapter implements OnNavigationListene
     * @author Trevor
     */
    private ProfileSelector(AppCompatActivity context) {
-      super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.PROFILE_NAME}, new int[] {android.R.id.text1},
+      super(context, android.R.layout.simple_spinner_dropdown_item, null, new String[] {MileageProvider.Companion.getPROFILE_NAME()}, new int[] {android.R.id.text1},
             NO_SELECTION);
 
       mContext = context;
@@ -34,7 +34,7 @@ class ProfileSelector extends SimpleCursorAdapter implements OnNavigationListene
    }
 
    private void updateCursor() {
-      Cursor c = mContext.getContentResolver().query(MileageProvider.CAR_PROFILE_URI, null, null, null, null);
+      Cursor c = mContext.getContentResolver().query(MileageProvider.Companion.getCAR_PROFILE_URI(), null, null, null, null);
       updateCursor(c);
    }
 
@@ -47,7 +47,7 @@ class ProfileSelector extends SimpleCursorAdapter implements OnNavigationListene
    private int getSelectedPosition() {
       Cursor cursor = getCursor();
       String currentProfile = getCurrentProfile();
-      int columnIndex = cursor.getColumnIndex(MileageProvider.PROFILE_NAME);
+      int columnIndex = cursor.getColumnIndex(MileageProvider.Companion.getPROFILE_NAME());
       for(int i = 0; i < cursor.getCount(); i++) {
          cursor.moveToPosition(i);
          if(cursor.getString(columnIndex).equalsIgnoreCase(currentProfile))
@@ -77,7 +77,7 @@ class ProfileSelector extends SimpleCursorAdapter implements OnNavigationListene
    private String getItemName(int position) {
       Cursor c = getCursor();
       c.moveToPosition(position);
-      return c.getString(c.getColumnIndex(MileageProvider.PROFILE_NAME));
+      return c.getString(c.getColumnIndex(MileageProvider.Companion.getPROFILE_NAME()));
    }
 
    @TargetApi(Build.VERSION_CODES.GINGERBREAD)

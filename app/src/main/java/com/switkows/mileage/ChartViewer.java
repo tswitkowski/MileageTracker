@@ -30,7 +30,7 @@ public class ChartViewer extends FragmentActivity implements LoaderManager.Loade
    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
       String pref = this.getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(pref, "Car1");
-      Uri uri = Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
+      Uri uri = Uri.withAppendedPath(MileageProvider.Companion.getCAR_CONTENT_URI(), car);
       return new CursorLoader(this, uri, null, null, null, null);
    }
 

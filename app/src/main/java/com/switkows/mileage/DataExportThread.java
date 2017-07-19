@@ -49,7 +49,7 @@ class DataExportThread extends AsyncTask<File, Integer, Boolean> {
          PrintWriter writer = new PrintWriter(csv_file);
          writer.println(MileageData.exportCSVTitle());
 
-         Cursor cursor = mContext.getContentResolver().query(MileageProvider.ALL_CONTENT_URI, null, null, null, null);
+         Cursor cursor = mContext.getContentResolver().query(MileageProvider.Companion.getALL_CONTENT_URI(), null, null, null, null);
          assert cursor != null;
          mMax = cursor.getCount();
          Integer lineCount = 0;
@@ -107,7 +107,7 @@ class DataExportThread extends AsyncTask<File, Integer, Boolean> {
    }
 
    public void clearDB() {
-      mContext.getContentResolver().delete(MileageProvider.ALL_CONTENT_URI, null, null);
+      mContext.getContentResolver().delete(MileageProvider.Companion.getALL_CONTENT_URI(), null, null);
    }
 
    private void createDialog() {

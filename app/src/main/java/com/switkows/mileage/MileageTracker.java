@@ -204,7 +204,7 @@ public class MileageTracker extends AppCompatActivity implements LoaderManager.L
 
    public Uri getCurrentProfileURI() {
       String car = getCurrentProfile();
-      return Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
+      return Uri.withAppendedPath(MileageProvider.Companion.getCAR_CONTENT_URI(), car);
    }
 
    public String getCurrentProfile() {

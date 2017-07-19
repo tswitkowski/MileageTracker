@@ -390,7 +390,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       } else {
          //pop the back stack
          getSupportFragmentManager().popBackStack();
-         Uri uri = ContentUris.withAppendedId(MileageProvider.ALL_CONTENT_URI, id);
+         Uri uri = ContentUris.withAppendedId(MileageProvider.Companion.getALL_CONTENT_URI(), id);
          //wait for result so we know whether the the activity was closed due to a
          //cancel or an orientation-change. This allows us to save the state when
          //we transition back and forth between dualPane & singlePane modes
@@ -424,7 +424,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
    private Uri getURI() {
       String option = getString(R.string.carSelection);
       String car = PreferenceManager.getDefaultSharedPreferences(this).getString(option, "Car45");
-      return Uri.withAppendedPath(MileageProvider.CAR_CONTENT_URI, car);
+      return Uri.withAppendedPath(MileageProvider.Companion.getCAR_CONTENT_URI(), car);
    }
 
    private String[] getCSVFiles() {
@@ -503,7 +503,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       protected boolean deleteSelected(long currentlyViewedId) {
          boolean foundIt = false; //set to true if the currentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
-         Uri baseUri = MileageProvider.ALL_CONTENT_URI;
+         Uri baseUri = MileageProvider.Companion.getALL_CONTENT_URI();
          long id;
          for (int index = 0; index < checked.size(); index++) {
             id = getListAdapter().getItemId(checked.keyAt(index));
@@ -521,7 +521,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       protected boolean moveSelected(long currentlyViewedId, String destProfile) {
          boolean foundIt = false; //set to true if the currentlyViewedId was moved/deleted
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
-         Uri baseUri = MileageProvider.ALL_CONTENT_URI;
+         Uri baseUri = MileageProvider.Companion.getALL_CONTENT_URI();
          ContentValues values = new ContentValues(1);
          values.put(MileageData.ToDBNames[MileageData.CAR], destProfile);
          long id;
@@ -651,7 +651,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
 
          public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             Uri uri = Uri.parse(args.getString("uri"));
-            return new CursorLoader(getActivity(), uri, null, null, null, MileageProvider.defaultSort());
+            return new CursorLoader(getActivity(), uri, null, null, null, MileageProvider.Companion.defaultSort());
          }
 
          public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -712,7 +712,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          text.setText(message);
          ArrayAdapter<CharSequence> newAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item);
          //replace code with addAll once we drop support for pre-honeycomb devices!
-         CharSequence[] cars = MileageProvider.getProfiles(activity);
+         CharSequence[] cars = MileageProvider.Companion.getProfiles(activity);
          for (CharSequence car : cars)
             newAdapter.add(car);
          Spinner s = (Spinner) view.findViewById(R.id.move_to_spinner);
