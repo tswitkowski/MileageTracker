@@ -15,7 +15,7 @@
    <!-- TODO - replace with Theme.AppCompat when colors & AB are added back !are fixed -->
    <style name="Theme.MainActionBar" parent="android:Theme.DeviceDefault">
    </style>
-   <style name="Theme.Transparent">
+   <style name="Theme.Transparent" parent="Theme.AppCompat">
       <item name="android:windowIsTranslucent">true</item>
       <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
       <item name="android:windowBackground">@drawable/translucent_background</item>      
