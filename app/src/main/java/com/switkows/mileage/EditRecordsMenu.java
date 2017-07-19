@@ -87,7 +87,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       }
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-         mProfileAdapter = ProfileSelector.setupActionBar(this, null);
+         mProfileAdapter = ProfileSelector.Companion.setupActionBar(this, null);
 
       // restore ImportThread pointer, if we got here by way of an orientation change
       if (getLastCustomNonConfigurationInstance() != null) {

@@ -245,7 +245,7 @@ public class EditRecord extends AppCompatActivity {
          if(isNewRecord) {
             getActivity().setTitle(getText(R.string.new_record_title));
             if(mProfileAdapter == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-               mProfileAdapter = ProfileSelector.setupActionBar((AppCompatActivity) getActivity(), this);
+               mProfileAdapter = ProfileSelector.Companion.setupActionBar((AppCompatActivity) getActivity(), this);
          } else {
             String indicator = "(" + getPrefs().getString(getString(R.string.carSelection), "Car45") + "):";
             getActivity().setTitle(getText(R.string.edit_record_title) + indicator);

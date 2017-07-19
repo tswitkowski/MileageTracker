@@ -87,7 +87,7 @@ public class MileageTracker extends AppCompatActivity implements LoaderManager.L
       initializePointers();
       getSupportLoaderManager().initLoader(45, null, this);
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-         mProfileAdapter = ProfileSelector.setupActionBar(this, null);
+         mProfileAdapter = ProfileSelector.Companion.setupActionBar(this, null);
       // Log.d("TJS", "Finished opening/creating database");
 
       // Firebase stuff
