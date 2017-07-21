@@ -45,7 +45,7 @@ public class EditRecord extends AppCompatActivity {
       PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
       String action = getIntent().getAction();
       //FIXME - added an assumption that the ONLY way we will start this activity in landscape is via a 'new' record
-      boolean isNew = MileageTracker.ACTION_INSERT.equals(action);
+      boolean isNew = MileageTracker.Companion.getACTION_INSERT().equals(action);
       if(!isNew && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
          //if we're in landscape, we'll use a two-pane interface, so dismiss this activity!
          int id = Integer.parseInt(getIntent().getData().getPathSegments().get(1));

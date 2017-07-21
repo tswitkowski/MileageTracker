@@ -177,7 +177,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       switch (item.getItemId()) {
          case R.id.add_item:
             Uri uri = getIntent().getData();
-            startActivity(new Intent(MileageTracker.ACTION_INSERT, uri));
+            startActivity(new Intent(MileageTracker.Companion.getACTION_INSERT(), uri));
             return true;
          case R.id.delete_entry:
             fragment = DeleteConfirmFragment.newInstance(getSelectedMessage());
