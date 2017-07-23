@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import android.database.Cursor
 import android.preference.PreferenceManager
 import android.util.Log
+import java.util.*
 
 class MileageData {
     var date: Long = 0
@@ -139,11 +140,11 @@ class MileageData {
         get() = getFloatValue(MPG_DIFF)
 
     //These methods return the specific data point with the correct units
-    fun getComputerMileage(context: Context, prefs: SharedPreferences): Float {
+    fun getComputerMileage(context: Context, prefs: SharedPreferences?): Float {
         return getEconomy(computerMileage, prefs, context)
     }
 
-    fun getActualMileage(context: Context, prefs: SharedPreferences): Float {
+    fun getActualMileage(context: Context, prefs: SharedPreferences?): Float {
         return getEconomy(actualMileage, prefs, context)
     }
 
@@ -218,6 +219,10 @@ class MileageData {
             return str
         }
 
+        internal fun getFormattedDate(month: Int, day: Int, year: Int): String {
+            val cal: GregorianCalendar = GregorianCalendar(year, month, day)
+            return dateFormatter.format(cal.time)
+        }
         internal fun getFormattedDate(milli: Long): String {
             return dateFormatter.format(milli)
         }

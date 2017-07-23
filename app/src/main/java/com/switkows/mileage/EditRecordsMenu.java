@@ -379,7 +379,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       mViewedRecordId = id;
       if (view != null) {
          FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-         EditRecordFragment fragment = EditRecordFragment.newInstance(id, false);
+         EditRecordFragment fragment = EditRecordFragment.Companion.newInstance(id, false);
          //add the fragment to the stack, so 'back' navigation properly hides it (hopefully)
          if (view.getVisibility() != View.VISIBLE)
             trans.addToBackStack(RECORD_FRAGMENT);
