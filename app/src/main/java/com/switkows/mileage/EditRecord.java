@@ -179,7 +179,7 @@ public class EditRecord extends AppCompatActivity {
                handleCompletion(mId);
             }
          });
-         TextView tf = getTextFieldStruct(MileageData.DATE);
+         TextView tf = getTextFieldStruct(MileageData.Companion.getDATE());
          if(tf != null) {
             tf.setOnClickListener(new View.OnClickListener() {
                public void onClick(View v) {
@@ -198,26 +198,26 @@ public class EditRecord extends AppCompatActivity {
                fillFromDataStructure(data);
             }
          };
-         tf = getTextFieldStruct(MileageData.TRIP);
+         tf = getTextFieldStruct(MileageData.Companion.getTRIP());
          if(tf != null)
             tf.setOnFocusChangeListener(listener);
-         tf = getTextFieldStruct(MileageData.PRICE);
+         tf = getTextFieldStruct(MileageData.Companion.getPRICE());
          if(tf != null)
             tf.setOnFocusChangeListener(listener);
-         tf = getTextFieldStruct(MileageData.GALLONS);
+         tf = getTextFieldStruct(MileageData.Companion.getGALLONS());
          if(tf != null)
             tf.setOnFocusChangeListener(listener);
-         tf = getTextFieldStruct(MileageData.COMPUTER_MILEAGE);
+         tf = getTextFieldStruct(MileageData.Companion.getCOMPUTER_MILEAGE());
          if(tf != null)
             tf.setOnFocusChangeListener(listener);
 
-         tf = getTextFieldStruct(MileageData.DATE);
+         tf = getTextFieldStruct(MileageData.Companion.getDATE());
          if(tf != null)
             tf.setInputType(InputType.TYPE_NULL);
          // getTextFieldStruct(MileageData.ACTUAL_MILEAGE).setEnabled(false);
          // getTextFieldStruct(MileageData.MPG_DIFF).setEnabled(false);
          // getTextFieldStruct(MileageData.TOTAL_PRICE).setEnabled(false);
-         getTextFieldStruct(MileageData.STATION);//grab pointer
+         getTextFieldStruct(MileageData.Companion.getSTATION());//grab pointer
 
          AppCompatActivity activity = (AppCompatActivity) getActivity();
          if(!mDualPane && activity.getSupportActionBar() == null) {
@@ -254,12 +254,12 @@ public class EditRecord extends AppCompatActivity {
          if(isNewRecord) {
             Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR), month = c.get(Calendar.MONTH), day = c.get(Calendar.DAY_OF_MONTH);
-            TextView tf = getTextFieldStruct(MileageData.DATE);
+            TextView tf = getTextFieldStruct(MileageData.Companion.getDATE());
             if(tf != null)
-               tf.setText(MileageData.getFormattedDate(month, day, year));
+               tf.setText(MileageData.Companion.getFormattedDate(month, day, year));
          }
          // Try and grab all of the previously entered gas stations, to make data entry easier
-         AutoCompleteTextView text = (AutoCompleteTextView)getTextFieldStruct(MileageData.STATION);
+         AutoCompleteTextView text = (AutoCompleteTextView)getTextFieldStruct(MileageData.Companion.getSTATION());
 
          //start us off with a null cursor (Loader will populate later)
          stationAutocompleteAdapter = new myListAdapter(getActivity(), null);
@@ -285,7 +285,7 @@ public class EditRecord extends AppCompatActivity {
       }
 
       private void setTextFields() {
-         for(int i = 0; i <= MileageData.MPG_DIFF; i++) {
+         for(int i = 0; i <= MileageData.Companion.getMPG_DIFF(); i++) {
             TextView tf = getTextFieldStruct(i);
             if(tf != null)
                tf.setText(colToString(i));
@@ -294,34 +294,34 @@ public class EditRecord extends AppCompatActivity {
 
       private void fillFromDataStructure(MileageData data) {
          ContentValues values = data.getContent();
-         for(int i = MileageData.ACTUAL_MILEAGE; i <= MileageData.MPG_DIFF; i++) {
+         for(int i = MileageData.Companion.getACTUAL_MILEAGE(); i <= MileageData.Companion.getMPG_DIFF(); i++) {
             TextView tf = getTextFieldStruct(i);
             if (tf != null)
-               tf.setText(values.getAsString(MileageData.ToDBNames[i]));
+               tf.setText(values.getAsString(MileageData.Companion.getToDBNames()[i]));
          }
       }
 
       private TextView getTextFieldStruct(int dbColumn) {
          switch(dbColumn) {
-            case MileageData.DATE:
+            case MileageData.Companion.getDATE():
                return dateBox == null ? dateBox = (TextView)getActivity().findViewById(R.id.date_reading) : dateBox;
-            case MileageData.STATION:
+            case MileageData.Companion.getSTATION():
                return stationBox == null ? stationBox = (AutoCompleteTextView)getActivity().findViewById(R.id.gas_station_reading) : stationBox;
-            case MileageData.ODOMETER:
+            case MileageData.Companion.getODOMETER():
                return odoBox == null ? odoBox = (TextView)getActivity().findViewById(R.id.odo_reading) : odoBox;
-            case MileageData.TRIP:
+            case MileageData.Companion.getTRIP():
                return tripBox == null ? tripBox = (TextView)getActivity().findViewById(R.id.trip_reading) : tripBox;
-            case MileageData.GALLONS:
+            case MileageData.Companion.getGALLONS():
                return gallonsBox == null ? gallonsBox = (TextView)getActivity().findViewById(R.id.gallons_reading) : gallonsBox;
-            case MileageData.PRICE:
+            case MileageData.Companion.getPRICE():
                return priceBox == null ? priceBox = (TextView)getActivity().findViewById(R.id.price_reading) : priceBox;
-            case MileageData.COMPUTER_MILEAGE:
+            case MileageData.Companion.getCOMPUTER_MILEAGE():
                return compMpgBox == null ? compMpgBox = (TextView)getActivity().findViewById(R.id.comp_mileage_reading) : compMpgBox;
-            case MileageData.ACTUAL_MILEAGE:
+            case MileageData.Companion.getACTUAL_MILEAGE():
                return actMpgBox == null ? actMpgBox = (TextView)getActivity().findViewById(R.id.actual_mileage_reading) : actMpgBox;
-            case MileageData.TOTAL_PRICE:
+            case MileageData.Companion.getTOTAL_PRICE():
                return totPriceBox == null ? totPriceBox = (TextView)getActivity().findViewById(R.id.total_price_reading) : totPriceBox;
-            case MileageData.MPG_DIFF:
+            case MileageData.Companion.getMPG_DIFF():
                return mpgDiffBox == null ? mpgDiffBox = (TextView)getActivity().findViewById(R.id.mpg_diff_reading) : mpgDiffBox;
          }
          return null;
@@ -349,48 +349,48 @@ public class EditRecord extends AppCompatActivity {
          if(mProfileName.length() == 0)
             mProfileName = getPrefs().getString(getString(R.string.carSelection), "Car45");
          try {
-            tf = getTextFieldStruct(MileageData.ODOMETER);
+            tf = getTextFieldStruct(MileageData.Companion.getODOMETER());
             if(tf != null)
                odo = Float.parseFloat(tf.getText().toString());
          } catch (NumberFormatException e) {
             odo = 0;
          }
          try {
-            tf = getTextFieldStruct(MileageData.TRIP);
+            tf = getTextFieldStruct(MileageData.Companion.getTRIP());
             if(tf != null)
                trip = Float.parseFloat(tf.getText().toString());
          } catch (NumberFormatException e) {
             trip = 0;
          }
          try {
-            tf = getTextFieldStruct(MileageData.GALLONS);
+            tf = getTextFieldStruct(MileageData.Companion.getGALLONS());
             if(tf != null)
                gal = Float.parseFloat(tf.getText().toString());
          } catch (NumberFormatException e) {
             gal = 0;
          }
          try {
-            tf = getTextFieldStruct(MileageData.PRICE);
+            tf = getTextFieldStruct(MileageData.Companion.getPRICE());
             if(tf != null)
                price = Float.parseFloat(tf.getText().toString());
          } catch (NumberFormatException e) {
             price = 0;
          }
          try {
-            tf = getTextFieldStruct(MileageData.COMPUTER_MILEAGE);
+            tf = getTextFieldStruct(MileageData.Companion.getCOMPUTER_MILEAGE());
             if(tf != null)
                diff = Float.parseFloat(tf.getText().toString());
          } catch (NumberFormatException e) {
             diff = 0;
          }
          // Convert from Metric units (km/L & km) to US units (mpg & mi)
-         if(!MileageData.isMilesGallons(getPrefs(), getActivity())) {
-            odo = odo / MileageData.getDistance(1, getPrefs(), getActivity());
-            trip = trip / MileageData.getDistance(1, getPrefs(), getActivity());
-            gal = gal / MileageData.getVolume(1, getPrefs(), getActivity());
+         if(!MileageData.Companion.isMilesGallons(getPrefs(), getActivity())) {
+            odo = odo / MileageData.Companion.getDistance(1, getPrefs(), getActivity());
+            trip = trip / MileageData.Companion.getDistance(1, getPrefs(), getActivity());
+            gal = gal / MileageData.Companion.getVolume(1, getPrefs(), getActivity());
          }
-         tf = getTextFieldStruct(MileageData.DATE);
-         TextView st = getTextFieldStruct(MileageData.STATION);
+         tf = getTextFieldStruct(MileageData.Companion.getDATE());
+         TextView st = getTextFieldStruct(MileageData.Companion.getSTATION());
          if(tf != null && st != null)
             return new MileageData(mProfileName, tf.getText().toString(),
                                    st.getText().toString(), odo, trip, gal, price, diff);
@@ -398,32 +398,32 @@ public class EditRecord extends AppCompatActivity {
       }
 
       private String colToString(int column) {
-         if(column == MileageData.DATE)
-            return MileageData.getFormattedDate(mCursor.getLong(mCursor.getColumnIndex(MileageData.ToDBNames[column])));
-         else if(column == MileageData.STATION)
-            return mCursor.getString(mCursor.getColumnIndex(MileageData.ToDBNames[column]));
-         float value = mCursor.getFloat(mCursor.getColumnIndex(MileageData.ToDBNames[column]));
+         if(column == MileageData.Companion.getDATE())
+            return MileageData.Companion.getFormattedDate(mCursor.getLong(mCursor.getColumnIndex(MileageData.Companion.getToDBNames()[column])));
+         else if(column == MileageData.Companion.getSTATION())
+            return mCursor.getString(mCursor.getColumnIndex(MileageData.Companion.getToDBNames()[column]));
+         float value = mCursor.getFloat(mCursor.getColumnIndex(MileageData.Companion.getToDBNames()[column]));
          switch(column) {
-            case MileageData.ACTUAL_MILEAGE:
-            case MileageData.COMPUTER_MILEAGE:
-               value = MileageData.getEconomy(value, getPrefs(), getActivity());
+            case MileageData.Companion.getACTUAL_MILEAGE():
+            case MileageData.Companion.getCOMPUTER_MILEAGE():
+               value = MileageData.Companion.getEconomy(value, getPrefs(), getActivity());
                break;
-            case MileageData.GALLONS:
-               value = MileageData.getVolume(value, getPrefs(), getActivity());
+            case MileageData.Companion.getGALLONS():
+               value = MileageData.Companion.getVolume(value, getPrefs(), getActivity());
                break;
-            case MileageData.ODOMETER:
-            case MileageData.TRIP:
-               value = MileageData.getDistance(value, getPrefs(), getActivity());
+            case MileageData.Companion.getODOMETER():
+            case MileageData.Companion.getTRIP():
+               value = MileageData.Companion.getDistance(value, getPrefs(), getActivity());
                break;
          }
          return "" + value;
       }
 
       private Dialog createDialog() {
-         TextView tf = getTextFieldStruct(MileageData.DATE);
+         TextView tf = getTextFieldStruct(MileageData.Companion.getDATE());
          String date = tf == null ? "" : tf.getText().toString();
          GregorianCalendar cal1 = new GregorianCalendar();
-         cal1.setTimeInMillis(MileageData.parseDate(date));
+         cal1.setTimeInMillis(MileageData.Companion.parseDate(date));
          return new DatePickerDialog(getActivity(), dateListener, cal1.get(Calendar.YEAR), cal1.get(Calendar.MONTH), cal1.get(Calendar.DAY_OF_MONTH));
       }
 
@@ -434,16 +434,16 @@ public class EditRecord extends AppCompatActivity {
                                                                     };
 
       private void setDateDisplay(int month, int day, int year) {
-         TextView tf = getTextFieldStruct(MileageData.DATE);
+         TextView tf = getTextFieldStruct(MileageData.Companion.getDATE());
          if(tf != null)
-            tf.setText(MileageData.getFormattedDate(month, day, year));
+            tf.setText(MileageData.Companion.getFormattedDate(month, day, year));
       }
 
       public void onProfileChange(String newProfile) {
          setInsertProfile(newProfile);
       }
 
-      private static final String STATION_NAME = MileageData.ToDBNames[MileageData.STATION];
+      private static final String STATION_NAME = MileageData.Companion.getToDBNames()[MileageData.Companion.getSTATION()];
 
       private class LoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
          static final int ID_STATION_LOADER = 0;

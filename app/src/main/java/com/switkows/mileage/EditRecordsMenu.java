@@ -464,7 +464,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
       public void onActivityCreated(Bundle savedInstanceState) {
          super.onActivityCreated(savedInstanceState);
          getLoaderManager().initLoader(0, getArguments(), mLoaderCallback);
-         mAdapter = new EditRecordsListAdapter(getActivity(), this, null, new String[]{MileageData.ToDBNames[MileageData.DATE]},
+         mAdapter = new EditRecordsListAdapter(getActivity(), this, null, new String[]{MileageData.Companion.getToDBNames()[MileageData.Companion.getDATE()]},
                new int[]{android.R.id.text1});
          setListAdapter(mAdapter);
          setEmptyText("No records present");
@@ -523,7 +523,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          SparseBooleanArray checked = getListView().getCheckedItemPositions();
          Uri baseUri = MileageProvider.Companion.getALL_CONTENT_URI();
          ContentValues values = new ContentValues(1);
-         values.put(MileageData.ToDBNames[MileageData.CAR], destProfile);
+         values.put(MileageData.Companion.getToDBNames()[MileageData.Companion.getCAR()], destProfile);
          long id;
          for (int index = 0; index < checked.size(); index++) {
             id = getListAdapter().getItemId(checked.keyAt(index));
@@ -566,8 +566,8 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
          if (cursor == null)
             return ret;
          int idColumn   = cursor.getColumnIndex("_id");
-         int dateColumn = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.DATE]);
-         int mpgColumn  = cursor.getColumnIndex(MileageData.ToDBNames[MileageData.ACTUAL_MILEAGE]);
+         int dateColumn = cursor.getColumnIndex(MileageData.Companion.getToDBNames()[MileageData.Companion.getDATE()]);
+         int mpgColumn  = cursor.getColumnIndex(MileageData.Companion.getToDBNames()[MileageData.Companion.getACTUAL_MILEAGE()]);
          SharedPreferences prefs = mAdapter.getPrefs();
          for (int i = 0; i < cursor.getCount(); i++) {
             cursor.moveToPosition(i);
@@ -575,7 +575,7 @@ public class EditRecordsMenu extends AppCompatActivity implements EditRecordFrag
             String str;
             for (long currId : mySelected) {
                if (currId == id) {
-                  str = MileageData.getSimpleDescription(cursor, dateColumn, mpgColumn, prefs, getActivity());
+                  str = MileageData.Companion.getSimpleDescription(cursor, dateColumn, mpgColumn, prefs, getActivity());
                   if (ret.length() > 0)
                      ret = String.format("%s\n%s", ret, str);
                   else
