@@ -14,9 +14,9 @@ import java.util.*
 class MileageData {
     var date: Long = 0
         private set
-    internal var carName: String? = null
+    internal var carName: String
         private set
-    private var gas_station: String? = null
+    private var gas_station: String
     var values: FloatArray
         private set
 
@@ -148,7 +148,7 @@ class MileageData {
         return getEconomy(actualMileage, prefs, context)
     }
 
-    fun getOdometerReading(context: Context, prefs: SharedPreferences): Float {
+    fun getOdometerReading(context: Context, prefs: SharedPreferences?): Float {
         return getDistance(odometerReading, prefs, context)
     }
 
@@ -156,7 +156,7 @@ class MileageData {
         var str = getFormattedDate(date) + "," + gas_station + ","
         for (`val` in values)
             str += java.lang.Float.toString(`val`) + ","
-        str += carName!! + ","
+        str += carName + ","
         Log.d("TJS", "Exporting line '$str'...")
         return str
     }
@@ -194,7 +194,7 @@ class MileageData {
 
         private val DATA_LEN = 8
 
-        internal val ToDBNames = arrayOf("date", "station", "odometer", "trip", "gallons", "price", "compMileage", "actMileage", "totalPrice", "mileageDiff", "carName")
+        val ToDBNames = arrayOf("date", "station", "odometer", "trip", "gallons", "price", "compMileage", "actMileage", "totalPrice", "mileageDiff", "carName")
 
         internal fun parseDate(dt: String): Long {
             var loc_dt: Long = 0

@@ -55,7 +55,7 @@ internal class DataImportThread(private val mContext: Context, private val mShow
             reader = BufferedReader(FileReader(in_file))
             while (reader.ready()) {
                 line = reader.readLine()
-                var fields : Array<String?> = line.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                var fields : Array<String> = line.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 if (fields[0] == MileageData.ToDBNames[0]) {
                     // Log.d("TJS","Found header in CSV file");
                     continue
@@ -65,7 +65,7 @@ internal class DataImportThread(private val mContext: Context, private val mShow
                     val newFields = arrayOfNulls<String>(11)
                     System.arraycopy(fields, 0, newFields, 0, fields.size)
                     newFields[10] = currentCar
-                    fields = newFields
+                    fields = newFields as Array<String>
                     Log.v("TJS", "Importing entry from CSV file into current car: " + newFields[10])
                 } else if (fields.size == 11) {
                     Log.v("TJS", "Importing entry from CSV file into car: " + fields[10])

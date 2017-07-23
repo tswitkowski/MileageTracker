@@ -154,7 +154,7 @@ class EditRecord : AppCompatActivity() {
 
         override fun onActivityCreated(savedInstanceState: Bundle?) {
             super.onActivityCreated(savedInstanceState)
-            val submit : Button? = activity.findViewById<View>(R.id.submit) as Button
+            val submit : Button? = activity.findViewById<View>(R.id.submit) as Button?
             //this is in case we don't have a view. for some reason, i'm seeing this called even if onCreateView returns null
             viewAttached = submit != null
             if (submit == null)
@@ -397,11 +397,11 @@ class EditRecord : AppCompatActivity() {
             internal val STATION_PROJ = arrayOf("_id", STATION_NAME)
             internal val STATION_SORT = STATION_NAME + " DESC"
 
-            override fun onCreateLoader(id: Int, args: Bundle): Loader<Cursor>? {
+            override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor>? {
                 if (id == ID_STATION_LOADER) {
                     val uri = MileageProvider.ALL_CONTENT_URI
-                    val hint = args.getString("hint")
-                    val filter = if (hint == null) null else STATION_NAME + " like '%" + hint + "%'"
+                    val hint = args?.getString("hint")
+                    val filter = if (hint == null) null else "$STATION_NAME like '%$hint%'"
                     return CursorLoader(activity, uri, STATION_PROJ, filter, null, STATION_SORT)
                 } else if (id == ID_DATA_LOADER) {
                     return CursorLoader(activity, mUri, null, null, null, null)

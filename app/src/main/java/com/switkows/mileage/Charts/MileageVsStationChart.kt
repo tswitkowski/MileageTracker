@@ -45,7 +45,7 @@ class MileageVsStationChart(c: Context, data: Array<MileageData>, isUS: Boolean)
         var i = 0
         //search for unique station names
         for (item in mData) {
-            val station = item.station
+            val station = item.station!!
             if (!titles.contains(station)) {
                 titles.add(station)
                 colors.add(allColors[i % allColors.size])
