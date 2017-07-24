@@ -252,7 +252,8 @@ class EditRecordsMenu : AppCompatActivity(), EditRecordFragment.UpdateCallback, 
                 mViewedRecordId = -1
             else {
                 messageUpdated()
-                mViewedRecordId = (resultCode - 1).toLong()
+                if(findViewById<View>(R.id.edit_record_fragment) != null)
+                    mViewedRecordId = (resultCode - 1).toLong()
             }
         }
     }
