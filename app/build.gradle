@@ -17,6 +17,7 @@ android {
         targetSdkVersion sdkVersion
         versionCode 32
         versionName "2.5.7"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
@@ -41,6 +42,14 @@ dependencies {
     // Google Sign In SDK (only required for Google Sign In)
     compile 'com.google.android.gms:play-services-auth:11.0.2'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    // Testing-only dependencies
+    // Force usage of support annotations in the test app, since it is internally used by the runner module.
+    androidTestCompile 'com.android.support:support-annotations:' + depVersion
+    androidTestCompile 'com.android.support.test:runner:1.0.0'
+    androidTestCompile 'com.android.support.test:rules:1.0.0'
+//    androidTestCompile 'com.android.support.test.espresso:espresso-core:' + rootProject.espressoVersion;
+//    androidTestCompile 'com.android.support.test.espresso:espresso-intents:' + rootProject.espressoVersion;
 }
 
 repositories {

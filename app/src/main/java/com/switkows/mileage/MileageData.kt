@@ -14,7 +14,7 @@ import java.util.*
 class MileageData {
     var date: Long = 0
         private set
-    internal var carName: String
+    var carName: String
         private set
     private var gas_station: String
     var values: FloatArray
@@ -152,7 +152,7 @@ class MileageData {
         return getDistance(odometerReading, prefs, context)
     }
 
-    internal fun exportCSV(): String {
+    fun exportCSV(): String {
         var str = getFormattedDate(date) + "," + gas_station + ","
         for (`val` in values)
             str += java.lang.Float.toString(`val`) + ","

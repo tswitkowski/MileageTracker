@@ -5,7 +5,6 @@ import android.content.ContentProvider
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.UriMatcher
 import android.database.Cursor
 import android.database.SQLException
@@ -13,29 +12,23 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
-import android.preference.PreferenceManager
 import android.util.Log
 
 class MileageProvider : ContentProvider() {
 
-    private var prefs: SharedPreferences? = null
-    private var mBackup: BackupManager? = null
-    private var mSuppressBackupUpdate: Boolean = false
+    private var mBackup: BackupManager? = null // Allow to be null for unit tests
 
     override fun onCreate(): Boolean {
-        if (prefs == null)
-            prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
         mBackup = BackupManager(context)
         mDatabase = MileageDataSet(context)
         mSuppressBackupUpdate = false
         return true
     }
 
-    private var mDatabase: MileageDataSet? = null
+    private lateinit var mDatabase: MileageDataSet
 
     override fun delete(uri: Uri, where: String?, whereArgs: Array<String>?): Int {
-        val db = mDatabase!!.writableDatabase
+        val db = mDatabase.writableDatabase
         val count: Int
         val id: String
         val extra = if (where != null && where.isNotEmpty()) " AND ($where)" else ""
@@ -61,7 +54,7 @@ class MileageProvider : ContentProvider() {
             resolver.notifyChange(ALL_CONTENT_URI, null)
         }
         if (count > 0 && !mSuppressBackupUpdate)
-            mBackup!!.dataChanged()
+            mBackup?.dataChanged()
         return count
     }
 
@@ -94,7 +87,7 @@ class MileageProvider : ContentProvider() {
         else
             values = ContentValues()
 
-        val db = mDatabase!!.writableDatabase
+        val db = mDatabase.writableDatabase
         val rowId = db.insert(table, null, values)
         if (rowId >= 0) {
             val noteUri = ContentUris.withAppendedId(dataSetUri, rowId)
@@ -105,7 +98,7 @@ class MileageProvider : ContentProvider() {
                 resolver.notifyChange(dataSetUri, null)
             }
             if (!mSuppressBackupUpdate)
-                mBackup!!.dataChanged()
+                mBackup?.dataChanged()
             return noteUri
         }
         throw SQLException("Failed to insert row into " + uri)
@@ -161,14 +154,14 @@ class MileageProvider : ContentProvider() {
             else -> throw IllegalArgumentException("Unknown URI : " + uri)
         }
 
-        val db = mDatabase!!.readableDatabase
+        val db = mDatabase.readableDatabase
         val c = qb.query(db, projection, selection, selectionArgs, groupBy, null, sortOrder)
         c.setNotificationUri(if (context != null) context!!.contentResolver else null, uri)
         return c
     }
 
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<String>?): Int {
-        val db = mDatabase!!.writableDatabase
+        val db = mDatabase.writableDatabase
         val isProfile = sriMatcher.match(uri) == PROFILE_SELECT
         val count: Int
         val id: String
@@ -204,27 +197,40 @@ class MileageProvider : ContentProvider() {
         return count
     }
 
-    private inner class MileageDataSet internal constructor(private val mContext: Context) : SQLiteOpenHelper(mContext, DB_FILENAME, null, DB_VERSION) {
+    companion object {
+        class MileageDataSet internal constructor(private val mContext: Context, filename: String = DB_FILENAME, version: Int = DB_VERSION) : SQLiteOpenHelper(mContext, filename, null, version) {
 
-        override fun onUpgrade(db: SQLiteDatabase, oldVer: Int, newVer: Int) {
-            if (oldVer == 3 && (newVer == 4 || newVer == 5)) {
-                Log.d("TJS", "Trying to execute'" + mContext.getString(R.string.upgradeDBfrom3To4) + "'")
-                db.execSQL(mContext.getString(R.string.upgradeDBfrom3To4)) // create the new column (supports infinite
-                // number of users/cars)
-                val defaults = ContentValues()
-                val carName = prefs!!.getString(mContext.getString(R.string.carSelection), "Car45")
-                defaults.put(MileageData.ToDBNames[MileageData.CAR], carName)
-                val rows = db.update(DB_TABLE, defaults, null, null) // add car name to all rows in old database
-                Log.d("TJS", "Database successfully upgraded. $rows records were added to $carName's stats")
-            } else if (oldVer == 4 && newVer == 5) {
-                db.execSQL(mContext.getString(R.string.initProfileTable))
-                val values = ContentValues()
-                for (i in 0..2) {
-                    values.put(PROFILE_NAME, "Car" + (i + 1))
-                    db.insert(PROFILE_TABLE, "", values)
+            override fun onUpgrade(db: SQLiteDatabase, oldVer: Int, newVer: Int) {
+                if (oldVer == 3 && (newVer == 4 || newVer == 5)) {
+                    Log.d("TJS", "Trying to execute'" + mContext.getString(R.string.upgradeDBfrom3To4) + "'")
+                    // create the new column (supports infinite number of users/cars)
+                    db.execSQL(mContext.getString(R.string.upgradeDBfrom3To4))
+                    val defaults = ContentValues()
+                    val carName = "Car45"
+                    defaults.put(MileageData.ToDBNames[MileageData.CAR], carName)
+                    // add car name to all rows in old database
+                    val rows = db.update(DB_TABLE, defaults, null, null)
+                    Log.d("TJS", "Database successfully upgraded. $rows records were added to $carName's stats")
+                } else if (oldVer == 4 && newVer == 5) {
+                    // TODO - scan DB for car names, uniq, then pass in to create
+                    createDefaultProfileTable(db)
+                } else {
+                    val sql = mContext.getString(R.string.clearDb).split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+                    db.beginTransaction()
+                    try {
+                        executeMultipleCommands(db, sql)
+                        db.setTransactionSuccessful()
+                    } catch (e: SQLException) {
+                        Log.e("Error creating table!", e.toString())
+                    } finally {
+                        db.endTransaction()
+                    }
+                    onCreate(db)
                 }
-            } else {
-                val sql = mContext.getString(R.string.clearDb).split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+            }
+
+            override fun onCreate(db: SQLiteDatabase) {
+                val sql = mContext.getString(R.string.initDb).split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
                 db.beginTransaction()
                 try {
                     executeMultipleCommands(db, sql)
@@ -234,45 +240,37 @@ class MileageProvider : ContentProvider() {
                 } finally {
                     db.endTransaction()
                 }
-                onCreate(db)
+                createDefaultProfileTable(db)
+            }
+
+            private fun createDefaultProfileTable(db: SQLiteDatabase, cars: ArrayList<String>? = null) {
+                db.execSQL(mContext.getString(R.string.initProfileTable))
+                val values = ContentValues()
+                (0..2).forEach { i ->
+                    values.put(PROFILE_NAME, "Car" + (i + 1))
+                    db.insert(PROFILE_TABLE, "", values)
+                }
+                cars?.forEach { name ->
+                    values.put(PROFILE_NAME, name)
+                    db.insert(PROFILE_TABLE, "", values)
+                }
+            }
+
+            private fun executeMultipleCommands(db: SQLiteDatabase, sql: Array<String>) {
+                sql.filter { s -> s.trim { it <= ' ' }.isNotEmpty() }
+                   .forEach { db.execSQL(it) }
             }
         }
 
-        override fun onCreate(db: SQLiteDatabase) {
-            val sql = mContext.getString(R.string.initDb).split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-            db.beginTransaction()
-            try {
-                executeMultipleCommands(db, sql)
-                db.setTransactionSuccessful()
-            } catch (e: SQLException) {
-                Log.e("Error creating table!", e.toString())
-            } finally {
-                db.endTransaction()
-            }
+        var mSuppressBackupUpdate: Boolean = false
 
-            db.execSQL(mContext.getString(R.string.initProfileTable))
-            val values = ContentValues()
-            (0..2).forEach { i ->
-                values.put(PROFILE_NAME, "Car" + (i + 1))
-                db.insert(PROFILE_TABLE, "", values)
-            }
-        }
-
-        private fun executeMultipleCommands(db: SQLiteDatabase, sql: Array<String>) {
-            sql
-                    .filter { s -> s.trim { it <= ' ' }.isNotEmpty() }
-                    .forEach { db.execSQL(it) }
-        }
-    }
-
-    companion object {
-        private val DB_FILENAME = "mileage_db"
+        val DB_FILENAME = "mileage_db"
         private val DB_TABLE = "mileageInfo"
-        private val PROFILE_TABLE = "mileageProfiles"
+        val PROFILE_TABLE = "mileageProfiles"
         private val DB_VERSION = 5
         val PROFILE_NAME = "carName"
 
-        private val AUTHORITY = "com.switkows.mileage.MileageProvider"
+        protected val AUTHORITY = "com.switkows.mileage.MileageProvider"
         val CAR_CONTENT_URI: Uri = Uri.parse("content://$AUTHORITY/car")
         val ALL_CONTENT_URI: Uri = Uri.parse("content://$AUTHORITY/all")
         val CAR_PROFILE_URI: Uri = Uri.parse("content://$AUTHORITY/profile")
