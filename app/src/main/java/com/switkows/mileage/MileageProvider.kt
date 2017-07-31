@@ -211,9 +211,10 @@ class MileageProvider : ContentProvider() {
                     // add car name to all rows in old database
                     val rows = db.update(DB_TABLE, defaults, null, null)
                     Log.d("TJS", "Database successfully upgraded. $rows records were added to $carName's stats")
+                    createDefaultProfileTable(db, arrayListOf(carName))
                 } else if (oldVer == 4 && newVer == 5) {
-                    // TODO - scan DB for car names, uniq, then pass in to create
-                    createDefaultProfileTable(db)
+                    val profiles = getUniqueProfilesFromData(db)
+                    createDefaultProfileTable(db, profiles)
                 } else {
                     val sql = mContext.getString(R.string.clearDb).split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
                     db.beginTransaction()
@@ -254,6 +255,17 @@ class MileageProvider : ContentProvider() {
                     values.put(PROFILE_NAME, name)
                     db.insert(PROFILE_TABLE, "", values)
                 }
+            }
+
+            private fun getUniqueProfilesFromData(db: SQLiteDatabase) : ArrayList<String> {
+                val profiles = ArrayList<String>()
+                val cursor = db.query(true, DB_TABLE, arrayOf(PROFILE_NAME), null, null, null, null, null, null)
+                while(cursor.moveToNext()) {
+                    val name = cursor.getString(cursor.getColumnIndex(PROFILE_NAME))
+                    profiles.add(name)
+                }
+                cursor.close()
+                return profiles
             }
 
             private fun executeMultipleCommands(db: SQLiteDatabase, sql: Array<String>) {
